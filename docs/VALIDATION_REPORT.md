@@ -4,8 +4,13 @@
 
 **MySQL 8.4.10 local release gates:** Passed.
 
-**GitHub/CodeQL/GHCR release status:** Pending verification on the exact merged
-release SHA and immutable published image.
+**v0.2.0 GitHub/CodeQL/GHCR candidate:** Passed on exact source commit
+`5482a23d83992ec210c326e365498590e5259a54`; the GitHub release was deliberately
+left as a draft after the invalid-configuration health gap described below.
+
+**v0.2.1 correction:** Local source, image, fail-closed health, real-server, and
+browser gates passed. Hosted verification remains required on the exact squash-
+merged release SHA before the protected tag is created.
 
 **Evidence window:** 20–22 July 2026.
 
@@ -170,31 +175,88 @@ container image.
 
 ## Production container evidence
 
-| Check                | Result                                                                     |
-| -------------------- | -------------------------------------------------------------------------- |
-| Runtime image        | `dbmason:0.2.0-final`                                                      |
-| Local image ID       | `sha256:7ff0bdba6c93a9fecdcad31222cb40fd1fe592bddd8b07795150abff054a4ba2`  |
-| Exact image size     | `71,023,806` bytes (`67.73 MiB`)                                           |
-| Runtime user         | `nextjs` / UID `1001` (non-root)                                           |
-| Legal files          | License, notice, trademark policy, third-party notices                     |
-| Linux capabilities   | `ALL` dropped                                                              |
-| Privilege escalation | `no-new-privileges` enabled                                                |
-| PID limit            | `256`                                                                      |
-| CPU limit            | `1` CPU                                                                    |
-| Memory limit         | `384 MiB`                                                                  |
-| Idle CPU sample      | `0.00%` from `docker stats --no-stream`                                    |
-| Warm idle memory     | `85.62 MiB`                                                                |
-| Warm process count   | `12` container PIDs                                                        |
-| Health endpoint      | HTTP `200`                                                                 |
-| Source/version link  | Runtime v0.2.0 tag URL rendered; public resolution pending tag publication |
-| Build-secret scan    | No build-only secret in final image environment                            |
-| Runtime logs         | Expected no-email-adapter warning only                                     |
-| Browser console      | `0` warnings and `0` errors                                                |
+| Check                | Result                                                                      |
+| -------------------- | --------------------------------------------------------------------------- |
+| Runtime image        | `dbmason:0.2.0-final`                                                       |
+| Local image ID       | `sha256:7ff0bdba6c93a9fecdcad31222cb40fd1fe592bddd8b07795150abff054a4ba2`   |
+| Exact image size     | `71,023,806` bytes (`67.73 MiB`)                                            |
+| Runtime user         | `nextjs` / UID `1001` (non-root)                                            |
+| Legal files          | License, notice, trademark policy, third-party notices                      |
+| Linux capabilities   | `ALL` dropped                                                               |
+| Privilege escalation | `no-new-privileges` enabled                                                 |
+| PID limit            | `256`                                                                       |
+| CPU limit            | `1` CPU                                                                     |
+| Memory limit         | `384 MiB`                                                                   |
+| Idle CPU sample      | `0.00%` from `docker stats --no-stream`                                     |
+| Warm idle memory     | `85.62 MiB`                                                                 |
+| Warm process count   | `12` container PIDs                                                         |
+| Health endpoint      | HTTP `200`                                                                  |
+| Source/version link  | Runtime v0.2.0 tag URL rendered and resolves to the exact public source tag |
+| Build-secret scan    | No build-only secret in final image environment                             |
+| Runtime logs         | Expected no-email-adapter warning only                                      |
+| Browser console      | `0` warnings and `0` errors                                                 |
 
 The recorded hardening values above were inspected on the running production
-release-candidate container, not inferred from the Dockerfile alone. The local
-image is frozen; public tag resolution, hosted multi-architecture identity, and
-registry attestations remain release gates until publication.
+release-candidate container, not inferred from the Dockerfile alone. Its later
+tag workflow reproduced the candidate as the public multi-architecture artifact
+recorded in the correction section below.
+
+## v0.2.0 published candidate and v0.2.1 readiness correction
+
+The protected annotated `v0.2.0` tag resolves to exact main commit
+`5482a23d83992ec210c326e365498590e5259a54`. Tag workflow run `29927828749`
+passed source, audit, runtime/legal, PostgreSQL, MySQL, both Chromium, multi-
+architecture publish, SBOM, provenance, and GitHub attestation gates. Anonymous
+clients pulled `ghcr.io/bestmaa/dbmason:0.2.0` at OCI index digest
+`sha256:b6386b8b8dce0455f86a4f278381de1356fee7abb342d9955a3c49f8ead93951`;
+strict attestation verification bound it to the tag workflow and exact source
+commit.
+
+A fresh-volume smoke with valid configuration passed on that published image.
+A separate smoke then found that empty secrets made the application root fail
+while the old constant health response still returned `200`, so Docker could
+report a broken instance as healthy. The `v0.2.0` GitHub release therefore
+remained an unpublished draft and its immutable candidate tag/image were not
+moved or deleted.
+
+v0.2.1 makes readiness fail closed. It validates the runtime environment,
+initializes Payload and production migrations, reads the user schema, returns
+only `ok` or `unhealthy`, shares concurrent work, and caches only the boolean
+result for five seconds. The following pre-tag gates ran against the correction:
+
+| Gate                                                | Recorded result                                                   |
+| --------------------------------------------------- | ----------------------------------------------------------------- |
+| Types, full lint, line boundary, unit/RBAC/security | Pass: 66 frontend files within 250 lines; 32 files, 154/154 tests |
+| Dependency audit                                    | Pass: zero known vulnerabilities                                  |
+| Third-party/runtime provenance                      | Pass: legal closure and 2,306 standalone runtime entries          |
+| Optimized standalone build                          | Pass: production build completed                                  |
+| Fresh isolated SQLite migration                     | Pass: initial migration applied, batch 1, `Ran: Yes`              |
+| Real PostgreSQL 17 integration                      | Pass: 5 files, 40/40 tests                                        |
+| Real MySQL 8.4.10 integration                       | Pass: 2 files, 11/11 tests                                        |
+| PostgreSQL Chromium lifecycle                       | Pass: 7/7 serial tests                                            |
+| MySQL Chromium lifecycle                            | Pass: 7/7 serial tests                                            |
+
+The exact local `dbmason:0.2.1-health-gate` image had manifest-list ID
+`sha256:dd31009b9f4d2b35ffa11ad7f6c5ee79bd206d01fd51a68e86f5e5c7dc324e20`,
+size `71,546,772` bytes (`68.23 MiB`), and ran as non-root UID `1001` with all
+capabilities dropped, no privilege escalation, one CPU, 384 MiB memory, and 256
+PIDs. Its warm sample used `89.77 MiB`, 13 PIDs, and `0.02%` CPU.
+
+Three preserved, isolated containers exercised the image:
+
+| Configuration                          | Health HTTP | Root HTTP | Docker state | Process |
+| -------------------------------------- | ----------: | --------: | ------------ | ------- |
+| Empty secrets                          |         503 |       500 | unhealthy    | running |
+| Valid secrets with unusable `/proc` DB |         503 |       500 | unhealthy    | running |
+| Valid secrets with a fresh volume      |         200 |       200 | healthy      | running |
+
+Both failures returned only `{ "status": "unhealthy" }`, every Docker health
+command exited nonzero, and no secret value appeared in logs. Payload/libSQL
+emitted server-side storage diagnostics for the unusable path, including Next's
+handled rejection diagnostics, but the process remained running with no fatal
+exit. The valid container applied its initial migration, returned
+`{ "status": "ok" }`, rendered the first-owner screen with `Source v0.2.1`, and
+had zero browser-console entries in the manual Chrome inspection.
 
 ## Security results
 
@@ -238,10 +300,10 @@ performed during validation.
 
 ## Pending release gates and follow-ups
 
-- **Release blocker:** record green hosted CI and CodeQL runs for the exact
-  merged v0.2.0 SHA, then verify the tag workflow, immutable GHCR digest, SBOM,
-  signed provenance, public package visibility, and anonymous pull before
-  publishing the release.
+- **Release blocker:** merge v0.2.1 through the protected pull-request path,
+  record all required hosted CI and CodeQL checks on the exact main SHA, then
+  verify its immutable tag workflow, GHCR digest, SBOM, signed provenance,
+  anonymous pull, and fresh-volume health smokes before publishing stable.
 - Add an independent cancellation deadline to DNS resolution; the current global limiter bounds concurrent exposure but not resolver duration.
 - Add saved administrator credential rotation and connection editing.
 - Expand the grant planner beyond the PostgreSQL `public` schema before claiming multi-schema coverage.

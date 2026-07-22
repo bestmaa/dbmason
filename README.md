@@ -4,7 +4,7 @@
 
 DBMason is a lightweight, self-hosted database access manager for PostgreSQL and MySQL. Save an administrator connection, inspect the live catalog, create databases and restricted accounts, manage their lifecycle through allowlisted access presets, inspect honest engine-native metrics, and browse/query data through a guarded read-only workspace.
 
-The v0.2.0 release is validated against PostgreSQL 17 and MySQL 8.4 LTS. Other
+The v0.2.1 release is validated against PostgreSQL 17 and MySQL 8.4 LTS. Other
 server versions are not claimed until they are added to the compatibility
 matrix and real-server CI.
 
@@ -51,11 +51,11 @@ The committed Compose profile also applies the tested defaults of one CPU,
 384 MiB memory, 256 PIDs, no added Linux capabilities, and no privilege
 escalation; tune the two resource values in `.env` when needed.
 
-To run the published v0.2.0 image instead of building locally, set this in
+To run the published v0.2.1 image instead of building locally, set this in
 `.env`, then pull and start without a build:
 
 ```dotenv
-DBMASON_IMAGE=ghcr.io/bestmaa/dbmason:0.2.0
+DBMASON_IMAGE=ghcr.io/bestmaa/dbmason:0.2.1
 ```
 
 ```bash
@@ -149,7 +149,7 @@ for the exact engine differences and limitations.
 
 Write/DDL workspaces, saved queries/history, backups, saved administrator
 credential rotation, a visual multi-schema/object grant planner, built-in host
-telemetry, and HA control-plane storage remain outside v0.2.0.
+telemetry, and HA control-plane storage remain outside v0.2.1.
 
 DBMason is licensed under [AGPL-3.0-only](./LICENSE). Modified network
 deployments must offer their corresponding source to their users. The DBMason

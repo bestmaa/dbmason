@@ -65,7 +65,7 @@ operators or concurrent operations grows. Run one replica while SQLite is the
 control-plane database.
 
 To use the official release rather than building this checkout, change
-`DBMASON_IMAGE` to `ghcr.io/bestmaa/dbmason:0.2.0`, run `docker compose pull`,
+`DBMASON_IMAGE` to `ghcr.io/bestmaa/dbmason:0.2.1`, run `docker compose pull`,
 then run `docker compose up -d --no-build`. Pin the published multi-platform
 digest for repeatable production deployment. The Compose hardening, volume,
 health check, resource ceilings, and `.env` settings remain the same.
