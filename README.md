@@ -2,13 +2,13 @@
 
 > Self-hosted database access control plane.
 
-DBMason is a lightweight, self-hosted database access manager. The first engine is PostgreSQL: save an administrator connection, inspect live databases and roles, create databases, create login roles with one-time passwords, manage their lifecycle through allowlisted access presets, inspect native PostgreSQL activity counters, and browse/query data through a guarded read-only workspace.
+DBMason is a lightweight, self-hosted database access manager for PostgreSQL and MySQL. Save an administrator connection, inspect the live catalog, create databases and restricted accounts, manage their lifecycle through allowlisted access presets, inspect honest engine-native metrics, and browse/query data through a guarded read-only workspace.
 
-The application is one Payload + Next.js process with SQLite for control-plane metadata. Managed PostgreSQL servers remain the source of truth; DBMason does not copy their catalogs into SQLite or keep idle pools open.
+The application is one Payload + Next.js process with SQLite for control-plane metadata. Managed database servers remain the source of truth; DBMason does not copy their catalogs into SQLite or keep idle pools open. PostgreSQL and MySQL behavior lives in isolated adapters rather than shared SQL conditionals.
 
 ## Start locally
 
-Requirements: Node.js 20.9+ and pnpm 9+.
+Requirements: Node.js 22 or 24 and pnpm 9–11.
 
 ```bash
 cp .env.example .env
@@ -18,6 +18,11 @@ pnpm dev
 ```
 
 `PORT` in `.env` controls the local port (the example uses `3010`). The dev/start scripts preload `.env` before Next chooses its listener. Open `http://localhost:3010`; on first run, create the owner account through the Payload admin screen.
+
+Official builds link to the GitHub tag matching the running `package.json` version. If you
+publish a modified network build, set runtime variable `DBMASON_SOURCE_URL` to the public
+corresponding source for that exact build. The login and application pages render that URL
+beside the running version for AGPL users.
 
 Generate suitable secrets with:
 
@@ -37,7 +42,7 @@ SQLite is stored in the named `db-control-data` volume. Back it up with a SQLite
 Committed Payload migrations run automatically when the production process initializes. Run only one application replica while SQLite is the control-plane store.
 Docker publishes its internal port `3000` on the host port selected by `PORT`.
 
-## Local PostgreSQL test target
+## Local database test targets
 
 The dedicated test-only PostgreSQL Compose project is separate from the DB
 Control application and binds to `127.0.0.1:55432` by default. Prepare its
@@ -52,6 +57,19 @@ pnpm postgres:test:up
 See [docs/POSTGRES_TEST_HARNESS.md](./docs/POSTGRES_TEST_HARNESS.md) for test
 credentials, connection fields, logs, stop, and isolated reset commands.
 
+MySQL 8.4 uses a different Compose project, loopback port, volume, environment
+file, integration suite, and browser-test control plane:
+
+```bash
+cp .env.mysql-test.example .env.mysql-test
+pnpm mysql:test:config
+pnpm mysql:test:up
+```
+
+See [docs/MYSQL_TEST_HARNESS.md](./docs/MYSQL_TEST_HARNESS.md). Both harnesses
+are test-only; never reuse their credentials or point their cleanup commands at
+a production server.
+
 The complete user workflow and production screenshots are in
 [docs/USER_GUIDE.md](./docs/USER_GUIDE.md). The recorded release evidence is in
 [docs/VALIDATION_REPORT.md](./docs/VALIDATION_REPORT.md).
@@ -61,7 +79,9 @@ The complete user workflow and production screenshots are in
 ```bash
 pnpm check
 pnpm test:postgres
+pnpm test:mysql
 pnpm test:e2e:mvp
+pnpm test:e2e:mysql
 pnpm build
 pnpm payload migrate:status
 ```
@@ -73,22 +93,33 @@ Read [ARCHITECTURE.md](./ARCHITECTURE.md), [SECURITY.md](./SECURITY.md), and [CO
 
 ## Current scope
 
-- PostgreSQL connections, live database/role inventory
+- PostgreSQL and MySQL connections with live database/principal inventory
 - Encrypted connection secrets
 - Database creation
-- LOGIN role creation with a password shown once
-- Connect/read/write/developer access presets for the `public` schema
-- Existing-role access replacement and explicit-grant revocation with `PUBLIC` warnings
-- Login enable/disable, one-time password rotation, and dependency-safe role deletion
+- PostgreSQL role and canonical MySQL `user@host` account creation with a password shown once
+- Engine-mapped connect/read/write/developer access presets
+- Existing-principal access reconciliation, login enable/disable, one-time password rotation, and protected deletion
 - Control-plane-only saved connection removal
-- On-demand PostgreSQL connection, activity, cache, temporary-file, deadlock, size, and rendered `pg_stat_io` counters/timing
-- Guarded relation browsing and row-returning read-only SQL under a transient, nonprivileged PostgreSQL login
+- On-demand PostgreSQL statistics/`pg_stat_io` and MySQL server-status/schema metrics
+- Guarded relation browsing and row-returning read-only SQL under a transient, nonprivileged engine account
 - Payload application RBAC and append-only audit events
 
-PostgreSQL core statistics do not expose reliable host/container CPU or RAM utilization. DBMason reports that boundary instead of inventing a percentage; an external metrics provider is required for host telemetry.
+Neither PostgreSQL nor MySQL SQL statistics expose trustworthy host/container
+CPU or RAM utilization. DBMason reports that boundary instead of inventing a
+percentage; an external metrics provider is required for host telemetry.
 
-Write/DDL SQL, saved queries/history, backups, saved administrator credential rotation, multi-schema grant planning, MySQL, and HA control-plane storage remain outside the current PostgreSQL release. MySQL comes later through a separate engine adapter.
+MySQL accounts are always explicit `user@host` identities. MySQL has no
+PostgreSQL-style database owner or per-database `CONNECT` grant; the connect
+preset is authentication-only. The MySQL workspace rejects developer, DDL,
+routine, trigger, event, temporary-table, lock, global, grant-option, role-linked,
+and proxy-linked accounts. See [docs/ENGINE_ADAPTERS.md](./docs/ENGINE_ADAPTERS.md)
+for the exact engine differences and limitations.
+
+Write/DDL workspaces, saved queries/history, backups, saved administrator
+credential rotation, a visual multi-schema/object grant planner, built-in host
+telemetry, and HA control-plane storage remain outside v0.2.0.
 
 DBMason is licensed under [AGPL-3.0-only](./LICENSE). Modified network
 deployments must offer their corresponding source to their users. The DBMason
 name and logo remain subject to the separate [trademark policy](./TRADEMARKS.md).
+Dependency licenses are recorded in [third-party notices](./THIRD_PARTY_NOTICES.md).

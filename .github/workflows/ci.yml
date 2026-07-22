@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CONNECTION_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+  DATABASE_HOST_ALLOWLIST: 127.0.0.1,localhost
+  PAYLOAD_SECRET: ci-only-payload-secret-never-use-in-production-2026
+
+jobs:
+  quality:
+    name: Quality, audit, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf471bd8a8e15df2eb00834d8f3aaf7c9c3144 # v6.0.9
+      - name: Install Node.js
+        uses: actions/setup-node@82076239c1e6089b052350c690a4a9edbfddb206 # v7.0.0
+        with:
+          cache: pnpm
+          node-version: 24.18.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run architectural quality gate
+        run: pnpm check
+      - name: Verify generated files are committed
+        run: git diff --exit-code
+      - name: Audit dependencies
+        run: pnpm audit --audit-level high
+      - name: Build standalone application
+        run: pnpm build
+
+  database-integration:
+    name: ${{ matrix.engine }} integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [PostgreSQL, MySQL]
+        include:
+          - engine: PostgreSQL
+            env_example: .env.postgres-test.example
+            env_file: .env.postgres-test
+            test_command: pnpm test:postgres
+            down_command: pnpm postgres:test:down
+          - engine: MySQL
+            env_example: .env.mysql-test.example
+            env_file: .env.mysql-test
+            test_command: pnpm test:mysql
+            down_command: pnpm mysql:test:down
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf471bd8a8e15df2eb00834d8f3aaf7c9c3144 # v6.0.9
+      - name: Install Node.js
+        uses: actions/setup-node@82076239c1e6089b052350c690a4a9edbfddb206 # v7.0.0
+        with:
+          cache: pnpm
+          node-version: 24.18.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prepare isolated test environment
+        run: cp "${{ matrix.env_example }}" "${{ matrix.env_file }}"
+      - name: Run real database integration suite
+        run: ${{ matrix.test_command }}
+      - name: Stop isolated database harness
+        if: always()
+        run: ${{ matrix.down_command }}
+
+  browser:
+    name: ${{ matrix.engine }} Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [PostgreSQL, MySQL]
+        include:
+          - engine: PostgreSQL
+            env_example: .env.postgres-test.example
+            env_file: .env.postgres-test
+            test_command: pnpm test:e2e:mvp
+            down_command: pnpm postgres:test:down
+          - engine: MySQL
+            env_example: .env.mysql-test.example
+            env_file: .env.mysql-test
+            test_command: pnpm test:e2e:mysql
+            down_command: pnpm mysql:test:down
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf471bd8a8e15df2eb00834d8f3aaf7c9c3144 # v6.0.9
+      - name: Install Node.js
+        uses: actions/setup-node@82076239c1e6089b052350c690a4a9edbfddb206 # v7.0.0
+        with:
+          cache: pnpm
+          node-version: 24.18.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium runtime
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Prepare isolated test environment
+        run: cp "${{ matrix.env_example }}" "${{ matrix.env_file }}"
+      - name: Run browser workflow
+        run: ${{ matrix.test_command }}
+      - name: Stop isolated database harness
+        if: always()
+        run: ${{ matrix.down_command }}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import type { ObservabilitySnapshot } from '@/modules/database-manager/domain/observability'
+import type { EngineId } from '@/modules/database-manager/domain/contracts'
 
 import {
   buildObservabilityPanelModel,
@@ -14,6 +15,7 @@ import { managerErrorMessage } from './managerHookSupport'
 
 interface UseObservabilityInput {
   connectionId: string | null
+  engine: EngineId | null
   enabled: boolean
 }
 
@@ -82,6 +84,6 @@ export function useObservability(input: UseObservabilityInput): UseObservability
         if (input.enabled && input.connectionId) setRefreshKey((value) => value + 1)
       },
     },
-    model: buildObservabilityPanelModel(visibleRequest),
+    model: buildObservabilityPanelModel({ ...visibleRequest, engine: input.engine }),
   }
 }

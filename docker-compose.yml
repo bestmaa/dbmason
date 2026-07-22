@@ -1,7 +1,7 @@
 services:
   db-control:
     build: .
-    image: db-control:local
+    image: dbmason:local
     init: true
     restart: unless-stopped
     ports:
@@ -11,6 +11,7 @@ services:
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Set PAYLOAD_SECRET in .env}
       CONNECTION_ENCRYPTION_KEY: ${CONNECTION_ENCRYPTION_KEY:?Set CONNECTION_ENCRYPTION_KEY in .env}
       DATABASE_HOST_ALLOWLIST: ${DATABASE_HOST_ALLOWLIST:-}
+      DBMASON_SOURCE_URL: ${DBMASON_SOURCE_URL:-}
     volumes:
       - db-control-data:/app/data
     cap_drop:

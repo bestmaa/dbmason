@@ -28,6 +28,6 @@ export const runWorkspaceQuerySchema = z
       .string()
       .min(1)
       .max(32_768)
-      .refine((value) => value.trim().length > 0, 'Enter a PostgreSQL query'),
+      .refine((value) => value.trim().length > 0, 'Enter a read-only query'),
   })
   .strict()

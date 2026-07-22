@@ -1,6 +1,6 @@
 services:
   postgres-test:
-    image: postgres:17-alpine
+    image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
     init: true
     restart: 'no'
     environment:
@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:?Set POSTGRES_TEST_PASSWORD in .env.postgres-test}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - '${POSTGRES_TEST_HOST:-127.0.0.1}:${POSTGRES_TEST_PORT:-55432}:5432'
+      - '127.0.0.1:${POSTGRES_TEST_PORT:-55432}:5432'
     volumes:
       - postgres-test-data:/var/lib/postgresql/data
     networks:
@@ -28,7 +28,8 @@ services:
     shm_size: 128mb
     stop_grace_period: 20s
     labels:
-      com.db-control.purpose: integration-testing-only
+      com.dbmason.purpose: integration-testing-only
+      com.dbmason.engine: postgresql
 
 volumes:
   postgres-test-data:

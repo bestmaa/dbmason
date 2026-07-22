@@ -6,7 +6,7 @@ import type {
   ClusterIoCounters,
   DatabaseMetricCounters,
   MetricAvailability,
-  ObservabilitySnapshot,
+  PostgresObservabilitySnapshot,
 } from '../../domain/observability'
 import { withPostgresClient } from './postgresClient'
 
@@ -205,7 +205,7 @@ function mapActivity(
 
 export async function getPostgresObservability(
   config: DatabaseConnectionConfig,
-): Promise<ObservabilitySnapshot> {
+): Promise<PostgresObservabilitySnapshot> {
   return withPostgresClient(config, config.database, async (client) => {
     await client.query('BEGIN READ ONLY')
     try {

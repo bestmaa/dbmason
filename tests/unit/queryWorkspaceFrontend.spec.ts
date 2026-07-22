@@ -4,6 +4,10 @@ import { describe, expect, it } from 'vitest'
 
 import { resolveManagerCapabilities } from '@/features/database-manager/model/managerCapabilities'
 import { buildWorkspaceResultView } from '@/features/database-manager/model/workspaceMappers'
+import {
+  workspaceEngineStrategy,
+  workspaceStarterQuery,
+} from '@/features/database-manager/model/workspaceEngineStrategy'
 import type {
   WorkspaceActions,
   WorkspaceModel,
@@ -15,9 +19,10 @@ import type { EngineCapabilities } from '@/modules/database-manager/domain/contr
 
 const engineCapabilities: EngineCapabilities = {
   accessLevels: ['connect', 'read', 'write', 'developer'],
-  canCreateDatabase: true,
-  canCreatePrincipal: true,
-  supportsDefaultPrivileges: true,
+      canCreateDatabase: true,
+      canCreatePrincipal: true,
+      supportsDatabaseOwners: true,
+      supportsDefaultPrivileges: true,
   supportsObservability: true,
   supportsReadOnlyWorkspace: true,
   supportsSchemas: true,
@@ -44,6 +49,7 @@ function workspaceModel(overrides: Partial<WorkspaceModel> = {}): WorkspaceModel
     canSubmitCredential: false,
     catalog: null,
     connected: false,
+    copy: workspaceEngineStrategy('postgresql').copy,
     credential: { database: 'app', password: '', principal: 'app_reader' },
     databaseOptions: [{ label: 'app', value: 'app' }],
     error: null,
@@ -167,5 +173,36 @@ describe('query workspace presentational safety', () => {
     expect(html).toContain('<code>true</code>')
     expect(html).toContain('<code>NULL</code>')
     expect(html).toContain('Result was truncated by the row or response limit')
+  })
+
+  it('delegates MySQL identity and guard copy without PostgreSQL SQL leakage', () => {
+    const copy = workspaceEngineStrategy('mysql').copy
+    const model = workspaceModel({ copy, querySql: workspaceStarterQuery })
+    const credentialHtml = renderToStaticMarkup(
+      createElement(WorkspaceCredentialGate, { actions, model }),
+    )
+    const editorHtml = renderToStaticMarkup(createElement(ReadOnlySqlEditor, { actions, model }))
+
+    expect(credentialHtml).toContain('restricted MySQL account')
+    expect(credentialHtml).toContain('Restricted account')
+    expect(editorHtml).toContain('MySQL read-only session guard')
+    expect(editorHtml).toContain('CURRENT_USER')
+    expect(`${credentialHtml}${editorHtml}`).not.toContain('PostgreSQL')
+    expect(workspaceStarterQuery).not.toContain('current_database')
+  })
+
+  it('keeps MySQL role-linked accounts out of the transient workspace selector', () => {
+    const account = {
+      canCreateDatabase: false,
+      canCreateRole: false,
+      canLogin: true,
+      isSuperuser: false,
+      memberships: ['app_role@%'],
+      name: 'app_reader@%',
+      validUntil: null,
+    }
+
+    expect(workspaceEngineStrategy('mysql').principalIsEligible(account, 'root@%')).toBe(false)
+    expect(workspaceEngineStrategy('postgresql').principalIsEligible(account, 'postgres')).toBe(true)
   })
 })

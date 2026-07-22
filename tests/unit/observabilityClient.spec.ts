@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { observabilityClient } from '@/features/database-manager/services/observabilityClient'
 
-import { observabilityFixture } from './observabilityFixture'
+import { mysqlObservabilityFixture, observabilityFixture } from './observabilityFixture'
 
 describe('observability browser client', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -26,8 +26,13 @@ describe('observability browser client', () => {
   })
 
   it('rejects malformed decimal counters from the server', async () => {
-    const invalid = observabilityFixture()
-    invalid.databases[0]!.transactionsCommitted = '12.5'
+    const fixture = observabilityFixture()
+    const invalid = {
+      ...fixture,
+      databases: fixture.databases.map((database, index) =>
+        index === 0 ? { ...database, transactionsCommitted: '12.5' } : database,
+      ),
+    }
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -41,5 +46,22 @@ describe('observability browser client', () => {
     await expect(observabilityClient.getSnapshot('connection-id')).rejects.toThrow(
       'The server returned an invalid response.',
     )
+  })
+
+  it('parses the discriminated MySQL server-status response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(mysqlObservabilityFixture()), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        }),
+      ),
+    )
+
+    const result = await observabilityClient.getSnapshot('mysql-id')
+
+    expect(result.engine).toBe('mysql')
+    if (result.engine === 'mysql') expect(result.serverStatus.threadsRunning).toBe(2)
   })
 })

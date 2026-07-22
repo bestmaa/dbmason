@@ -1,4 +1,8 @@
-import type { ServerSnapshot } from '@/modules/database-manager/domain/contracts'
+import {
+  engineIds,
+  type EngineId,
+  type ServerSnapshot,
+} from '@/modules/database-manager/domain/contracts'
 
 import type {
   ConnectionFormValue,
@@ -6,15 +10,34 @@ import type {
   PrincipalFormValue,
 } from '../model/viewModels'
 
-export const initialConnectionForm: ConnectionFormValue = {
-  host: 'localhost',
-  maintenanceDatabase: 'postgres',
-  name: '',
-  password: '',
-  port: '5432',
-  sslMode: 'verify-full',
-  username: 'postgres',
+const engineConnectionDefaults: Readonly<
+  Record<EngineId, Pick<ConnectionFormValue, 'maintenanceDatabase' | 'port' | 'username'>>
+> = {
+  mysql: { maintenanceDatabase: 'mysql', port: '3306', username: 'root' },
+  postgresql: { maintenanceDatabase: 'postgres', port: '5432', username: 'postgres' },
 }
+
+export function connectionFormForEngine(
+  engine: EngineId,
+  shared: Partial<
+    Pick<ConnectionFormValue, 'host' | 'name' | 'password' | 'sslMode'>
+  > = {},
+): ConnectionFormValue {
+  return {
+    engine,
+    host: shared.host ?? 'localhost',
+    name: shared.name ?? '',
+    password: shared.password ?? '',
+    sslMode: shared.sslMode ?? 'verify-full',
+    ...engineConnectionDefaults[engine],
+  }
+}
+
+export function parseEngineId(value: unknown): EngineId | null {
+  return engineIds.find((engine) => engine === value) ?? null
+}
+
+export const initialConnectionForm = connectionFormForEngine('postgresql')
 
 export const initialDatabaseForm: DatabaseFormValue = { name: '', owner: '' }
 export const initialPrincipalForm: PrincipalFormValue = { database: '', level: 'read', name: '' }

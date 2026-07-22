@@ -1,8 +1,12 @@
 import type { DatabaseEngine, EngineId } from '../../domain/contracts'
 import { ManagerError } from '../../domain/errors'
+import { MysqlEngine } from '../mysql/MysqlEngine'
 import { PostgresEngine } from '../postgresql/PostgresEngine'
 
-const engines = new Map<EngineId, DatabaseEngine>([['postgresql', new PostgresEngine()]])
+const engines = new Map<EngineId, DatabaseEngine>([
+  ['postgresql', new PostgresEngine()],
+  ['mysql', new MysqlEngine()],
+])
 
 export function getDatabaseEngine(id: EngineId): DatabaseEngine {
   const engine = engines.get(id)

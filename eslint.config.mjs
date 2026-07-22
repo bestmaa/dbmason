@@ -72,6 +72,7 @@ export default defineConfig([
     '.next/**',
     '.next-app-test/**',
     '.next-e2e/**',
+    '.next-e2e-mysql/**',
     '.next-production-test/**',
     'playwright-report/**',
     'test-results/**',

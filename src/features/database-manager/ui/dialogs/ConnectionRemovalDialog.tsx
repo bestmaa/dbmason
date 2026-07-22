@@ -16,7 +16,7 @@ export function ConnectionRemovalDialog({ actions, model }: ConnectionRemovalDia
   if (!model.target) return null
   return (
     <Modal
-      description="This removes only the encrypted saved connection. The PostgreSQL server, databases, and users are not changed."
+      description="This removes only the encrypted saved connection. The managed server, databases, and accounts are not changed."
       error={model.error}
       onClose={actions.close}
       title="Remove saved connection"

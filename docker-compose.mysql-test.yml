@@ -1,0 +1,37 @@
+services:
+  mysql-test:
+    image: mysql:8.4.10@sha256:c592c15aaf4a1961e15d82eb31ea5987dda862d1c4b1e93424438c0e91dc1f8d
+    init: true
+    restart: 'no'
+    environment:
+      MYSQL_DATABASE: ${MYSQL_TEST_DATABASE:?Set MYSQL_TEST_DATABASE in .env.mysql-test}
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: ${MYSQL_TEST_PASSWORD:?Set MYSQL_TEST_PASSWORD in .env.mysql-test}
+      MYSQL_INITDB_SKIP_TZINFO: '1'
+    ports:
+      - '127.0.0.1:${MYSQL_TEST_PORT:-53306}:3306'
+    volumes:
+      - mysql-test-data:/var/lib/mysql
+    networks:
+      - mysql-test-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          mysqladmin ping --protocol=TCP --host=127.0.0.1
+          --user=root --password="$${MYSQL_ROOT_PASSWORD}" --silent
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+    stop_grace_period: 30s
+    labels:
+      com.dbmason.purpose: integration-testing-only
+      com.dbmason.engine: mysql
+
+volumes:
+  mysql-test-data:
+
+networks:
+  mysql-test-network:
+    driver: bridge

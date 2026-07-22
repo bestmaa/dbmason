@@ -4,26 +4,35 @@ import { useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 
 import type {
+  AccessLevel,
   ConnectionSummary,
   CreatePrincipalResult,
 } from '@/modules/database-manager/domain/contracts'
 
 import type { ManagerCapabilities } from '../model/managerCapabilities'
+import {
+  parseAvailableAccessLevel,
+  preferredAccessLevel,
+} from '../model/accessLevelOptions'
 import type { ManagerActions, ManagerViewModel } from '../model/viewModels'
 import { clipboardClient } from '../services/clipboardClient'
 import { databaseManagerClient } from '../services/databaseManagerClient'
 import {
+  connectionFormForEngine,
   initialConnectionForm,
   initialDatabaseForm,
   initialPrincipalForm,
   managerErrorMessage,
+  parseEngineId,
 } from './managerHookSupport'
 
 interface ResourceCreationInput {
+  accessLevels: readonly AccessLevel[]
   capabilities: ManagerCapabilities
   onConnectionCreated: (connection: ConnectionSummary) => void
   onRefresh: () => void
   selectedConnectionId: string | null
+  supportsDatabaseOwners: boolean
 }
 
 interface ResourceCreationState {
@@ -71,6 +80,11 @@ export function useResourceCreation(input: ResourceCreationInput): ResourceCreat
 
   const closeDialog = () => {
     if (submitting) return
+    if (openDialog === 'connection') {
+      setConnectionForm((value) => connectionFormForEngine(value.engine))
+    }
+    if (openDialog === 'database') setDatabaseForm(initialDatabaseForm)
+    if (openDialog === 'principal') setPrincipalForm(initialPrincipalForm)
     setOpenDialog(null)
     setDialogError(null)
     setCredentialCopied(false)
@@ -87,12 +101,13 @@ export function useResourceCreation(input: ResourceCreationInput): ResourceCreat
         ...connectionForm,
         port: Number(connectionForm.port),
       })
-      setConnectionForm(initialConnectionForm)
+      setConnectionForm(connectionFormForEngine(connectionForm.engine))
       setOpenDialog(null)
       input.onConnectionCreated(connection)
     } catch (submitError: unknown) {
       setDialogError(managerErrorMessage(submitError))
     } finally {
+      setConnectionForm((value) => ({ ...value, password: '' }))
       setSubmitting(false)
     }
   }
@@ -105,7 +120,7 @@ export function useResourceCreation(input: ResourceCreationInput): ResourceCreat
     try {
       await databaseManagerClient.createDatabase(input.selectedConnectionId, {
         name: databaseForm.name,
-        owner: databaseForm.owner.trim() || null,
+        owner: input.supportsDatabaseOwners ? databaseForm.owner.trim() || null : null,
       })
       setDatabaseForm(initialDatabaseForm)
       setOpenDialog(null)
@@ -124,7 +139,8 @@ export function useResourceCreation(input: ResourceCreationInput): ResourceCreat
     setDialogError(null)
     try {
       const result = await databaseManagerClient.createPrincipal(input.selectedConnectionId, {
-        access: principalForm.database
+        access:
+          principalForm.database && input.accessLevels.includes(principalForm.level)
           ? [{ database: principalForm.database, level: principalForm.level }]
           : [],
         name: principalForm.name,
@@ -143,6 +159,17 @@ export function useResourceCreation(input: ResourceCreationInput): ResourceCreat
     actions: {
       closeDialog,
       connectionForm: {
+        onEngineChange: (event) => {
+          const engine = parseEngineId(event.target.value)
+          if (!engine) return
+          setConnectionForm((value) =>
+            connectionFormForEngine(engine, {
+              host: value.host,
+              name: value.name,
+              sslMode: value.sslMode,
+            }),
+          )
+        },
         onHostChange: (event: ChangeEvent<HTMLInputElement>) =>
           setConnectionForm((value) => ({ ...value, host: event.target.value })),
         onMaintenanceDatabaseChange: (event) =>
@@ -178,22 +205,30 @@ export function useResourceCreation(input: ResourceCreationInput): ResourceCreat
         onSubmit: submitDatabase,
       },
       openConnectionDialog: () => {
-        if (input.capabilities.canCreateConnection) setOpenDialog('connection')
+        if (input.capabilities.canCreateConnection) {
+          setConnectionForm((value) => ({ ...value, password: '' }))
+          setOpenDialog('connection')
+        }
       },
       openDatabaseDialog: () => {
         if (input.capabilities.canCreateDatabase) setOpenDialog('database')
       },
       openPrincipalDialog: () => {
-        if (input.capabilities.canCreatePrincipal) setOpenDialog('principal')
+        if (input.capabilities.canCreatePrincipal) {
+          setPrincipalForm({
+            ...initialPrincipalForm,
+            level: preferredAccessLevel(input.accessLevels),
+          })
+          setOpenDialog('principal')
+        }
       },
       principalForm: {
         onDatabaseChange: (event) =>
           setPrincipalForm((value) => ({ ...value, database: event.target.value })),
-        onLevelChange: (event) =>
-          setPrincipalForm((value) => ({
-            ...value,
-            level: event.target.value as typeof value.level,
-          })),
+        onLevelChange: (event) => {
+          const level = parseAvailableAccessLevel(event.target.value, input.accessLevels)
+          if (level) setPrincipalForm((value) => ({ ...value, level }))
+        },
         onNameChange: (event) =>
           setPrincipalForm((value) => ({ ...value, name: event.target.value })),
         onSubmit: submitPrincipal,

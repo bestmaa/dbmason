@@ -8,7 +8,7 @@ import type {
   CreatePrincipalResult,
   DatabaseConnectionConfig,
   DatabaseEngine,
-  DatabaseSummary,
+  PostgresDatabaseSummary,
   DropPrincipalCommand,
   PrincipalAccessCommand,
   PrincipalAccessResult,
@@ -20,7 +20,7 @@ import type {
   SetPrincipalLoginCommand,
 } from '../../domain/contracts'
 import { ManagerError } from '../../domain/errors'
-import type { ObservabilitySnapshot } from '../../domain/observability'
+import type { PostgresObservabilitySnapshot } from '../../domain/observability'
 import type {
   BrowseRelationCommand,
   LoadWorkspaceCatalogCommand,
@@ -103,6 +103,7 @@ const capabilities = {
   accessLevels: ['connect', 'read', 'write', 'developer'],
   canCreateDatabase: true,
   canCreatePrincipal: true,
+  supportsDatabaseOwners: true,
   supportsDefaultPrivileges: true,
   supportsObservability: true,
   supportsReadOnlyWorkspace: true,
@@ -195,7 +196,7 @@ export class PostgresEngine implements DatabaseEngine {
     return browseWorkspaceRelation(config, command)
   }
 
-  getObservability(config: DatabaseConnectionConfig): Promise<ObservabilitySnapshot> {
+  getObservability(config: DatabaseConnectionConfig): Promise<PostgresObservabilitySnapshot> {
     return getPostgresObservability(config)
   }
 
@@ -265,8 +266,9 @@ export class PostgresEngine implements DatabaseEngine {
       return {
         capabilities,
         currentUser: serverRow.currentUser,
-        databases: databases.rows.map((row): DatabaseSummary => ({
+        databases: databases.rows.map((row): PostgresDatabaseSummary => ({
           ...row,
+          engine: this.id,
           sizeBytes: row.sizeBytes === null ? null : Number(row.sizeBytes),
         })),
         engine: this.id,

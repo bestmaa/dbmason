@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { engineIds } from '@/modules/database-manager/domain/contracts'
 import type {
   MetricAvailability,
   ObservabilitySnapshot,
@@ -9,6 +10,7 @@ import { requestJson } from './managerHttpClient'
 
 const decimalCounterSchema = z.string().regex(/^\d+$/u)
 const unavailableReasonSchema = z.enum([
+  'performance-schema-disabled',
   'remote-stats-privilege-required',
   'tracking-disabled',
 ])
@@ -37,7 +39,33 @@ const ioTimingSchema = z.object({
   writebackTimeMs: z.number().nonnegative(),
 })
 
-const databaseMetricSchema = z.object({
+const commonShape = {
+  activity: metricAvailabilitySchema(activitySchema),
+  collectionLagHintMs: z.number().int().nonnegative(),
+  connections: z.object({
+    configuredMaximum: z.number().int().nonnegative(),
+    observed: z.number().int().nonnegative(),
+    regularCapacity: z.number().int().nonnegative(),
+    reserved: z.number().int().nonnegative(),
+    superuserReserved: z.number().int().nonnegative(),
+    utilizationPercent: z.number().nonnegative(),
+  }),
+  currentDatabase: z.string(),
+  hostTelemetry: z.object({
+    reason: z.literal('external-provider-required'),
+    status: z.literal('unavailable'),
+  }),
+  longQueryThresholdMs: z.number().int().nonnegative(),
+  sampledAt: z.string().datetime(),
+  serverStartedAt: z.string().datetime(),
+  tracking: z.object({
+    activities: z.boolean(),
+    counts: z.boolean(),
+    ioTiming: z.boolean(),
+  }),
+}
+
+const postgresDatabaseMetricSchema = z.object({
   activeTimeMs: z.number().nonnegative(),
   blocksRead: decimalCounterSchema,
   bufferCacheHitPercent: z.number().min(0).max(100).nullable(),
@@ -61,8 +89,8 @@ const databaseMetricSchema = z.object({
   transactionsRolledBack: decimalCounterSchema,
 })
 
-const observabilitySnapshotSchema: z.ZodType<ObservabilitySnapshot> = z.object({
-  activity: metricAvailabilitySchema(activitySchema),
+const postgresSnapshotSchema = z.object({
+  ...commonShape,
   clusterIo: z.object({
     evictions: decimalCounterSchema,
     extends: decimalCounterSchema,
@@ -77,34 +105,43 @@ const observabilitySnapshotSchema: z.ZodType<ObservabilitySnapshot> = z.object({
     writebacks: decimalCounterSchema,
     writes: decimalCounterSchema,
   }),
-  collectionLagHintMs: z.number().int().nonnegative(),
-  connections: z.object({
-    configuredMaximum: z.number().int().nonnegative(),
-    observed: z.number().int().nonnegative(),
-    regularCapacity: z.number().int().nonnegative(),
-    reserved: z.number().int().nonnegative(),
-    superuserReserved: z.number().int().nonnegative(),
-    utilizationPercent: z.number().nonnegative(),
-  }),
-  currentDatabase: z.string(),
-  databases: z.array(databaseMetricSchema),
-  engine: z.literal('postgresql'),
-  hostTelemetry: z.object({
-    reason: z.literal('external-provider-required'),
-    status: z.literal('unavailable'),
-  }),
+  databases: z.array(postgresDatabaseMetricSchema),
+  engine: z.literal(engineIds[0]),
   inRecovery: z.boolean(),
-  longQueryThresholdMs: z.number().int().nonnegative(),
-  sampledAt: z.string().datetime(),
   scope: z.literal('cluster'),
-  serverStartedAt: z.string().datetime(),
   source: z.literal('postgresql-statistics'),
-  tracking: z.object({
-    activities: z.boolean(),
-    counts: z.boolean(),
-    ioTiming: z.boolean(),
-  }),
 })
+
+const mysqlSnapshotSchema = z.object({
+  ...commonShape,
+  databases: z.array(z.object({
+    currentConnections: z.number().int().nonnegative().nullable(),
+    database: z.string(),
+    defaultCharacterSet: z.string(),
+    defaultCollation: z.string(),
+    sizeBytes: decimalCounterSchema.nullable(),
+  })),
+  engine: z.literal(engineIds[1]),
+  readOnlyServer: z.boolean(),
+  scope: z.literal('server'),
+  serverStatus: z.object({
+    abortedConnects: decimalCounterSchema,
+    bytesReceived: decimalCounterSchema,
+    bytesSent: decimalCounterSchema,
+    connections: decimalCounterSchema,
+    createdTemporaryDiskTables: decimalCounterSchema,
+    queries: decimalCounterSchema,
+    questions: decimalCounterSchema,
+    slowQueries: decimalCounterSchema,
+    threadsRunning: z.number().int().nonnegative(),
+  }),
+  source: z.literal('mysql-server-status'),
+})
+
+const observabilitySnapshotSchema: z.ZodType<ObservabilitySnapshot> = z.discriminatedUnion(
+  'engine',
+  [postgresSnapshotSchema, mysqlSnapshotSchema],
+)
 
 export const observabilityClient = {
   getSnapshot(connectionId: string, signal?: AbortSignal): Promise<ObservabilitySnapshot> {

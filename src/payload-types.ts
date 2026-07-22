@@ -158,7 +158,7 @@ export interface DatabaseConnection {
   id: number;
   publicId: string;
   name: string;
-  engine: 'postgresql';
+  engine: 'postgresql' | 'mysql';
   host: string;
   port: number;
   maintenanceDatabase: string;
@@ -181,7 +181,7 @@ export interface AccessProfile {
   id: number;
   name: string;
   code: string;
-  engine: 'postgresql';
+  engine: 'postgresql' | 'mysql';
   level: 'connect' | 'read' | 'write' | 'developer';
   description: string;
   builtIn: boolean;

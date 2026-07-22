@@ -22,7 +22,10 @@ export const AccessProfiles: CollectionConfig = {
       name: 'engine',
       type: 'select',
       defaultValue: 'postgresql',
-      options: [{ label: 'PostgreSQL', value: 'postgresql' }],
+      options: [
+        { label: 'PostgreSQL', value: 'postgresql' },
+        { label: 'MySQL', value: 'mysql' },
+      ],
       required: true,
     },
     {

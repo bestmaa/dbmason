@@ -1,9 +1,11 @@
 import { Activity, Code2, Database, Search, Users } from 'lucide-react'
 import type { ChangeEventHandler, MouseEventHandler } from 'react'
 
-import type { DatabaseSummary, ServerSnapshot } from '@/modules/database-manager/domain/contracts'
+import type { ServerSnapshot } from '@/modules/database-manager/domain/contracts'
 
+import type { DatabaseTableViewModel } from '../model/databaseResources'
 import type { PrincipalManagementActions } from '../model/lifecycleViewModels'
+import type { EnginePresentation } from '../model/enginePresentation'
 import type {
   ObservabilityPanelActions,
   ObservabilityPanelModel,
@@ -29,9 +31,10 @@ interface ResourcePanelProps {
   onShowWorkspace: () => void
   observabilityActions: ObservabilityPanelActions
   observabilityModel: ObservabilityPanelModel
+  presentation: EnginePresentation
   principalManagement: PrincipalManagementActions
   principalRows: readonly PrincipalRowViewModel[]
-  resourceDatabases: readonly DatabaseSummary[]
+  resourceDatabaseTable: DatabaseTableViewModel
   resourceFilter: string
   snapshot: ServerSnapshot
   workspaceActions: WorkspaceActions
@@ -59,7 +62,7 @@ export function ResourcePanel(props: ResourcePanelProps) {
             role="tab"
             type="button"
           >
-            <Users size={15} /> Users &amp; roles <span>{props.snapshot.principals.length}</span>
+            <Users size={15} /> {props.presentation.principal.listLabel} <span>{props.snapshot.principals.length}</span>
           </button>
           {props.canViewObservability && (
             <button
@@ -104,7 +107,7 @@ export function ResourcePanel(props: ResourcePanelProps) {
       ) : props.activeTab === 'databases' ? (
         <DatabaseTable
           canBrowse={props.canUseWorkspace}
-          databases={props.resourceDatabases}
+          model={props.resourceDatabaseTable}
           onBrowse={props.onBrowseDatabase}
         />
       ) : (

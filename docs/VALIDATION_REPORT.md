@@ -1,8 +1,11 @@
-# PostgreSQL MVP validation report
+# DBMason validation report
 
-**Final PostgreSQL MVP status:** Passed.
+**PostgreSQL production MVP status:** Passed.
 
-**Evidence window:** 20–21 July 2026.
+**MySQL 8.4 adapter real-server status:** Passed. MySQL production/manual
+browser screenshots are not claimed in this report yet.
+
+**Evidence window:** 20–22 July 2026.
 
 This final release pass covered the production Docker image, isolated SQLite control planes, a dedicated PostgreSQL 17 container, real privilege/login behavior, Payload application RBAC, native observability, the guarded Data & SQL workspace, serial Chromium workflows, audit visibility, responsive layout, and runtime footprint. Existing development services and unrelated Docker containers were not stopped or modified.
 
@@ -18,7 +21,7 @@ Chrome
 
 The automated Chromium suite used its own SQLite file and application port `39112`. PostgreSQL remained bound to host loopback for host-side tests. The final-source production validation container joined only the dedicated PostgreSQL test network, used the service DNS name allowlisted for that run, and passed an internal TCP reachability check to PostgreSQL. The manual screenshot pass used the preceding hardened validation container on port `39114`; the final server-side membership hardening and prop-only auth-gate cleanup were then covered by the repeated strict gates, 40/40 PostgreSQL tests, and current-source 7/7 Chromium rerun.
 
-## Production browser evidence
+## PostgreSQL production browser evidence
 
 | ID  | Scenario                                                                                                  | Result | Evidence                                                              |
 | --- | --------------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------- |
@@ -39,7 +42,7 @@ The automated Chromium suite used its own SQLite file and application port `3911
 
 The manual in-app production-browser pass completed with zero console warnings and zero console errors. All new screenshots were inspected before inclusion; none contains a generated or saved password.
 
-## Automated release gates
+## Recorded PostgreSQL MVP release gates (20–21 July)
 
 | Gate                                               | Command              | Recorded result                                                                     |
 | -------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------- |
@@ -55,6 +58,34 @@ The Payload RBAC test harness uses a copied temporary SQLite fixture and a uniqu
 The serial browser gate covers first-owner bootstrap, saved connection creation, `PUBLIC` visibility, database/read-role creation, observability, restricted catalog and query access, real write denial with direct unchanged-data verification, password clearing after reload, duplicate error presentation, viewer control hiding, direct viewer API rejection, role lifecycle, and control-plane-only connection removal while the remote database remains.
 
 The development E2E web server emitted Next/Turbopack's known negative-timestamp `Performance.measure` instrumentation warning once. The seven assertions passed, and the separate production-browser pass had zero console warnings and zero console errors.
+
+## MySQL adapter evidence (22 July)
+
+| Gate | Command | Recorded result |
+| --- | --- | --- |
+| Types, full lint, line boundary, unit/RBAC/security | `pnpm check` | Pass: 66 frontend files within 250 lines; 27 test files, 128/128 tests |
+| Real MySQL 8.4.10 integration | `pnpm test:mysql` | Pass: 2 files, 11/11 tests |
+| PostgreSQL regression | `pnpm test:postgres` | Pass: 5 files, 40/40 tests |
+
+The real MySQL suite covers connection/inventory, genuine server-status
+observability, database and `user@host` creation, one-time passwords, access
+presets, login/password/drop lifecycle, direct schema/table/column/routine grant
+reconciliation, global/role/`PROXY`/column-grant-option protection, catalog and
+relation browsing, authenticated identity verification, read-only writes and
+stacked-statement denial, developer rejection, five-second deadline behavior,
+and rejection of a dangerous routine grant on another schema before any side
+effect occurs.
+
+Unit coverage also verifies the 64-byte MySQL versus 63-byte PostgreSQL
+identifier boundary, engine-aware connection defaults, safe errors, explicit
+account parsing, vetted-address socket pinning while preserving TLS hostname,
+and a fail-closed transient-session `SHOW GRANTS` allowlist. The local real
+server intentionally disables TLS, so the certificate/SAN behavior is unit-
+verified rather than claimed as live-certificate evidence.
+
+The MySQL Playwright harness and serial workflow are present, but a completed
+production/manual MySQL screenshot pass is not recorded here. Existing images
+and browser claims in this document remain PostgreSQL-specific.
 
 ## Observability and workspace validation
 
@@ -109,6 +140,9 @@ The hardening and resource values above were inspected on the running production
 
 `pnpm postgres:test:down` stops only the dedicated PostgreSQL harness and preserves its volume. `pnpm postgres:test:reset` deliberately removes only that harness volume and must be used only when its test data may be destroyed.
 
+`pnpm mysql:test:down` and `pnpm mysql:test:reset` have the equivalent boundary
+for the separate `dbmason-mysql-test` project and its named volume.
+
 The E2E preparation script removes only `data/e2e-control-plane.db` and its exact WAL/SHM companions. It does not touch the normal development or app-test SQLite files. No Git reset, branch deletion, repository cleanup, or GitHub mutation was performed during this validation.
 
 ## Known non-blocking follow-ups
@@ -118,4 +152,4 @@ The E2E preparation script removes only `data/e2e-control-plane.db` and its exac
 - Add saved administrator credential rotation and connection editing.
 - Expand the grant planner beyond the PostgreSQL `public` schema before claiming multi-schema coverage.
 - Add real host telemetry only through a separately secured external-provider adapter; PostgreSQL native statistics are not CPU/RAM.
-- Add MySQL as the next separate engine goal; MySQL is not covered by this PostgreSQL validation report.
+- Record MySQL production/manual browser screenshots and live-certificate TLS evidence before claiming those gates.

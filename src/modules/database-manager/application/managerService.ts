@@ -110,7 +110,7 @@ export const managerService = {
         sslMode: input.sslMode,
         username: input.username,
       }
-      const test = await getDatabaseEngine('postgresql').testConnection(config)
+      const test = await getDatabaseEngine(input.engine).testConnection(config)
       return createConnectionRecord(req, input, test)
     })
   },

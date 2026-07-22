@@ -7,6 +7,7 @@ import type {
 } from '@/modules/database-manager/domain/workspace'
 
 import type { WorkspaceRelationRow, WorkspaceResultViewModel } from './workspaceMappers'
+import type { WorkspaceCopy } from './workspaceEngineStrategy'
 
 export interface WorkspaceCredentialValue {
   database: string
@@ -26,6 +27,7 @@ export interface WorkspaceModel {
   canSubmitCredential: boolean
   catalog: WorkspaceCatalog | null
   connected: boolean
+  copy: WorkspaceCopy
   credential: WorkspaceCredentialValue
   databaseOptions: readonly WorkspaceOption[]
   error: string | null

@@ -4,6 +4,7 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { ObservabilitySnapshot } from '@/modules/database-manager/domain/observability'
+import type { EngineId } from '@/modules/database-manager/domain/contracts'
 
 import { useObservability } from '@/features/database-manager/hooks/useObservability'
 
@@ -23,6 +24,12 @@ function deferred<T>() {
   return { promise, resolve }
 }
 
+interface HookInput {
+  connectionId: string | null
+  enabled: boolean
+  engine: EngineId | null
+}
+
 describe('useObservability', () => {
   afterEach(() => {
     cleanup()
@@ -32,12 +39,12 @@ describe('useObservability', () => {
   it('loads only when opened and preserves the current snapshot during refresh', async () => {
     mocks.getSnapshot.mockResolvedValueOnce(observabilityFixture())
     const { result, rerender } = renderHook(
-      (input: { connectionId: string | null; enabled: boolean }) => useObservability(input),
-      { initialProps: { connectionId: 'one', enabled: false } },
+      (input: HookInput) => useObservability(input),
+      { initialProps: { connectionId: 'one', enabled: false, engine: 'postgresql' } },
     )
 
     expect(mocks.getSnapshot).not.toHaveBeenCalled()
-    rerender({ connectionId: 'one', enabled: true })
+    rerender({ connectionId: 'one', enabled: true, engine: 'postgresql' })
     await waitFor(() => expect(result.current.model.state).toBe('ready'))
 
     const next = deferred<ObservabilitySnapshot>()
@@ -56,13 +63,13 @@ describe('useObservability', () => {
     const second = deferred<ObservabilitySnapshot>()
     mocks.getSnapshot.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise)
     const { result, rerender } = renderHook(
-      (input: { connectionId: string | null; enabled: boolean }) => useObservability(input),
-      { initialProps: { connectionId: 'one', enabled: true } },
+      (input: HookInput) => useObservability(input),
+      { initialProps: { connectionId: 'one', enabled: true, engine: 'postgresql' } },
     )
     await waitFor(() => expect(mocks.getSnapshot).toHaveBeenCalledTimes(1))
     const firstSignal = mocks.getSnapshot.mock.calls[0]?.[1] as AbortSignal
 
-    rerender({ connectionId: 'two', enabled: true })
+    rerender({ connectionId: 'two', enabled: true, engine: 'postgresql' })
     await waitFor(() => expect(mocks.getSnapshot).toHaveBeenCalledTimes(2))
     expect(firstSignal.aborted).toBe(true)
     expect(result.current.model.state).toBe('loading')
