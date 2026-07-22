@@ -6,9 +6,12 @@ import {
   databaseIsWorkspaceSelectable,
   databaseSearchValues,
 } from '@/features/database-manager/model/databaseResources'
+import { buildPrincipalRows } from '@/features/database-manager/model/principalRows'
 import type {
   MysqlDatabaseSummary,
+  MysqlServerSnapshot,
   PostgresDatabaseSummary,
+  PostgresServerSnapshot,
 } from '@/modules/database-manager/domain/contracts'
 
 const mysqlDatabase: MysqlDatabaseSummary = {
@@ -28,6 +31,26 @@ const postgresDatabase: PostgresDatabaseSummary = {
   publicConnect: true,
   publicTemporary: false,
   sizeBytes: 2048,
+}
+
+const capabilities = {
+  accessLevels: ['read'] as const,
+  canCreateDatabase: true,
+  canCreatePrincipal: true,
+  supportsDatabaseOwners: true,
+  supportsDefaultPrivileges: true,
+  supportsObservability: true,
+  supportsReadOnlyWorkspace: true,
+  supportsSchemas: true,
+}
+
+const principal = {
+  canCreateDatabase: false,
+  canCreateRole: false,
+  canLogin: true,
+  isSuperuser: false,
+  memberships: [],
+  validUntil: null,
 }
 
 describe('engine-specific database resource mapping', () => {
@@ -73,5 +96,31 @@ describe('engine-specific database resource mapping', () => {
       { label: 'app', value: 'app' },
       { label: 'reporting (PUBLIC CONNECT)', value: 'reporting' },
     ])
+  })
+
+  it('uses an engine-exhaustive system-principal policy', () => {
+    const mysqlSnapshot: MysqlServerSnapshot = {
+      capabilities,
+      currentUser: 'root@localhost',
+      databases: [],
+      engine: 'mysql',
+      principals: [{ ...principal, name: 'mysql.sys@localhost' }],
+      serverVersion: '8.4.10',
+    }
+    const postgresSnapshot: PostgresServerSnapshot = {
+      capabilities,
+      currentUser: 'postgres',
+      databases: [],
+      engine: 'postgresql',
+      principals: [{ ...principal, name: 'pg_monitor' }],
+      serverVersion: '17.0',
+    }
+
+    expect(buildPrincipalRows(mysqlSnapshot)[0]?.managementDisabledReason).toBe(
+      'Database system accounts are protected.',
+    )
+    expect(buildPrincipalRows(postgresSnapshot)[0]?.managementDisabledReason).toBe(
+      'Database system accounts are protected.',
+    )
   })
 })

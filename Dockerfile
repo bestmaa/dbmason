@@ -7,12 +7,20 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
+COPY scripts/collect-third-party-licenses.mjs ./scripts/collect-third-party-licenses.mjs
+COPY legal/third-party ./legal/third-party
 
 FROM deps AS builder
 COPY . .
+RUN pnpm check:third-party-provenance
 RUN PAYLOAD_SECRET=build-only-payload-secret-00000000000000000000000000000000 \
   CONNECTION_ENCRYPTION_KEY=0000000000000000000000000000000000000000000000000000000000000000 \
+  DBMASON_PUBLIC_URL=http://localhost:3000 \
   pnpm build
+RUN pnpm check:runtime
+RUN pnpm --config.optional=false licenses list --prod --json \
+  | node scripts/collect-third-party-licenses.mjs \
+  node_modules /third-party-licenses .next/standalone/node_modules /dev/stdin
 
 FROM node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436 AS runner
 LABEL org.opencontainers.image.licenses="AGPL-3.0-only" \
@@ -35,7 +43,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs \
   /app/LICENSE /app/NOTICE /app/TRADEMARKS.md /app/THIRD_PARTY_NOTICES.md \
   ./licenses/
+COPY --from=builder --chown=nextjs:nodejs /third-party-licenses ./licenses/third-party/
 
 USER nextjs
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
 CMD ["node", "server.js"]

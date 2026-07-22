@@ -9,6 +9,8 @@ Do not open a public issue for suspected credential disclosure, authentication b
 - Generate independent random values for `PAYLOAD_SECRET` and `CONNECTION_ENCRYPTION_KEY`.
 - Never commit `.env`, SQLite files, backups, or browser traces containing credentials.
 - Put DBMason behind HTTPS and restrict it to trusted administrators.
+- Set `DBMASON_PUBLIC_URL` to the exact browser-facing origin. Only exact loopback hosts may use HTTP; all other origins require HTTPS.
+- Payload account passwords are rejected below 12 characters on bootstrap, direct changes, and reset flows.
 - Restrict container egress to approved database networks when possible.
 - Set `DATABASE_HOST_ALLOWLIST` to the exact database hosts or `*.domain` patterns the deployment may reach. DBMason also rejects metadata/link-local, unspecified, and multicast targets.
 - Prefer `verify-full` TLS certificate and hostname verification for every remote PostgreSQL or MySQL target.
@@ -20,7 +22,25 @@ Do not open a public issue for suspected credential disclosure, authentication b
 
 Generated database-user passwords are intentionally displayed once. Connection passwords are encrypted at rest, but a running authorized server process can decrypt them to connect; host and runtime security remain part of the trust boundary.
 
+Ordinary manager JSON request bodies are rejected above 64 KiB. The
+credential-bearing workspace uses a separate 256 KiB cap and the tighter
+query/result limits described below.
+
 DNS lookups are bounded by the global operation limiter but do not yet have a separate cancellation deadline. Deployments should combine `DATABASE_HOST_ALLOWLIST` with network-level egress rules so DNS behavior alone is never the security boundary.
+
+## Origin, CSRF, and server-rendered authentication
+
+Production startup requires a validated `DBMASON_PUBLIC_URL`. Payload CORS and
+CSRF trust exactly that origin rather than a wildcard, and authentication
+cookies are marked secure when the configured origin uses HTTPS.
+
+A normal top-level browser navigation does not send an `Origin` header. For the
+read-only server render of the product home page, DBMason fills that missing
+header from the already validated public origin before asking Payload for the
+current account. It never replaces an `Origin` supplied by the request, so a
+foreign origin remains foreign and fails Payload's normal check. This fallback
+is not used to authorize manager mutations or workspace calls; those endpoints
+retain exact-origin CSRF enforcement plus application-role authorization.
 
 ## PostgreSQL role lifecycle boundary
 
@@ -104,4 +124,13 @@ of `%` increases reliance on TLS, MySQL bind/firewall policy, and network scope.
 
 ## Supported releases
 
-Until the first stable release, security fixes target the latest main branch only.
+| Release line            | Security support                                  |
+| ----------------------- | ------------------------------------------------- |
+| Latest `0.2.x` patch    | Supported.                                        |
+| Older `0.2.x` patches   | Unsupported; upgrade to the latest `0.2.x` patch. |
+| `0.1.x`                 | Unsupported; upgrade to the latest `0.2.x` patch. |
+| Earlier/untagged builds | Not supported.                                    |
+
+Security fixes land only on the latest `0.2.x` patch; older release lines do not
+receive backports. Any support-policy change will be announced in a security
+advisory.

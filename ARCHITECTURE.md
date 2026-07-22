@@ -85,7 +85,7 @@ DatabaseManagerConnector
 
 Rules enforced by ESLint and `scripts/check-source-lines.mjs`:
 
-- Presentational UI imports no hooks, services, Payload, `pg`, or navigation APIs.
+- Presentational UI imports no hooks, services, Payload, `pg`, `mysql2`, or navigation APIs.
 - UI owns no `useState`, `useEffect`, reducer, storage, fetch, or domain validation.
 - The connector calls one composed hook and spreads its result into the view.
 - Hooks own React state/effects and orchestration.
@@ -137,7 +137,7 @@ Append-only intent/result records:
 - `requested`, `succeeded`, or `failed`
 - duration and a sanitized error code
 
-Passwords, raw DSNs, cookies, SQL statements, stack traces, and raw PostgreSQL errors are forbidden.
+Passwords, raw DSNs, cookies, SQL statements, stack traces, and raw database-engine errors are forbidden.
 
 ## PostgreSQL execution
 
@@ -235,7 +235,7 @@ same external-provider boundary applies.
 
 ## Guarded data and SQL workspace
 
-The workspace is available to DBMason owners, admins, and operators, never viewers. Every request supplies a transient database, PostgreSQL login role, and password. The saved administrator connection is used only to verify that the selected role exists and is not the active administrator, a superuser, `CREATEDB`, `CREATEROLE`, replication, `BYPASSRLS`, a role inheriting a privileged/`pg_*` membership, or the direct/inherited owner of the selected database or any non-system relation in it. The actual catalog, browse, and SQL operation connects as the selected restricted login and repeats the safety checks inside that session.
+The workspace is available to DBMason owners, admins, and operators, never viewers. Every request supplies a transient database, engine-native principal, and password. For PostgreSQL, the saved administrator connection is used only to verify that the selected role exists and is not the active administrator, a superuser, `CREATEDB`, `CREATEROLE`, replication, `BYPASSRLS`, a role inheriting a privileged/`pg_*` membership, or the direct/inherited owner of the selected database or any non-system relation in it. The actual catalog, browse, and SQL operation connects as the selected restricted login and repeats the safety checks inside that session.
 
 The workspace does not attempt to classify PostgreSQL grammar with regexes. It trims the submitted SQL and removes at most one trailing semicolon, then gives the raw text to `pg-cursor` through PostgreSQL's extended query protocol. It does not interpolate the SQL into a parenthesized wrapper. Extended-protocol preparation accepts one statement, so stacked statements are rejected by PostgreSQL, and DBMason rejects statements that return no row fields. Relation browsing uses the same cursor boundary with quoted relation identifiers and parameterized paging values.
 
@@ -243,7 +243,15 @@ Every operation starts `BEGIN READ ONLY`, sets a five-second statement timeout, 
 
 Catalog discovery returns only non-system relations for which the transient role has schema `USAGE` and relation `SELECT`. Relation identifiers use the existing validation/quoting boundary; paging values and row limits are parameters. PostgreSQL permissions and row-level-security policies remain authoritative.
 
-Workspace JSON request bodies are capped at 256 KiB. Other fixed bounds are 32,768 SQL characters, 500 catalog relations, 200 result rows, offset at most 100,000, 32,768 characters per cell, and about 1 MiB of serialized rows. Oversized cells/results are marked truncated. A dedicated limiter permits two active workspace operations and eight waiting operations, with a three-second queue wait; it supplements the global PostgreSQL limiter. A seven-second hard operation deadline destroys the workspace socket if the normal PostgreSQL timeout path does not finish.
+Ordinary manager JSON request bodies are capped at 64 KiB; credential-bearing
+workspace bodies have a separate 256 KiB cap. Other fixed bounds are 32,768 SQL
+characters, 500 catalog relations, 200 result rows, offset at most 100,000,
+32,768 characters per cell, and about 1 MiB of serialized rows. Oversized
+cells/results are marked truncated. A dedicated limiter permits two active
+workspace operations and eight waiting operations, with a three-second queue
+wait; it supplements the global engine limiter. A seven-second hard operation
+deadline destroys the workspace socket if the normal engine timeout path does
+not finish.
 
 Cell truncation happens after the PostgreSQL driver decodes a datum. Consequently, one exceptionally large PostgreSQL datum can allocate more input memory before its displayed value is reduced to 32,768 characters; the cell and serialized-response limits are not an absolute peak-input-allocation bound. PostgreSQL-side resource policy remains necessary.
 
@@ -279,11 +287,11 @@ confidentiality boundary.
 
 ## Access preset behavior
 
-| Preset | PostgreSQL | MySQL |
-| --- | --- | --- |
-| `connect` | Database `CONNECT` | Authentication-only; MySQL has no database `CONNECT` grant |
-| `read` | `CONNECT`, schema `USAGE`, existing table `SELECT`, sequence read | `SELECT`, `SHOW VIEW` on the database |
-| `write` | Read plus table insert/update/delete and sequence usage/update | Read plus `INSERT`, `UPDATE`, `DELETE` |
+| Preset      | PostgreSQL                                                              | MySQL                                                                        |
+| ----------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `connect`   | Database `CONNECT`                                                      | Authentication-only; MySQL has no database `CONNECT` grant                   |
+| `read`      | `CONNECT`, schema `USAGE`, existing table `SELECT`, sequence read       | `SELECT`, `SHOW VIEW` on the database                                        |
+| `write`     | Read plus table insert/update/delete and sequence usage/update          | Read plus `INSERT`, `UPDATE`, `DELETE`                                       |
 | `developer` | Schema create plus all existing public-schema table/sequence privileges | `ALL PRIVILEGES` on the database; intentionally ineligible for workspace use |
 
 The adapter attempts future-object grants using `ALTER DEFAULT PRIVILEGES FOR ROLE <database owner>`. If the connected administrator cannot alter that owner's defaults, the operation returns a warning rather than pretending future objects are covered.
@@ -314,9 +322,31 @@ POST /api/db-manager/v1/connections/:id/workspace/rows
 POST /api/db-manager/v1/connections/:id/workspace/query
 ```
 
-Payload custom endpoints are not authenticated automatically. Every manager endpoint explicitly authenticates; mutation and workspace endpoints also enforce their application-role allowlist. Request bodies are parsed from `unknown` with Zod, workspace JSON bodies are rejected above 256 KiB, every response uses `Cache-Control: no-store`, and infrastructure errors become safe response codes. Observability is available to every authenticated application role, while workspace endpoints allow only owner, admin, and operator.
+Payload custom endpoints are not authenticated automatically. Every manager
+endpoint explicitly authenticates; mutation and workspace endpoints also
+enforce their application-role allowlist. Request bodies are parsed from
+`unknown` with Zod, ordinary manager bodies are rejected above 64 KiB, and
+workspace bodies above 256 KiB. Every response uses `Cache-Control: no-store`,
+and infrastructure errors become safe response codes. Observability is
+available to every authenticated application role, while workspace endpoints
+allow only owner, admin, and operator.
 
 Local API calls acting for a user use `overrideAccess: false`. Intentional system writes (encrypted connection records and audits) use privileged Local API only after explicit endpoint authorization and thread `req` through nested operations.
+
+### Origin and server-rendered authentication boundary
+
+`DBMASON_PUBLIC_URL` is mandatory in production and is parsed as one exact
+origin. Payload CORS, CSRF, and secure-cookie configuration derive from that
+validated value; non-loopback production origins must use HTTPS.
+
+Top-level browser navigations normally omit `Origin`. The read-only product
+home Server Component therefore builds a separate authentication-header set
+and fills an absent `Origin` with the validated configured origin before its
+Payload current-user lookup. It does not overwrite any supplied `Origin`, so a
+foreign origin still reaches Payload unchanged and fails its normal trust
+check. Mutation and workspace endpoints do not use this navigation fallback:
+they continue to require explicit endpoint authentication, role authorization,
+and Payload's exact-origin CSRF boundary.
 
 ## Adding another database engine
 
@@ -384,7 +414,7 @@ See `SECURITY.md` for reporting and operational guidance.
 
 1. Saved connection editing and administrator credential rotation.
 2. Multi-schema/object-owner discovery, dry-run grant plans, and per-step reconciliation.
-3. PostgreSQL/MySQL integration and serial Chromium gates in hosted CI.
+3. Record the first green hosted CI/CodeQL run for each exact release SHA.
 4. Cancellable DNS resolution and configurable CIDR egress policy.
-5. Record a production/manual MySQL browser evidence set and expand version compatibility coverage.
+5. Expand MySQL version compatibility and add a real certificate/SAN integration target.
 6. Optional Payload PostgreSQL control-plane adapter for HA deployments.

@@ -19,6 +19,12 @@ Set these values:
 
 ```dotenv
 PORT=3010
+DBMASON_PUBLIC_URL=http://localhost:3010
+NEXT_TELEMETRY_DISABLED=1
+DBMASON_BIND_ADDRESS=127.0.0.1
+DBMASON_IMAGE=dbmason:local
+DBMASON_CPU_LIMIT=1.0
+DBMASON_MEMORY_LIMIT=384m
 DATABASE_URL=file:./data/control-plane.db
 PAYLOAD_SECRET=<at-least-32-random-characters>
 CONNECTION_ENCRYPTION_KEY=<64-hex-characters>
@@ -27,6 +33,11 @@ DBMASON_SOURCE_URL=
 ```
 
 Generate independent secrets with `openssl rand -base64 48` and `openssl rand -hex 32`. Keep `.env` and SQLite files out of source control. Set `DATABASE_HOST_ALLOWLIST` to exact hosts or deliberate wildcard domains in production. Official builds derive their corresponding-source link from the package version; a modified network build must set runtime `DBMASON_SOURCE_URL` to its public source for AGPL users.
+
+`DBMASON_PUBLIC_URL` is a security boundary, not a display label. It must be the
+exact origin operators use in the browser, including scheme and port. Only
+exact loopback hosts may use HTTP; use HTTPS everywhere else. Payload CORS,
+CSRF, and secure-cookie behavior derive from this value.
 
 `PORT` is read when the process starts. Change it and restart when that port is already occupied; do not kill an unknown process without first verifying its PID and working directory.
 
@@ -45,7 +56,19 @@ For the single-container production build:
 docker compose up --build -d
 ```
 
-The container runs as a non-root user, stores SQLite in the `db-control-data` volume, and publishes its internal port `3000` on the host `PORT` from `.env`. Run one replica while SQLite is the control-plane database.
+The container runs as a non-root user, stores SQLite in the `db-control-data`
+volume, and publishes its internal port `3000` on the loopback host `PORT` from
+`.env`.
+Compose defaults to the tested one-CPU, 384-MiB, 256-PID profile; override
+`DBMASON_CPU_LIMIT` or `DBMASON_MEMORY_LIMIT` deliberately when the number of
+operators or concurrent operations grows. Run one replica while SQLite is the
+control-plane database.
+
+To use the official release rather than building this checkout, change
+`DBMASON_IMAGE` to `ghcr.io/bestmaa/dbmason:0.2.0`, run `docker compose pull`,
+then run `docker compose up -d --no-build`. Pin the published multi-platform
+digest for repeatable production deployment. The Compose hardening, volume,
+health check, resource ceilings, and `.env` settings remain the same.
 
 For a disposable local PostgreSQL target, follow the [test harness guide](POSTGRES_TEST_HARNESS.md):
 
@@ -73,7 +96,7 @@ Open the configured application URL. A new control plane shows one bootstrap act
 ![Production first-run screen](images/10-production-first-run.png)
 
 1. Select **Create owner account**.
-2. Enter a unique email, strong password, and display name.
+2. Enter a unique email, a password of at least 12 characters, and a display name.
 3. Submit once. Concurrent bootstrap attempts are serialized, and only the first account becomes the initial owner.
 
 Payload Admin then exposes Users, Database Connections, Access Profiles, and Audit Events:
@@ -95,9 +118,11 @@ Use separate DBMason accounts for people. Do not share a managed-database admini
 
 ![Connection form](images/03-add-connection.png)
 
-The password is encrypted with AES-256-GCM before it reaches SQLite and is never returned by the connection API. A successful save loads that server's live catalog. The retained production screenshots document the PostgreSQL flow:
+The password is encrypted with AES-256-GCM before it reaches SQLite and is never returned by the connection API. A successful save loads that server's live catalog. These production captures show each engine's distinct database metadata:
 
 ![Production connected overview](images/12-production-connected-overview.png)
+
+![Production MySQL 8.4 connected overview](images/23-mysql-connected-overview.png)
 
 A DBMason container cannot reach a host-published database port through its own `127.0.0.1`. Give containers deliberate network routing or use an approved host gateway/DNS name, and include that name in `DATABASE_HOST_ALLOWLIST`.
 
@@ -141,6 +166,8 @@ MySQL SQL also cannot provide trustworthy host/container CPU or RAM. Both
 engines show **External provider** for host telemetry until a separately secured
 metrics provider is configured.
 
+![Production MySQL native observability and explicit host-telemetry boundary](images/24-mysql-observability.png)
+
 ## 6. Use the guarded Data & SQL workspace
 
 Owners, admins, and operators can open **Data & SQL**. Viewers cannot see or call this workspace. It deliberately does not execute user queries with the saved administrator credential.
@@ -148,7 +175,7 @@ Owners, admins, and operators can open **Data & SQL**. Viewers cannot see or cal
 1. Choose a database that accepts connections.
 2. Choose a restricted principal. PostgreSQL rejects privileged memberships and direct/inherited owners. MySQL rejects current/system/global/grant-option/role/`PROXY` accounts and DDL, routine, trigger, event, temporary-table, or lock authority across every schema.
 3. Enter that role's password and select **Open read-only workspace**.
-4. Browse relations visible through the role's schema `USAGE` and relation `SELECT` permissions, or run one row-returning PostgreSQL statement.
+4. Browse relations visible through the selected principal's native grants, or run one row-returning statement through the selected engine.
 5. Select **Disconnect & forget password** when finished.
 
 The password remains only in the active browser state, is sent to the same-origin endpoint for each workspace request, and is never saved in SQLite or audit events. Changing the connection/role or disconnecting clears it.
@@ -205,8 +232,21 @@ the confidentiality boundary.
 
 The MySQL adapter uses the same 256 KiB request, 32,768-character query/cell,
 200-row, roughly 1 MiB response, two-active/eight-waiting, five-second server,
-and seven-second hard-deadline limits. MySQL browser screenshots are not claimed
-in this guide until a production/manual evidence pass is recorded.
+and seven-second hard-deadline limits.
+
+The production pass authenticated the canonical restricted account, browsed
+only its visible table, and kept its password in transient browser state:
+
+![Production MySQL restricted catalog and relation browse](images/26-mysql-relation-browser.png)
+
+A safe query returned only the expected rows:
+
+![Production MySQL read-only query](images/27-mysql-query-result.png)
+
+An `UPDATE` was rejected, and a separate administrator read confirmed the
+source row stayed unchanged:
+
+![Production MySQL write blocked](images/28-mysql-write-blocked.png)
 
 ## 7. Create a database
 
@@ -272,6 +312,8 @@ database before granting the replacement. Unknown grant shapes stop safely.
 MySQL DCL is not transactional, so an interrupted later step can leave reduced
 access; refresh and reconcile before retrying.
 
+![Production MySQL account lifecycle and least-privilege preset](images/25-mysql-account-lifecycle.png)
+
 ## 10. Understand `PUBLIC` access
 
 PostgreSQL commonly grants database `CONNECT` and temporary-table capability to `PUBLIC`. Every role inherits `PUBLIC`, so an explicit revoke is not proof that the role can no longer connect.
@@ -319,12 +361,13 @@ pnpm test:mysql
 pnpm test:e2e:mvp
 pnpm test:e2e:mysql
 pnpm build
+pnpm payload migrate:status
 ```
 
 The real-server and browser suites use isolated test targets and exact test-only
-names. The retained production screenshots and manual browser evidence are
-PostgreSQL-specific; see the [validation report](VALIDATION_REPORT.md) for the
-recorded status of each engine.
+names. The retained production screenshots and manual browser evidence cover
+both PostgreSQL 17 and MySQL 8.4; see the
+[validation report](VALIDATION_REPORT.md) for the exact gates and limitations.
 
 Stop the PostgreSQL harness while preserving its volume:
 

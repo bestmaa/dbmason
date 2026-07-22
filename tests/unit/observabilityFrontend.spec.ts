@@ -80,6 +80,8 @@ describe('observability presentation', () => {
     )
 
     expect(html).toContain('MySQL native global status')
+    expect(html).toContain('Cross-session activity available')
+    expect(html).not.toContain('Performance Schema activity')
     expect(html).toContain('Threads running')
     expect(html).toContain('utf8mb4_0900_ai_ci')
     expect(html).not.toContain('PostgreSQL')

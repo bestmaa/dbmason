@@ -1,6 +1,17 @@
 import { z } from 'zod'
 
+import type { EngineId } from '../domain/contracts'
 import { accessLevels, engineIds, sslModes } from '../domain/contracts'
+
+interface ConnectionDefaults {
+  maintenanceDatabase: string
+  port: number
+}
+
+const connectionDefaults = {
+  mysql: { maintenanceDatabase: 'mysql', port: 3306 },
+  postgresql: { maintenanceDatabase: 'postgres', port: 5432 },
+} as const satisfies Readonly<Record<EngineId, ConnectionDefaults>>
 
 export const identifierSchema = z
   .string()
@@ -26,12 +37,14 @@ const createConnectionFields = z.object({
   username: identifierSchema,
 })
 
-export const createConnectionSchema = createConnectionFields.transform((input) => ({
-  ...input,
-  maintenanceDatabase:
-    input.maintenanceDatabase ?? (input.engine === 'mysql' ? 'mysql' : 'postgres'),
-  port: input.port ?? (input.engine === 'mysql' ? 3306 : 5432),
-}))
+export const createConnectionSchema = createConnectionFields.transform((input) => {
+  const defaults = connectionDefaults[input.engine]
+  return {
+    ...input,
+    maintenanceDatabase: input.maintenanceDatabase ?? defaults.maintenanceDatabase,
+    port: input.port ?? defaults.port,
+  }
+})
 
 export const createDatabaseSchema = z.object({
   name: identifierSchema,

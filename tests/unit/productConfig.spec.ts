@@ -35,6 +35,8 @@ describe('running-build source disclosure', () => {
     expect(html).toContain('https://code.example/dbmason/tree/deployment-7')
     expect(html).toContain(`Source v${manifest.version}`)
     expect(html).toContain('AGPL-3.0-only')
+    expect(html).toContain('© 2026 Aditya Nandlal')
+    expect(html).toContain('No warranty')
   })
 
   it('rejects non-HTTP source URL schemes', () => {

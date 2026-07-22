@@ -4,6 +4,10 @@
 
 DBMason is a lightweight, self-hosted database access manager for PostgreSQL and MySQL. Save an administrator connection, inspect the live catalog, create databases and restricted accounts, manage their lifecycle through allowlisted access presets, inspect honest engine-native metrics, and browse/query data through a guarded read-only workspace.
 
+The v0.2.0 release is validated against PostgreSQL 17 and MySQL 8.4 LTS. Other
+server versions are not claimed until they are added to the compatibility
+matrix and real-server CI.
+
 The application is one Payload + Next.js process with SQLite for control-plane metadata. Managed database servers remain the source of truth; DBMason does not copy their catalogs into SQLite or keep idle pools open. PostgreSQL and MySQL behavior lives in isolated adapters rather than shared SQL conditionals.
 
 ## Start locally
@@ -17,7 +21,7 @@ pnpm install
 pnpm dev
 ```
 
-`PORT` in `.env` controls the local port (the example uses `3010`). The dev/start scripts preload `.env` before Next chooses its listener. Open `http://localhost:3010`; on first run, create the owner account through the Payload admin screen.
+`PORT` in `.env` controls the local port (the example uses `3010`). The dev/start scripts preload `.env` before Next chooses its listener. `DBMASON_PUBLIC_URL` must match the exact browser-facing origin; HTTP is accepted only for `localhost`, `127.0.0.1`, or `[::1]`, while every non-loopback deployment requires HTTPS. Open `http://localhost:3010`; on first run, create the owner account through the Payload admin screen with a password of at least 12 characters.
 
 Official builds link to the GitHub tag matching the running `package.json` version. If you
 publish a modified network build, set runtime variable `DBMASON_SOURCE_URL` to the public
@@ -40,12 +44,34 @@ docker compose up --build -d
 
 SQLite is stored in the named `db-control-data` volume. Back it up with a SQLite-consistent backup process before upgrades.
 Committed Payload migrations run automatically when the production process initializes. Run only one application replica while SQLite is the control-plane store.
-Docker publishes its internal port `3000` on the host port selected by `PORT`.
+Docker publishes its internal port `3000` on the loopback host port selected by
+`PORT`. Set `DBMASON_BIND_ADDRESS=0.0.0.0` only when direct network exposure is
+intentional and protected.
+The committed Compose profile also applies the tested defaults of one CPU,
+384 MiB memory, 256 PIDs, no added Linux capabilities, and no privilege
+escalation; tune the two resource values in `.env` when needed.
+
+To run the published v0.2.0 image instead of building locally, set this in
+`.env`, then pull and start without a build:
+
+```dotenv
+DBMASON_IMAGE=ghcr.io/bestmaa/dbmason:0.2.0
+```
+
+```bash
+docker compose pull
+docker compose up -d --no-build
+```
+
+For repeatable production deployment, replace the version tag with the
+multi-platform digest shown on the GitHub release/package page. Keep the host
+port loopback-bound behind an authenticated reverse proxy unless direct LAN
+exposure is intentional.
 
 ## Local database test targets
 
-The dedicated test-only PostgreSQL Compose project is separate from the DB
-Control application and binds to `127.0.0.1:55432` by default. Prepare its
+The dedicated test-only PostgreSQL Compose project is separate from the
+DBMason application and binds to `127.0.0.1:55432` by default. Prepare its
 ignored environment file, validate the configuration, and start it with:
 
 ```bash
@@ -70,7 +96,7 @@ See [docs/MYSQL_TEST_HARNESS.md](./docs/MYSQL_TEST_HARNESS.md). Both harnesses
 are test-only; never reuse their credentials or point their cleanup commands at
 a production server.
 
-The complete user workflow and production screenshots are in
+The complete user workflow and engine-labelled production screenshots are in
 [docs/USER_GUIDE.md](./docs/USER_GUIDE.md). The recorded release evidence is in
 [docs/VALIDATION_REPORT.md](./docs/VALIDATION_REPORT.md).
 
@@ -87,7 +113,13 @@ pnpm payload migrate:status
 ```
 
 `pnpm check` regenerates Payload types, type-checks strict TypeScript, enforces the props-only UI boundary and 250-line frontend limit, and runs unit tests.
+It also validates the generated third-party provenance bundle against both the
+frozen production dependency graph and the exact traced standalone runtime;
+missing legal coverage fails the gate.
 `pnpm build` intentionally uses an ignored build-only SQLite file; production migrations run against the configured persistent database when the server starts.
+The commands above, in that order, are the authoritative release gate; the
+generic `pnpm test` script is retained for the scaffold integration/browser
+suite and does not replace the engine-specific gates.
 
 Read [ARCHITECTURE.md](./ARCHITECTURE.md), [SECURITY.md](./SECURITY.md), and [CONTRIBUTING.md](./CONTRIBUTING.md) before extending an engine or permission model.
 

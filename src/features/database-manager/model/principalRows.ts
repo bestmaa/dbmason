@@ -8,10 +8,15 @@ export interface PrincipalRowViewModel extends PrincipalSummary {
   managementDisabledReason: string | null
 }
 
+type SystemPrincipalMatcher = (name: string) => boolean
+
+const systemPrincipalMatchers = {
+  mysql: (name) => (name.split('@', 1)[0] ?? '').startsWith('mysql.'),
+  postgresql: (name) => name.startsWith('pg_'),
+} satisfies Readonly<Record<EngineId, SystemPrincipalMatcher>>
+
 function isEngineSystemPrincipal(engine: EngineId, name: string): boolean {
-  if (engine === 'postgresql') return name.startsWith('pg_')
-  const account = name.split('@', 1)[0] ?? ''
-  return account.startsWith('mysql.')
+  return systemPrincipalMatchers[engine](name)
 }
 
 function disabledReason(

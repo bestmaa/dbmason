@@ -1,0 +1,953 @@
+{
+  "schemaVersion": 1,
+  "scope": "Supplemental notices for package archives selected by SUPPLEMENTS.json. pnpm-lock.yaml remains the authority for the complete frozen dependency graph.",
+  "supplements": {
+    "brocli@0.10.2": {
+      "appliesTo": ["@drizzle-team/brocli@0.10.2"],
+      "artifacts": [
+        {
+          "name": "@drizzle-team/brocli",
+          "version": "0.10.2",
+          "integrity": "sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==",
+          "tarball": "https://registry.npmjs.org/@drizzle-team/brocli/-/brocli-0.10.2.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/drizzle-team/brocli",
+        "ref": "65d1432f4ce1f048d99604acd60d0eab8612c91b",
+        "attestation": "https://registry.npmjs.org/-/npm/v1/attestations/%40drizzle-team%2Fbrocli@0.10.2",
+        "buildRun": "https://github.com/drizzle-team/brocli/actions/runs/11557602565/attempts/1"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/drizzle-team/brocli/65d1432f4ce1f048d99604acd60d0eab8612c91b/LICENSE",
+          "sourceSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      ]
+    },
+    "data-uri-to-buffer@4.0.1": {
+      "appliesTo": ["data-uri-to-buffer@4.0.1"],
+      "artifacts": [
+        {
+          "name": "data-uri-to-buffer",
+          "version": "4.0.1",
+          "integrity": "sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==",
+          "tarball": "https://registry.npmjs.org/data-uri-to-buffer/-/data-uri-to-buffer-4.0.1.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/TooTallNate/node-data-uri-to-buffer",
+        "tag": "4.0.1",
+        "ref": "85cd8c854aefbf1bb636789d80364cfac8ea1583"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "20c27c914b1d6c127f7e7863b47527547bcd6fd4e743e7a1853cf5db73d61429",
+          "derivation": "README.md License section; unrelated README link reference omitted",
+          "sourceUrl": "https://raw.githubusercontent.com/TooTallNate/node-data-uri-to-buffer/85cd8c854aefbf1bb636789d80364cfac8ea1583/README.md",
+          "sourceSha256": "a7cc4332acfa1f9b6530e01aac77fefe74f2efa32579215fddaa473013f9a25c"
+        }
+      ]
+    },
+    "drizzle-kit@0.31.7": {
+      "appliesTo": ["drizzle-kit@0.31.7"],
+      "artifacts": [
+        {
+          "name": "drizzle-kit",
+          "version": "0.31.7",
+          "integrity": "sha512-hOzRGSdyKIU4FcTSFYGKdXEjFsncVwHZ43gY3WU5Bz9j5Iadp6Rh6hxLSQ1IWXpKLBKt/d5y1cpSPcV+FcoQ1A==",
+          "tarball": "https://registry.npmjs.org/drizzle-kit/-/drizzle-kit-0.31.7.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/drizzle-team/drizzle-orm",
+        "ref": "c66862c55abe6cd23e9bf1f07519e3e5c6274cbf",
+        "attestation": "https://registry.npmjs.org/-/npm/v1/attestations/drizzle-kit@0.31.7",
+        "buildRun": "https://github.com/drizzle-team/drizzle-orm/actions/runs/19333748116/attempts/3",
+        "packageMetadataUrl": "https://raw.githubusercontent.com/drizzle-team/drizzle-orm/c66862c55abe6cd23e9bf1f07519e3e5c6274cbf/drizzle-kit/package.json",
+        "packageMetadataSha256": "93f266e46e3bef114fe5fead5795ff9aa227fcc6a29a89d4a9cc42f84a713c76"
+      },
+      "conflict": "Published package metadata declares MIT; the exact attested source root is Apache-2.0. Inclusion records both signals and does not assert dual licensing.",
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "24f09d6d1dc1534b8efcaca939ddec1969cac255471aae25d299ab8e81ada29f",
+          "derivation": "standard MIT template with placeholders retained because upstream supplies no MIT copyright notice",
+          "referenceUrl": "https://spdx.org/licenses/MIT.html"
+        },
+        {
+          "path": "LICENSE-Apache-2.0.txt",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/drizzle-team/drizzle-orm/c66862c55abe6cd23e9bf1f07519e3e5c6274cbf/LICENSE",
+          "sourceSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        {
+          "path": "NOTICE-LICENSE-CONFLICT.md",
+          "sha256": "6a93866ca2c707db30d3d18a148948f5516532ffba25254bb578996d9bfcf445",
+          "derivation": "project-authored evidence note"
+        }
+      ]
+    },
+    "drizzle-orm@0.45.2": {
+      "appliesTo": ["drizzle-orm@0.45.2"],
+      "artifacts": [
+        {
+          "name": "drizzle-orm",
+          "version": "0.45.2",
+          "integrity": "sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q==",
+          "tarball": "https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-0.45.2.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/drizzle-team/drizzle-orm",
+        "tag": "0.45.2",
+        "ref": "273c78071d4841b497f5144734b38294df7ec64b",
+        "attestation": "https://registry.npmjs.org/-/npm/v1/attestations/drizzle-orm@0.45.2"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/drizzle-team/drizzle-orm/273c78071d4841b497f5144734b38294df7ec64b/LICENSE",
+          "sourceSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      ]
+    },
+    "esbuild@0.25.12": {
+      "appliesTo": ["@esbuild/linux-*@0.25.12"],
+      "artifacts": [
+        {
+          "name": "@esbuild/linux-x64",
+          "version": "0.25.12",
+          "integrity": "sha512-uqZMTLr/zR/ed4jIGnwSLkaHmPjOjJvnm6TVVitAa08SLS9Z0VM8wIRx7gWbJB5/J54YuIMInDquWyYvQLZkgw=="
+        },
+        {
+          "name": "@esbuild/linux-arm64",
+          "version": "0.25.12",
+          "integrity": "sha512-8bwX7a8FghIgrupcxb4aUmYDLp8pX06rGh5HqDT7bB+8Rdells6mHvrFHHW2JAOPZUbnjUpKTLg6ECyzvas2AQ=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/evanw/esbuild",
+        "tag": "v0.25.12",
+        "ref": "208f539945b145e7c9d6d844290f81c3fe5af320"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/evanw/esbuild/208f539945b145e7c9d6d844290f81c3fe5af320/LICENSE.md",
+          "sourceSha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+        }
+      ]
+    },
+    "esbuild@0.28.1": {
+      "appliesTo": ["@esbuild/linux-*@0.28.1"],
+      "artifacts": [
+        {
+          "name": "@esbuild/linux-x64",
+          "version": "0.28.1",
+          "integrity": "sha512-u/anNYF2mmVOEDwLtnQ1wOr3EZ9sTNGLWrsYGYwHWzGA3Si84IOkHXlbWTD1NB+9/1lcnweYKO54uhxZydNzfA=="
+        },
+        {
+          "name": "@esbuild/linux-arm64",
+          "version": "0.28.1",
+          "integrity": "sha512-yHs+0uc8+nvEAfAfxrWQKK5peSNzBc4PegcMO0EJ2hT71uA7vB8Ihg2e77R2P7SG5uYjPbHlLLmve4LLLRCf0g=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/evanw/esbuild",
+        "tag": "v0.28.1",
+        "ref": "bb9db84c02433fbe37b3509f53f9f3e3cc48725e"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/evanw/esbuild/bb9db84c02433fbe37b3509f53f9f3e3cc48725e/LICENSE.md",
+          "sourceSha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+        }
+      ]
+    },
+    "libsql-client-ts@0.14.0": {
+      "appliesTo": ["@libsql/client@0.14.0", "@libsql/core@0.14.0"],
+      "artifacts": [
+        {
+          "name": "@libsql/client",
+          "version": "0.14.0",
+          "integrity": "sha512-/9HEKfn6fwXB5aTEEoMeFh4CtG0ZzbncBb1e++OCdVpgKZ/xyMsIVYXm0w7Pv4RUel803vE6LwniB3PqD72R0Q=="
+        },
+        {
+          "name": "@libsql/core",
+          "version": "0.14.0",
+          "integrity": "sha512-nhbuXf7GP3PSZgdCY2Ecj8vz187ptHlZQ0VRc751oB2C1W8jQUXKKklvt7t1LJiUTQBVJuadF628eUk+3cRi4Q=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/libsql/libsql-client-ts",
+        "tag": "v0.14.0",
+        "ref": "839d48ef033d0baa8e8fb68ffad853998b1e7f84"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "f7984723ac416cb45f9eb462c4da22ad4a7d7996bd3f9c7a92288e047cce003f",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/libsql/libsql-client-ts/839d48ef033d0baa8e8fb68ffad853998b1e7f84/LICENSE",
+          "sourceSha256": "f7984723ac416cb45f9eb462c4da22ad4a7d7996bd3f9c7a92288e047cce003f"
+        }
+      ]
+    },
+    "libsql-isomorphic-ts": {
+      "appliesTo": ["@libsql/isomorphic-fetch@0.3.1", "@libsql/isomorphic-ws@0.1.5"],
+      "artifacts": [
+        {
+          "name": "@libsql/isomorphic-fetch",
+          "version": "0.3.1",
+          "integrity": "sha512-6kK3SUK5Uu56zPq/Las620n5aS9xJq+jMBcNSOmjhNf/MUvdyji4vrMTqD7ptY7/4/CAVEAYDeotUz60LNQHtw=="
+        },
+        {
+          "name": "@libsql/isomorphic-ws",
+          "version": "0.1.5",
+          "integrity": "sha512-DtLWIH29onUYR00i0GlQ3UdcTRC6EP4u9w/h9LxpUZJWRMARk6dQwZ6Jkd+QdwVpuAOrdxt18v0K2uIYR3fwFg=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/libsql/isomorphic-ts",
+        "refs": [
+          "ab3b09a269a7385bab85684aae3a469e5c1b2797",
+          "87331abc53d4e77deb2f3d6384438d4804a07e0a"
+        ],
+        "note": "The registry git heads carry the published versions and the root LICENSE is byte-identical at both refs. The repository tag v0.1.5 points to a pre-release and is not used."
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "cecf589818a56c2da8a0a6cc82c8a215c9770988c033b6016c2b74bf79f38152",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/libsql/isomorphic-ts/87331abc53d4e77deb2f3d6384438d4804a07e0a/LICENSE",
+          "sourceSha256": "cecf589818a56c2da8a0a6cc82c8a215c9770988c033b6016c2b74bf79f38152"
+        }
+      ]
+    },
+    "libsql-js@0.4.7": {
+      "appliesTo": ["@libsql/linux-*@0.4.7"],
+      "artifacts": [
+        {
+          "name": "@libsql/linux-x64-gnu",
+          "version": "0.4.7",
+          "integrity": "sha512-CMnNRCmlWQqqzlTw6NeaZXzLWI8bydaXDke63JTUCvu8R+fj/ENsLrVBtPDlxQ0wGsYdXGlrUCH8Qi9gJep0yQ==",
+          "tarball": "https://registry.npmjs.org/@libsql/linux-x64-gnu/-/linux-x64-gnu-0.4.7.tgz",
+          "tarballSha256": "154261e0f7f1509b24f8504e8e5ddc5c38035096b606c2ed41503a68ac9b00f1",
+          "binarySha256": "05fd43b9f701af09d1848891834ca5de15549d8a75aad7160a61a6250e28fd94",
+          "binaryBuildId": "0027f617"
+        },
+        {
+          "name": "@libsql/linux-x64-musl",
+          "version": "0.4.7",
+          "integrity": "sha512-nI6tpS1t6WzGAt1Kx1n1HsvtBbZ+jHn0m7ogNNT6pQHZQj7AFFTIMeDQw/i/Nt5H38np1GVRNsFe99eSIMs9XA==",
+          "tarball": "https://registry.npmjs.org/@libsql/linux-x64-musl/-/linux-x64-musl-0.4.7.tgz",
+          "tarballSha256": "76793df7b397491765658a1f7fa7f293fdcfb77bf79bf9a5c3b082d1ce6e08fd",
+          "binarySha256": "aabe37ef0be35ba9f32af85f7d3d68fa1509f421663521fae37fd34bce71ccea"
+        },
+        {
+          "name": "@libsql/linux-arm64-gnu",
+          "version": "0.4.7",
+          "integrity": "sha512-WlX2VYB5diM4kFfNaYcyhw5y+UJAI3xcMkEUJZPtRDEIu85SsSFrQ+gvoKfcVh76B//ztSeEX2wl9yrjF7BBCA==",
+          "tarball": "https://registry.npmjs.org/@libsql/linux-arm64-gnu/-/linux-arm64-gnu-0.4.7.tgz",
+          "tarballSha256": "3e5edd4003e7684ac839e9669582a4701663e1ebdc464e1f92d4963a3a71813b",
+          "binarySha256": "b3e5f864e6313c8285dfea5c49db658fe20ce841c05d8558038dd19688d0c7a1",
+          "binaryBuildId": "7124ba8"
+        },
+        {
+          "name": "@libsql/linux-arm64-musl",
+          "version": "0.4.7",
+          "integrity": "sha512-6kK9xAArVRlTCpWeqnNMCoXW1pe7WITI378n4NpvU5EJ0Ok3aNTIC2nRPRjhro90QcnmLL1jPcrVwO4WD1U0xw==",
+          "tarball": "https://registry.npmjs.org/@libsql/linux-arm64-musl/-/linux-arm64-musl-0.4.7.tgz",
+          "tarballSha256": "72cdccfc7a56c2b6a37b9f75870ebf7d45974188b46d986b2e5e361a1664a75e",
+          "binarySha256": "35b43de6caab0231ef7b5748f068509da3c9994aeb4a611e2ea2b0baca6b6ae6"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/tursodatabase/libsql-js",
+        "tag": "v0.4.7",
+        "ref": "e6422aab8be35af73601e452d40d4a0945fd6bfb",
+        "libsqlRepository": "https://github.com/tursodatabase/libsql",
+        "libsqlRef": "20147731c4a9d6e942b159f183215e9399fda2c3"
+      },
+      "native": {
+        "embeddedRustCommit": "9b00956e56009bab2aa15d7bff10916599e3d6d6",
+        "cargoAbout": {
+          "version": "0.9.1",
+          "archiveSha256": "c0e7dc6f5d74b0beec5c0053d39ab24514c717d19acd91886907a22457ea9e98",
+          "executableSha256": "c6e1f29efddc40bb41c2a990c3bb0b5650c3b352943f7fba78fc26eb1e19bb19",
+          "rawReportSha256": "f6185a8c8385afdc2d67ca6c453a876f2aca3e289a5f5a701d8f402475c77193",
+          "targets": [
+            "aarch64-unknown-linux-musl",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl"
+          ],
+          "componentCount": 178,
+          "licenseTextCount": 66
+        },
+        "rust": {
+          "version": "1.78.0",
+          "copyrightSha256": "bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d",
+          "mitSha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "apacheSha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        "sqliteAmalgamation": {
+          "version": "3.45.1",
+          "bytes": 9304075,
+          "sha256": "0fd6a3d357bfa92dc820dd8f9b1b02643f837b8048277fae3e575e73281bd7ea"
+        },
+        "webpkiRootsSource": {
+          "component": "webpki-roots@0.26.5",
+          "license": "MPL-2.0",
+          "url": "https://static.crates.io/crates/webpki-roots/webpki-roots-0.26.5.crate",
+          "sha256": "0bd24728e5af82c6c4ec1b66ac4844bdf8156257fccda846ec58b42cd0cdbe6a"
+        },
+        "spdxReferenceTexts": {
+          "version": "3.28.0",
+          "ref": "c4a7237ec8f4654e867546f9f409749300f1bf4c",
+          "lgpl3OrLaterSha256": "996af0513df21f7496288951c41428a03c174e9e4a9d63665c57d670f845ccb1",
+          "wxWindowsException31Sha256": "8147956dd2d78744a052bc0d6490bbefe21e18b325a096fb13b3768b74458b55",
+          "retentionReason": "Precautionary response to the exact SQLite3MultipleCiphers filelist; not a conclusion that the binary is governed by LGPL."
+        },
+        "licenseMetadataConflicts": [
+          "SQLite3MultipleCiphers src/filelist.md labels rijndael.* LGPL-3.0+ WITH WxWindows-exception-3.1, while the same-commit file headers say MIT plus original public domain and the project root says MIT.",
+          "The vendored extensionfunctions.c header has no license declaration; the same-commit filelist assumes public domain, while Liam Healy added an Unlicense/public-domain file later at commit 16c2a17c7d9675ecbc717cad1883df21011a71e4."
+        ]
+      },
+      "scopeNote": "Conservative native notice and source-pointer closure. Conflicting upstream rijndael and extensionfunctions metadata is retained verbatim and is not presented as resolved legal advice.",
+      "files": [
+        {
+          "path": "COMPONENTS.json",
+          "sha256": "31b808031abf12c6a9cb496b3c127e21cfd18552905aa5eb30f7bfe49378d0aa",
+          "derivation": "generated from the exact fail-closed cargo-about report",
+          "inputSha256": "f6185a8c8385afdc2d67ca6c453a876f2aca3e289a5f5a701d8f402475c77193"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "81680d013513cf3003b03b7074948609dfb90dfeca0b8292b3c16e0172a189f4",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql-js/e6422aab8be35af73601e452d40d4a0945fd6bfb/LICENSE",
+          "sourceSha256": "81680d013513cf3003b03b7074948609dfb90dfeca0b8292b3c16e0172a189f4"
+        },
+        {
+          "path": "LICENSE-EXTENSION-FUNCTIONS-UNLICENSE.txt",
+          "sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+          "derivation": "verbatim later upstream license evidence; applicability caveat retained in SOURCE-NATIVE.md",
+          "sourceUrl": "https://gitlab.com/liamh/extension-functions/-/raw/16c2a17c7d9675ecbc717cad1883df21011a71e4/LICENSE",
+          "sourceSha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd"
+        },
+        {
+          "path": "LICENSE-REFERENCE-LGPL-3.0-or-later.txt",
+          "sha256": "996af0513df21f7496288951c41428a03c174e9e4a9d63665c57d670f845ccb1",
+          "derivation": "verbatim precautionary reference text; retention is not a license conclusion",
+          "sourceUrl": "https://raw.githubusercontent.com/spdx/license-list-data/c4a7237ec8f4654e867546f9f409749300f1bf4c/text/LGPL-3.0-or-later.txt",
+          "sourceSha256": "996af0513df21f7496288951c41428a03c174e9e4a9d63665c57d670f845ccb1"
+        },
+        {
+          "path": "LICENSE-REFERENCE-WxWindows-exception-3.1.txt",
+          "sha256": "8147956dd2d78744a052bc0d6490bbefe21e18b325a096fb13b3768b74458b55",
+          "derivation": "verbatim precautionary reference text; retention is not a license conclusion",
+          "sourceUrl": "https://raw.githubusercontent.com/spdx/license-list-data/c4a7237ec8f4654e867546f9f409749300f1bf4c/text/WxWindows-exception-3.1.txt",
+          "sourceSha256": "8147956dd2d78744a052bc0d6490bbefe21e18b325a096fb13b3768b74458b55"
+        },
+        {
+          "path": "LICENSE-LIBSQL-SOURCE-MIT.txt",
+          "sha256": "cecf589818a56c2da8a0a6cc82c8a215c9770988c033b6016c2b74bf79f38152",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/LICENSE.md",
+          "sourceSha256": "cecf589818a56c2da8a0a6cc82c8a215c9770988c033b6016c2b74bf79f38152"
+        },
+        {
+          "path": "LICENSE-LIBSQL-SQLITE3-MIT.txt",
+          "sha256": "0c1c9ea80b1b18972618f572eb2d9e99776f39c8303a2533f331d65aa97ef36d",
+          "derivation": "verbatim, including source line endings",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-sqlite3/LICENSE.md",
+          "sourceSha256": "0c1c9ea80b1b18972618f572eb2d9e99776f39c8303a2533f331d65aa97ef36d"
+        },
+        {
+          "path": "LICENSE-RUST-1.78-APACHE-2.0.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "derivation": "verbatim Rust 1.78 distribution document",
+          "sourceUrl": "https://raw.githubusercontent.com/rust-lang/rust/1.78.0/LICENSE-APACHE",
+          "sourceSha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        {
+          "path": "LICENSE-RUST-1.78-MIT.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "derivation": "verbatim Rust 1.78 distribution document",
+          "sourceUrl": "https://raw.githubusercontent.com/rust-lang/rust/1.78.0/LICENSE-MIT",
+          "sourceSha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        {
+          "path": "LICENSE-SQLITE3MC-MIT.txt",
+          "sha256": "4cc2340ffda5a4533859b1a8766d0865cf0732e1566236dfa9f3565bea6d75db",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/LICENSE",
+          "sourceSha256": "4cc2340ffda5a4533859b1a8766d0865cf0732e1566236dfa9f3565bea6d75db"
+        },
+        {
+          "path": "LICENSE-SQLITE3MC.spdx",
+          "sha256": "ad57de27c76254688bd784507a3fd5290edee9ec70a1c68925f72290b4c9b1b7",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/LICENSE.spdx",
+          "sourceSha256": "ad57de27c76254688bd784507a3fd5290edee9ec70a1c68925f72290b4c9b1b7"
+        },
+        {
+          "path": "NOTICE-RUST-1.78-COPYRIGHT.txt",
+          "sha256": "bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d",
+          "derivation": "verbatim Rust 1.78 distribution document",
+          "sourceUrl": "https://raw.githubusercontent.com/rust-lang/rust/1.78.0/COPYRIGHT",
+          "sourceSha256": "bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d"
+        },
+        {
+          "path": "NOTICE-RUST-DEPENDENCIES.txt",
+          "sha256": "3c91ad42ae158765c28b34e1afee72abb25e8c6a8d1186e9c1c441e143ffa73d",
+          "derivation": "generated from the exact fail-closed cargo-about report with all 66 text variants",
+          "inputSha256": "f6185a8c8385afdc2d67ca6c453a876f2aca3e289a5f5a701d8f402475c77193"
+        },
+        {
+          "path": "NOTICE-SQLITE-PUBLIC-DOMAIN.txt",
+          "sha256": "00c45be3c4a4fa9134450a8cc9725fa84c6e27286f166df5f4f036f952626cd3",
+          "derivation": "SQLite blessing text extracted with a provenance preamble",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-sqlite3/src/main.c",
+          "sourceSha256": "a74744e19eaae1b26ad9bc963abc042e39de0596d421de9b2459d807a946470a"
+        },
+        {
+          "path": "SOURCE-Cargo.lock",
+          "sha256": "c81ec106dad8512e5eb742a032fb7c4207976b4f8d749ab277bf663908b25869",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql-js/e6422aab8be35af73601e452d40d4a0945fd6bfb/Cargo.lock",
+          "sourceSha256": "c81ec106dad8512e5eb742a032fb7c4207976b4f8d749ab277bf663908b25869"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE-PUBLIC-DOMAIN.txt",
+          "sha256": "71c9d370765c4e00aaf89d43bdb57cef6d2404aa3121a1f29931778c0e599b46",
+          "derivation": "exact leading source comment",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-sqlite3/src/main.c",
+          "sourceSha256": "a74744e19eaae1b26ad9bc963abc042e39de0596d421de9b2459d807a946470a"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE3MC-extensionfunctions.c.txt",
+          "sha256": "b3d4e217ec046ef306f7944ac917021e7ffdd8439d31bf6f52224b300743488d",
+          "derivation": "exact leading source comment",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/extensionfunctions.c",
+          "sourceSha256": "1fc1f9bcecb388dbc41c42895aee16371a6e1da6f541ae481a6255f59d0ddf3d"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE3MC-md5.c.txt",
+          "sha256": "c7cf010490872c2fc0de69a68dcd729a4659aec4eef96a92be9d6b0098baa434",
+          "derivation": "exact leading source comment",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/md5.c",
+          "sourceSha256": "ec0f9b5b714655f5c4e36110982fcd018f0409b63ff4f0e98925e468b9553713"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE3MC-rijndael.c.txt",
+          "sha256": "9f70d65a27522cd24d3ae6ceb534c324ba35c4032194c631fa444a75cb6e151a",
+          "derivation": "exact two leading source comments",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/rijndael.c",
+          "sourceSha256": "5558e2dee8af013643e05fb8266c068408f9baadb84279e2eca8f06a6985d963"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE3MC-rijndael.h.txt",
+          "sha256": "c4f30727d16c3673c860c01f4bfc751508cea9159973a844625fecc73dda85e1",
+          "derivation": "exact two leading source comments",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/rijndael.h",
+          "sourceSha256": "f80640183b62026a1793e796cfb650fb703c2f609fce361a208b8e314621c4f1"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE3MC-sha1.c.txt",
+          "sha256": "022762ca87731d5c00675c0a862acb0e7e74c9e86c2c55517852d78b5fbc1f23",
+          "derivation": "exact two leading source comments",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/sha1.c",
+          "sourceSha256": "ad386b579c29865ebfa77c299a3798aac37157f41764126e53748c62dd22e689"
+        },
+        {
+          "path": "SOURCE-HEADER-SQLITE3MC-sha2.c.txt",
+          "sha256": "882a0260d9b3485283797ddd9e54bc966295a8780aee4ee028cea42af907a19c",
+          "derivation": "exact leading source comment",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/sha2.c",
+          "sourceSha256": "e2c26048b6486c07905b2627d34cc9b1a80118f82da39d8fb798f46603df2b9e"
+        },
+        {
+          "path": "SOURCE-NATIVE.md",
+          "sha256": "6568329ca10e92efb1ae88951b437c13c3c637370e2d946d2a842af0af8c32f2",
+          "derivation": "DBMason-authored reproducibility and conflict record"
+        },
+        {
+          "path": "SOURCE-SQLITE3MC-filelist.md",
+          "sha256": "113a3c0eb9c38669ebef8c5821ce437a01e70f09dd313a6be2a58bf816726348",
+          "derivation": "verbatim, retained specifically to preserve upstream license classifications and conflicts",
+          "sourceUrl": "https://raw.githubusercontent.com/tursodatabase/libsql/20147731c4a9d6e942b159f183215e9399fda2c3/libsql-ffi/bundled/SQLite3MultipleCiphers/src/filelist.md",
+          "sourceSha256": "113a3c0eb9c38669ebef8c5821ce437a01e70f09dd313a6be2a58bf816726348"
+        }
+      ]
+    },
+    "next-compiled@16.2.6": {
+      "appliesTo": ["next@16.2.6 dist/compiled components present in the standalone runtime trace"],
+      "artifacts": [
+        {
+          "name": "next",
+          "version": "16.2.6",
+          "integrity": "sha512-qOVgKJg1+At15NpeUP+eJgCHvTCgXsogweq87Ri/Ix7PkqQHg4sdaXmSFqKlgaIXE4kW0g25LE68W87UANlHtw==",
+          "tarball": "https://registry.npmjs.org/next/-/next-16.2.6.tgz"
+        },
+        {
+          "name": "@edge-runtime/cookies",
+          "version": "6.0.0",
+          "integrity": "sha512-VVO/8AwC2qVbygLb2IOkX1zWFx2yWIHzFv4D602CTnoRffd/+cdcXqpSydKaedFrk7a1dRYXbWwjzfV/gwZ2Gw==",
+          "tarball": "https://registry.npmjs.org/@edge-runtime/cookies/-/cookies-6.0.0.tgz"
+        },
+        {
+          "name": "@edge-runtime/ponyfill",
+          "version": "4.0.0",
+          "integrity": "sha512-JZdDyYUqweSbhMgSxxL8QuquNuanVw+gMK8RfFq1LHMQHxzXPVvAf9aw6M7MSuyhnCBtFhqtSTr682rf8U5eyA==",
+          "tarball": "https://registry.npmjs.org/@edge-runtime/ponyfill/-/ponyfill-4.0.0.tgz"
+        },
+        {
+          "name": "@edge-runtime/primitives",
+          "version": "6.0.0",
+          "integrity": "sha512-FqoxaBT+prPBHBwE1WXS1ocnu/VLTQyZ6NMUBAdbP7N2hsFTTxMC/jMu2D/8GAlMQfxeuppcPuCUk/HO3fpIvA==",
+          "tarball": "https://registry.npmjs.org/@edge-runtime/primitives/-/primitives-6.0.0.tgz"
+        },
+        {
+          "name": "image-size",
+          "version": "1.2.1",
+          "integrity": "sha512-rH+46sQJ2dlwfjfhCyNx5thzrv+dtmBIhPHk0zgRUukHzZ/kRueTJXoYYsclBaKcSMBWuGbOFXtioLpzTb5euw==",
+          "tarball": "https://registry.npmjs.org/image-size/-/image-size-1.2.1.tgz"
+        },
+        {
+          "name": "string-hash",
+          "version": "1.1.3",
+          "integrity": "sha512-kJUvRUFK49aub+a7T1nNE66EJbZBMnBgoC1UbCZ5n6bsZKBRga4KgBRTMn/pFkeCZSYtNeSyMxPDM0AXWELk2A==",
+          "tarball": "https://registry.npmjs.org/string-hash/-/string-hash-1.1.3.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/vercel/next.js",
+        "tag": "v16.2.6",
+        "ref": "ee6e79b1792a4d401ddf2480f40a83549fe8e722",
+        "packageJsonSha256": "1ec03f46fd6a51b9adbc80b023f6e75223f0a7125b1394023d55841ca5ddf625",
+        "taskfileUrl": "https://raw.githubusercontent.com/vercel/next.js/ee6e79b1792a4d401ddf2480f40a83549fe8e722/packages/next/taskfile.js",
+        "taskfileSha256": "faf15dd54929d21b360a7271284d8aef308777f5e05278a59aa7a546fff5a02d"
+      },
+      "closure": {
+        "generatedManifest": "NEXT_COMPILED_NOTICES.json",
+        "embeddedSourcePath": "dist/compiled",
+        "expectedEmbeddedLegalFileCount": 137,
+        "method": "retain and hash every legal/notice text in the pinned Next archive, derive components from the exact standalone trace, and fail collection when any traced component has no direct or reviewed fallback notice",
+        "fallbackMappings": [
+          {
+            "components": [
+              "@edge-runtime/cookies",
+              "@edge-runtime/ponyfill",
+              "@edge-runtime/primitives"
+            ],
+            "notice": "LICENSE-edge-runtime-MIT.txt",
+            "evidence": "the three exact package tags peel to edge-runtime commit 440c123a37284d6a852ce453af810ad484ecfc01 and declare MIT"
+          },
+          {
+            "component": "image-detector",
+            "notice": "dist/compiled/image-size/LICENSE",
+            "evidence": "the pinned Next taskfile builds image-detector from image-size@1.2.1"
+          },
+          {
+            "component": "next-server",
+            "notice": "license.md",
+            "evidence": "Next.js project code is covered by the pinned package root license"
+          },
+          {
+            "component": "string-hash",
+            "notice": "NOTICE-string-hash-CC0-1.0.txt",
+            "evidence": "the compiled package metadata declares CC0-1.0 and the exact upstream README supplies the waiver notice"
+          }
+        ]
+      },
+      "files": [
+        {
+          "path": "LICENSE-edge-runtime-MIT.txt",
+          "sha256": "e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/vercel/edge-runtime/440c123a37284d6a852ce453af810ad484ecfc01/LICENSE.md",
+          "sourceSha256": "e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3",
+          "sourceTags": [
+            "@edge-runtime/cookies@6.0.0",
+            "@edge-runtime/ponyfill@4.0.0",
+            "@edge-runtime/primitives@6.0.0"
+          ]
+        },
+        {
+          "path": "NOTICE-string-hash-CC0-1.0.txt",
+          "sha256": "bfc3944b6957df9cd115cbc6db32870d8d88f8e8839fcc49589e20e6d4de1bcd",
+          "derivation": "README License section extracted verbatim, including its CC0 reference definition",
+          "sourceUrl": "https://raw.githubusercontent.com/darkskyapp/string-hash/5bf7547a91372c399f4052cc1094a93f73e10284/README.md",
+          "sourceSha256": "62a7a3b8dba4cc818974ab2c00cb7fb7cb20afd7d3c73ed049d7f2eb5621a46e"
+        }
+      ]
+    },
+    "next@15.5.20": {
+      "appliesTo": ["@next/env@15.5.20"],
+      "artifacts": [
+        {
+          "name": "@next/env",
+          "version": "15.5.20",
+          "integrity": "sha512-dXh51Wvddf8daEyBXryZZEe1FdVxEWx9lgaTseLZUtC1XP/W8Wri+Z+VPOElHlByk23CyqHdc2oVByX7wsTWsw==",
+          "tarball": "https://registry.npmjs.org/@next/env/-/env-15.5.20.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/vercel/next.js",
+        "tag": "v15.5.20",
+        "ref": "a518d38b3a00713be23eefb3fa662ecbcf1341b2",
+        "attestation": "https://registry.npmjs.org/-/npm/v1/attestations/%40next%2Fenv@15.5.20"
+      },
+      "bundle": {
+        "distSha256": "44e84a28e712bca30781e892e3e64d3aecdc46bef9d23b5b7f39bfa1fcef6baa",
+        "components": ["dotenv@16.3.1", "dotenv-expand@10.0.0"]
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/vercel/next.js/a518d38b3a00713be23eefb3fa662ecbcf1341b2/license.md",
+          "sourceSha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224"
+        },
+        {
+          "path": "LICENSE-dotenv-BSD-2-Clause.txt",
+          "sha256": "74b629b24865e1e83c5277ee84590b7937644d6fd959d0c7bdce758676cd2ced",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/motdotla/dotenv/b13ca7bbdae868e2565db1188a033761ff59cb47/LICENSE",
+          "sourceSha256": "74b629b24865e1e83c5277ee84590b7937644d6fd959d0c7bdce758676cd2ced"
+        },
+        {
+          "path": "LICENSE-dotenv-expand-BSD-2-Clause.txt",
+          "sha256": "43b0d13a8c15c1b0c2a1ffd7aaf6ee6444e16769ed221449ee02e47340601701",
+          "derivation": "verbatim text with one redundant terminal blank line normalized",
+          "sourceUrl": "https://raw.githubusercontent.com/motdotla/dotenv-expand/4ac51eac991d6ed87d1d56f35f4b85c77bb4ed5f/LICENSE",
+          "sourceSha256": "3726b9470c3a6b54e1ebcc1d802d37089b5a5fc97273b52b2cee578a4421ec45"
+        }
+      ]
+    },
+    "next@16.2.6": {
+      "appliesTo": ["@next/env@16.2.6", "@next/swc-linux-*@16.2.6"],
+      "artifacts": [
+        {
+          "name": "@next/env",
+          "version": "16.2.6",
+          "integrity": "sha512-gd8HoHN4ufj73WmR3JmVolrpJR47ILK6LouP5xElPglaVxir6e1a7VzvTvDWkOoPXT9rkkTzyCxBu4yeZfZwcw=="
+        },
+        {
+          "name": "@next/swc-linux-x64-gnu",
+          "version": "16.2.6",
+          "integrity": "sha512-DOj182mPV8G3UkrayLoREM5YEYI+Dk5wv7Ox9xl1fFibAELEsFD0lDPfHIeILlutMMfdyhlzYPELG3peuKaurw=="
+        },
+        {
+          "name": "@next/swc-linux-x64-musl",
+          "version": "16.2.6",
+          "integrity": "sha512-HKQ5SP/V/ub73UvF7n/zeJlxk2kLmtL7Wzrg4WfmkjmNos5onJ2tKu7yZOPdL18A6Svfn3max29ym+ry7NkK4g=="
+        },
+        {
+          "name": "@next/swc-linux-arm64-gnu",
+          "version": "16.2.6",
+          "integrity": "sha512-RPOvqlYBbcQjkz9VQQDZ2T2bARIjXZV1KFlt+V2Mr6SW/e4I9fcKsaA0hdyf2FHoTlsV2xnBd5Y912rP/1Ce6w=="
+        },
+        {
+          "name": "@next/swc-linux-arm64-musl",
+          "version": "16.2.6",
+          "integrity": "sha512-URUTu1+dMkxJsPFgm+OeEvq9wf5sujw0EvgYy80TDGHTSLTnIHeqb0Eu8A3sC95IRgjejQL+kC4mw+4yPxiAXA=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/vercel/next.js",
+        "tag": "v16.2.6",
+        "ref": "ee6e79b1792a4d401ddf2480f40a83549fe8e722"
+      },
+      "bundle": {
+        "distSha256": "44e84a28e712bca30781e892e3e64d3aecdc46bef9d23b5b7f39bfa1fcef6baa",
+        "components": ["dotenv@16.3.1", "dotenv-expand@10.0.0"]
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/vercel/next.js/ee6e79b1792a4d401ddf2480f40a83549fe8e722/license.md",
+          "sourceSha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224"
+        },
+        {
+          "path": "LICENSE-dotenv-BSD-2-Clause.txt",
+          "sha256": "74b629b24865e1e83c5277ee84590b7937644d6fd959d0c7bdce758676cd2ced",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/motdotla/dotenv/b13ca7bbdae868e2565db1188a033761ff59cb47/LICENSE",
+          "sourceSha256": "74b629b24865e1e83c5277ee84590b7937644d6fd959d0c7bdce758676cd2ced"
+        },
+        {
+          "path": "LICENSE-dotenv-expand-BSD-2-Clause.txt",
+          "sha256": "43b0d13a8c15c1b0c2a1ffd7aaf6ee6444e16769ed221449ee02e47340601701",
+          "derivation": "verbatim text with one redundant terminal blank line normalized",
+          "sourceUrl": "https://raw.githubusercontent.com/motdotla/dotenv-expand/4ac51eac991d6ed87d1d56f35f4b85c77bb4ed5f/LICENSE",
+          "sourceSha256": "3726b9470c3a6b54e1ebcc1d802d37089b5a5fc97273b52b2cee578a4421ec45"
+        }
+      ]
+    },
+    "pg-types@2.2.0": {
+      "appliesTo": ["pg-types@2.2.0"],
+      "artifacts": [
+        {
+          "name": "pg-types",
+          "version": "2.2.0",
+          "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/brianc/node-pg-types",
+        "tag": "v2.2.0",
+        "ref": "d9d9dfb87eb50914043cbc178c301b7dd3b0c50d"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "2c8a6e1b7782f0ca241792868af742f1c281c9661f59ec36c9acf40381c86645",
+          "derivation": "README.md License section",
+          "sourceUrl": "https://raw.githubusercontent.com/brianc/node-pg-types/d9d9dfb87eb50914043cbc178c301b7dd3b0c50d/README.md",
+          "sourceSha256": "ecda9bca71d3f0cee4e600d1dd2bef336213f39ef2e8fca6a1a1c1c8723f643a"
+        }
+      ]
+    },
+    "pgpass@1.0.5": {
+      "appliesTo": ["pgpass@1.0.5"],
+      "artifacts": [
+        {
+          "name": "pgpass",
+          "version": "1.0.5",
+          "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/hoegaarden/pgpass",
+        "tag": "v1.0.5",
+        "ref": "4230ed5e417ba6044ea7eb80b7c33db9ec301398"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "492e56ee92e47d39ca91d60ef75f55b1104678fab8f09838206b61b43136e211",
+          "derivation": "README.md License section",
+          "sourceUrl": "https://raw.githubusercontent.com/hoegaarden/pgpass/4230ed5e417ba6044ea7eb80b7c33db9ec301398/README.md",
+          "sourceSha256": "62549909404b5a0dcb2b4b74c9a930baf8095dbcfa1543c4ffc79378acd22b57"
+        }
+      ]
+    },
+    "promise-limit@2.7.0": {
+      "appliesTo": ["promise-limit@2.7.0"],
+      "artifacts": [
+        {
+          "name": "promise-limit",
+          "version": "2.7.0",
+          "integrity": "sha512-7nJ6v5lnJsXwGprnGXga4wx6d1POjvi5Qmf1ivTRxTjH4Z/9Czja/UCMLVmB9N93GeWOU93XaFaEt6jbuoagNw==",
+          "tarball": "https://registry.npmjs.org/promise-limit/-/promise-limit-2.7.0.tgz"
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/featurist/promise-limit",
+        "tag": "v2.7.0",
+        "ref": "5b911ce33253ec0a7ea9cf079d8c0434efbe3244",
+        "packageMetadataUrl": "https://raw.githubusercontent.com/featurist/promise-limit/5b911ce33253ec0a7ea9cf079d8c0434efbe3244/package.json",
+        "packageMetadataSha256": "dc438c2d05deb0ba521b02cdfe4c7b840c94d11134353357d772dbaad53ff0a9"
+      },
+      "note": "The exact source and npm archive declare ISC but contain no LICENSE/COPYING/NOTICE text. Author metadata is not treated as a copyright notice.",
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "ed2c15ca64ec8fe3eb83f345cdc85a87db18a4042350874bfa6f4ac3bc5b12f6",
+          "derivation": "standard ISC template with <YEAR> and <OWNER> placeholders retained",
+          "referenceUrl": "https://opensource.org/license/isc"
+        }
+      ]
+    },
+    "react-client-only@0.0.1": {
+      "appliesTo": ["client-only@0.0.1"],
+      "artifacts": [
+        {
+          "name": "client-only",
+          "version": "0.0.1",
+          "integrity": "sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==",
+          "shasum": "38bba5d403c41ab150bff64a95c85013cf73bca1",
+          "tarball": "https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
+          "packageMetadataSha256": "4d6342705767832f299b9a59c28e4275bcf02db19472732f93f67d979441df8f"
+        }
+      ],
+      "source": null,
+      "note": "The published artifact declares MIT but provides no repository, git head, author, copyright notice, or npm provenance attestation. Homepage and bug tracker metadata are not copyright evidence.",
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "24f09d6d1dc1534b8efcaca939ddec1969cac255471aae25d299ab8e81ada29f",
+          "derivation": "standard MIT template with placeholders retained",
+          "referenceUrl": "https://spdx.org/licenses/MIT.html"
+        }
+      ]
+    },
+    "react-select@5.9.0": {
+      "appliesTo": ["react-select@5.9.0"],
+      "artifacts": [
+        {
+          "name": "react-select",
+          "version": "5.9.0",
+          "integrity": "sha512-nwRKGanVHGjdccsnzhFte/PULziueZxGD8LL2WojON78Mvnq7LdAMEtu2frrwld1fr3geixg3iiMBIc/LLAZpw=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/JedWatson/react-select",
+        "tag": "react-select@5.9.0",
+        "ref": "179b8166cafc6540ec7a3c6091320c18b8aff75a"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "d736dd18c7e53f88217fa2106c748f1a1687bb91d69a1f673fa685269402d784",
+          "derivation": "verbatim",
+          "sourceUrl": "https://raw.githubusercontent.com/JedWatson/react-select/179b8166cafc6540ec7a3c6091320c18b8aff75a/LICENSE",
+          "sourceSha256": "d736dd18c7e53f88217fa2106c748f1a1687bb91d69a1f673fa685269402d784"
+        }
+      ]
+    },
+    "tokenizer-token@0.3.0": {
+      "appliesTo": ["@tokenizer/token@0.3.0"],
+      "artifacts": [
+        {
+          "name": "@tokenizer/token",
+          "version": "0.3.0",
+          "integrity": "sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/Borewit/tokenizer-token",
+        "tag": "v0.3.0",
+        "ref": "e068a455370090f44c757946b8571bb3fb1f117e"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "2d92855fe0c91f754a34c19fb9976f1f28f2c6750054c3da64bf419840264997",
+          "derivation": "README.md Licence section",
+          "sourceUrl": "https://raw.githubusercontent.com/Borewit/tokenizer-token/e068a455370090f44c757946b8571bb3fb1f117e/README.md",
+          "sourceSha256": "844148fa5d91a03c6ada823a207f43aabdcd4c79d73ceb2276571127787c9228"
+        }
+      ]
+    },
+    "to-no-case@1.0.2": {
+      "appliesTo": ["to-no-case@1.0.2"],
+      "artifacts": [
+        {
+          "name": "to-no-case",
+          "version": "1.0.2",
+          "integrity": "sha512-Z3g735FxuZY8rodxV4gH7LxClE4H0hTIyHNIHdk+vpQxjLm0cwnKXq/OFVZ76SOQmto7txVcwSCwkU5kqp+FKg=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/ianstormtaylor/to-no-case",
+        "tag": "1.0.2",
+        "ref": "9d93bfe6c86b73bcd93d86c17d2ea28f164a967a"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "918dfb4dbd3c6784bf27b19d57073f4167170326c7ea692b3d1663474831572c",
+          "derivation": "Readme.md License section",
+          "sourceUrl": "https://raw.githubusercontent.com/ianstormtaylor/to-no-case/9d93bfe6c86b73bcd93d86c17d2ea28f164a967a/Readme.md",
+          "sourceSha256": "d25c074282ce074cff242686dfc3f9e9c3b2c1e7cbbcc1069bbb41d2117fbc84"
+        }
+      ]
+    },
+    "to-snake-case@1.0.0": {
+      "appliesTo": ["to-snake-case@1.0.0"],
+      "artifacts": [
+        {
+          "name": "to-snake-case",
+          "version": "1.0.0",
+          "integrity": "sha512-joRpzBAk1Bhi2eGEYBjukEWHOe/IvclOkiJl3DtA91jV6NwQ3MwXA4FHYeqk8BNp/D8bmi9tcNbRu/SozP0jbQ=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/ianstormtaylor/to-snake-case",
+        "tag": "1.0.0",
+        "ref": "b3652b407617699f16866debb0f71d73bbb6ce58"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "918dfb4dbd3c6784bf27b19d57073f4167170326c7ea692b3d1663474831572c",
+          "derivation": "Readme.md License section",
+          "sourceUrl": "https://raw.githubusercontent.com/ianstormtaylor/to-snake-case/b3652b407617699f16866debb0f71d73bbb6ce58/Readme.md",
+          "sourceSha256": "816f6ccd69f9d9bcdf94435a3536dc3e1c2261494362e093776afcb2ae364732"
+        }
+      ]
+    },
+    "to-space-case@1.0.0": {
+      "appliesTo": ["to-space-case@1.0.0"],
+      "artifacts": [
+        {
+          "name": "to-space-case",
+          "version": "1.0.0",
+          "integrity": "sha512-rLdvwXZ39VOn1IxGL3V6ZstoTbwLRckQmn/U8ZDLuWwIXNpuZDhQ3AiRUlhTbOXFVE9C+dR51wM0CBDhk31VcA=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/ianstormtaylor/to-space-case",
+        "tag": "1.0.0",
+        "ref": "aa68213d1211745ce7c6c725ba072e6b13bef640"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "918dfb4dbd3c6784bf27b19d57073f4167170326c7ea692b3d1663474831572c",
+          "derivation": "Readme.md License section",
+          "sourceUrl": "https://raw.githubusercontent.com/ianstormtaylor/to-space-case/aa68213d1211745ce7c6c725ba072e6b13bef640/Readme.md",
+          "sourceSha256": "d3ae60527ccb836238b10edcd65b0ed2cd870a52c7a2785b7710dae2efa23e5b"
+        }
+      ]
+    },
+    "truncate-utf8-bytes@1.0.2": {
+      "appliesTo": ["truncate-utf8-bytes@1.0.2"],
+      "artifacts": [
+        {
+          "name": "truncate-utf8-bytes",
+          "version": "1.0.2",
+          "integrity": "sha512-95Pu1QXQvruGEhv62XCMO3Mm90GscOCClvrIUwCM0PYOXK3kaF3l3sIHxx71ThJfcbM2O5Au6SO3AWCSEfW4mQ=="
+        }
+      ],
+      "source": {
+        "repository": "https://github.com/parshap/truncate-utf8-bytes",
+        "tag": "v1.0.2",
+        "ref": "c8fcebc8be093c8bd8db1e7d75c09b9fce7e4708",
+        "packageMetadataUrl": "https://raw.githubusercontent.com/parshap/truncate-utf8-bytes/c8fcebc8be093c8bd8db1e7d75c09b9fce7e4708/package.json",
+        "packageMetadataSha256": "8da766c7092b0ce9fd8f3b2ac2f41d1b739df9210067d3f710d65d95c9c17a7a",
+        "authorsUrl": "https://raw.githubusercontent.com/parshap/truncate-utf8-bytes/c8fcebc8be093c8bd8db1e7d75c09b9fce7e4708/AUTHORS",
+        "authorsSha256": "e10bd5710c7d7fdba909e3f2a1f1557b6daad714f209c938fc83dd5bb6c1983a"
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "97f447536de3b0d1a2df792f749459a67ab613e7b877e9494ae6d45eca383a28",
+          "derivation": "WTFPL v2 text with whitespace normalized",
+          "sourceUrl": "https://www.wtfpl.net/txt/copying/",
+          "sourceSha256": "0356258391e190dc1d44ea01565cfe627fe44e27dad693a0a54c2483a7b223e5"
+        }
+      ]
+    }
+  }
+}

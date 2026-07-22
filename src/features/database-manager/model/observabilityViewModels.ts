@@ -207,7 +207,7 @@ function mysqlDetail(snapshot: MysqlObservabilitySnapshot): ObservabilityDetailP
 function trackingNotes(snapshot: ObservabilitySnapshot): readonly string[] {
   if (snapshot.engine === 'mysql') {
     return [
-      snapshot.tracking.activities ? 'Performance Schema activity available' : 'Performance Schema activity unavailable',
+      snapshot.tracking.activities ? 'Cross-session activity available' : 'Cross-session activity unavailable',
       'MySQL global status counters',
       `Expected collection lag up to ${formatDuration(snapshot.collectionLagHintMs)}`,
     ]

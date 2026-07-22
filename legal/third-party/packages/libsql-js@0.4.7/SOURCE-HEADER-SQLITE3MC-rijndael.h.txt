@@ -1,0 +1,16 @@
+/*
+** Name:        rijndael.h
+** Purpose:     Header file for the Rijndael cipher
+** Author:      Ulrich Telle
+** Created:     2006-12-06
+** Copyright:   (c) 2006-2020 Ulrich Telle
+** License:     MIT
+**
+** Adjustments were made to make this code work with the wxSQLite3's
+** SQLite encryption extension.
+** The original code is public domain (see comments below).
+*/
+
+/*
+/// \file rijndael.h Interface of the Rijndael cipher
+*/

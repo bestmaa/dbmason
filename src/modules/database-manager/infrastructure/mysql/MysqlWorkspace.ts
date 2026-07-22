@@ -68,7 +68,7 @@ function mapWorkspaceError(error: unknown): unknown {
   ) {
     return new ManagerError(
       'QUERY_PERMISSION_DENIED',
-      'The selected MySQL account cannot read this resource.',
+      'The MySQL read-only workspace or selected account blocked this query.',
       403,
     )
   }

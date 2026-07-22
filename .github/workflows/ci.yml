@@ -16,6 +16,7 @@ permissions:
 env:
   CONNECTION_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
   DATABASE_HOST_ALLOWLIST: 127.0.0.1,localhost
+  DBMASON_PUBLIC_URL: http://localhost:3000
   PAYLOAD_SECRET: ci-only-payload-secret-never-use-in-production-2026
 
 jobs:
@@ -26,10 +27,12 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@0ebf471bd8a8e15df2eb00834d8f3aaf7c9c3144 # v6.0.9
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Install Node.js
-        uses: actions/setup-node@82076239c1e6089b052350c690a4a9edbfddb206 # v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: pnpm
           node-version: 24.18.0
@@ -38,11 +41,26 @@ jobs:
       - name: Run architectural quality gate
         run: pnpm check
       - name: Verify generated files are committed
-        run: git diff --exit-code
+        run: |
+          changes="$(git status --porcelain --untracked-files=all)"
+          if [ -n "${changes}" ]; then
+            printf '%s\n' "${changes}"
+            exit 1
+          fi
       - name: Audit dependencies
-        run: pnpm audit --audit-level high
+        run: pnpm audit --audit-level low
       - name: Build standalone application
         run: pnpm build
+      - name: Enforce the production runtime boundary
+        run: pnpm check:runtime
+      - name: Verify third-party license inventory
+        run: |
+          legal_root="$(mktemp -d)"
+          pnpm --config.optional=false licenses list --prod --json > "${legal_root}/production.json"
+          node scripts/collect-third-party-licenses.mjs \
+            node_modules "${legal_root}/third-party-licenses" \
+            .next/standalone/node_modules "${legal_root}/production.json"
+          test -s "${legal_root}/third-party-licenses/INDEX.json"
 
   database-integration:
     name: ${{ matrix.engine }} integration
@@ -66,10 +84,12 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@0ebf471bd8a8e15df2eb00834d8f3aaf7c9c3144 # v6.0.9
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Install Node.js
-        uses: actions/setup-node@82076239c1e6089b052350c690a4a9edbfddb206 # v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: pnpm
           node-version: 24.18.0
@@ -105,10 +125,12 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@0ebf471bd8a8e15df2eb00834d8f3aaf7c9c3144 # v6.0.9
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Install Node.js
-        uses: actions/setup-node@82076239c1e6089b052350c690a4a9edbfddb206 # v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: pnpm
           node-version: 24.18.0

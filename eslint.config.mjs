@@ -44,6 +44,8 @@ export default defineConfig([
             { message: 'Navigation belongs in a connector or hook.', name: 'next/link' },
             { message: 'Navigation belongs in a connector or hook.', name: 'next/navigation' },
             { message: 'Payload must not be imported by presentational UI.', name: 'payload' },
+            { message: 'Database drivers must remain server-side.', name: 'mysql2' },
+            { message: 'Database drivers must remain server-side.', name: 'mysql2/promise' },
             { message: 'Database drivers must remain server-side.', name: 'pg' },
             {
               importNames: [

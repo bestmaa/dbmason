@@ -153,7 +153,7 @@ async function assertAccessDatabase(connection: Connection, database: string): P
   if (isMysqlSystemSchema(database)) {
     throw new ManagerError(
       'DATABASE_PROTECTED',
-      'DB Control does not grant access to MySQL system schemas.',
+      'DBMason does not grant access to MySQL system schemas.',
       409,
     )
   }

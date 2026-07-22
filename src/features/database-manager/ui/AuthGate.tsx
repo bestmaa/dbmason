@@ -24,8 +24,10 @@ export function AuthGate({ actionHref, actionLabel, description, product, title 
           {actionLabel}
         </a>
         <small>
-          Self-hosted · Encrypted secrets · No telemetry ·{' '}
-          <a href={product.sourceUrl}>Source v{product.version} ({product.licenseName})</a>
+          Self-hosted · Encrypted secrets · No product telemetry
+          <br />
+          {product.copyrightNotice} · {product.licenseName} · {product.warrantyNotice} ·{' '}
+          <a href={product.sourceUrl}>Source v{product.version}</a>
         </small>
       </section>
     </main>

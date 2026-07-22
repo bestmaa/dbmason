@@ -36,7 +36,8 @@ export function DatabaseManagerView({ actions, model, product }: DatabaseManager
               rel="noreferrer"
               target="_blank"
             >
-              Source · v{product.version} · {product.licenseName}
+              {product.copyrightNotice} · {product.licenseName} · {product.warrantyNotice} · Source
+              v{product.version}
             </a>
           </div>
           <div className="identity">

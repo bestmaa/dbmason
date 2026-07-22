@@ -1,0 +1,47 @@
+{
+  "exact": {
+    "@drizzle-team/brocli@0.10.2": "brocli@0.10.2",
+    "@libsql/client@0.14.0": "libsql-client-ts@0.14.0",
+    "@libsql/core@0.14.0": "libsql-client-ts@0.14.0",
+    "@libsql/isomorphic-fetch@0.3.1": "libsql-isomorphic-ts",
+    "@libsql/isomorphic-ws@0.1.5": "libsql-isomorphic-ts",
+    "@next/env@15.5.20": "next@15.5.20",
+    "@next/env@16.2.6": "next@16.2.6",
+    "next@16.2.6": "next-compiled@16.2.6",
+    "@tokenizer/token@0.3.0": "tokenizer-token@0.3.0",
+    "client-only@0.0.1": "react-client-only@0.0.1",
+    "data-uri-to-buffer@4.0.1": "data-uri-to-buffer@4.0.1",
+    "drizzle-kit@0.31.7": "drizzle-kit@0.31.7",
+    "drizzle-orm@0.45.2": "drizzle-orm@0.45.2",
+    "pg-types@2.2.0": "pg-types@2.2.0",
+    "pgpass@1.0.5": "pgpass@1.0.5",
+    "promise-limit@2.7.0": "promise-limit@2.7.0",
+    "react-select@5.9.0": "react-select@5.9.0",
+    "to-no-case@1.0.2": "to-no-case@1.0.2",
+    "to-snake-case@1.0.0": "to-snake-case@1.0.0",
+    "to-space-case@1.0.0": "to-space-case@1.0.0",
+    "truncate-utf8-bytes@1.0.2": "truncate-utf8-bytes@1.0.2"
+  },
+  "prefixes": [
+    {
+      "directory": "esbuild@0.25.12",
+      "namePrefix": "@esbuild/linux-",
+      "version": "0.25.12"
+    },
+    {
+      "directory": "esbuild@0.28.1",
+      "namePrefix": "@esbuild/linux-",
+      "version": "0.28.1"
+    },
+    {
+      "directory": "next@16.2.6",
+      "namePrefix": "@next/swc-linux-",
+      "version": "16.2.6"
+    },
+    {
+      "directory": "libsql-js@0.4.7",
+      "namePrefix": "@libsql/linux-",
+      "version": "0.4.7"
+    }
+  ]
+}

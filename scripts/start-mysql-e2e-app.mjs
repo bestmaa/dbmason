@@ -30,6 +30,7 @@ const child = spawn(
       CONNECTION_ENCRYPTION_KEY: 'a1'.repeat(32),
       DATABASE_HOST_ALLOWLIST: '127.0.0.1,localhost',
       DATABASE_URL: mysqlE2EDatabaseURL,
+      DBMASON_PUBLIC_URL: `http://127.0.0.1:${e2ePort}`,
       DEV_ALLOWED_ORIGINS: '',
       NEXT_DIST_DIR: '.next-e2e-mysql',
       NODE_OPTIONS: '--no-deprecation',

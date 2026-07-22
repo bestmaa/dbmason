@@ -13,6 +13,12 @@ type Harness = {
 }
 
 const originalDatabaseURL = process.env.DATABASE_URL
+const shortPasswordError = {
+  data: {
+    errors: [{ message: 'Password must be at least 12 characters.', path: 'password' }],
+  },
+  status: 400,
+}
 
 function restoreDatabaseURL(): void {
   if (originalDatabaseURL === undefined) delete process.env.DATABASE_URL
@@ -25,11 +31,13 @@ async function createHarness(sourceDatabasePath?: string): Promise<Harness> {
   if (sourceDatabasePath) await copyFile(sourceDatabasePath, databasePath)
   const databaseURL = `file:${databasePath}`
   process.env.DATABASE_URL = databaseURL
-  const [{ sqliteAdapter }, { buildConfig, getPayload }, { Users }] = await Promise.all([
-    import('@payloadcms/db-sqlite'),
-    import('payload'),
-    import('@/collections/Users'),
-  ])
+  const [{ sqliteAdapter }, { buildConfig, getPayload }, { createUsersCollection }] =
+    await Promise.all([
+      import('@payloadcms/db-sqlite'),
+      import('payload'),
+      import('@/collections/Users'),
+    ])
+  const Users = createUsersCollection({ secureCookies: false })
   const config = await buildConfig({
     collections: [Users],
     db: sqliteAdapter({
@@ -68,13 +76,17 @@ function actingAs(user: User) {
   return sessions ? { ...actor, sessions } : actor
 }
 
-async function bootstrapOwner(payload: Payload, email = 'owner@example.test'): Promise<User> {
+async function bootstrapOwner(
+  payload: Payload,
+  email = 'owner@example.test',
+  password = 'Testing!123456',
+): Promise<User> {
   return payload.create({
     collection: 'users',
     data: {
       email,
       name: 'Owner',
-      password: 'Testing!123456',
+      password,
       roles: ['viewer'],
     },
     overrideAccess: false,
@@ -121,6 +133,17 @@ describe.sequential('users RBAC', () => {
   afterAll(async () => {
     await rm(templateDirectory, { force: true, recursive: true })
     restoreDatabaseURL()
+  })
+
+  it('rejects a password shorter than 12 characters during owner bootstrap', async () => {
+    const harness = await createHarness()
+    try {
+      await expect(
+        bootstrapOwner(harness.payload, 'short-password@example.test', 'Short!12345'),
+      ).rejects.toMatchObject(shortPasswordError)
+    } finally {
+      await destroyHarness(harness)
+    }
   })
 
   it('serializes concurrent bootstrap attempts and creates one owner', async () => {
@@ -205,6 +228,44 @@ describe.sequential('users RBAC', () => {
         user: actingAs(admin),
       })
       await expect(payload.findByID({ collection: 'users', id: viewer.id })).rejects.toThrow()
+    })
+
+    it('enforces the password minimum on direct changes and reset-password flows', async () => {
+      const { payload } = harness
+      const viewer = await createUser(payload, owner, 'password-policy@example.test', ['viewer'])
+
+      await expect(
+        payload.update({
+          collection: 'users',
+          data: { password: 'Short!12345' },
+          id: viewer.id,
+          overrideAccess: false,
+          user: actingAs(owner),
+        }),
+      ).rejects.toMatchObject(shortPasswordError)
+
+      const resetToken = await payload.forgotPassword({
+        collection: 'users',
+        data: { email: viewer.email },
+        disableEmail: true,
+      })
+      if (typeof resetToken !== 'string') throw new Error('Password reset did not return a token.')
+
+      await expect(
+        payload.resetPassword({
+          collection: 'users',
+          data: { password: 'Short!12345', token: resetToken },
+          overrideAccess: true,
+        }),
+      ).rejects.toMatchObject(shortPasswordError)
+
+      await expect(
+        payload.resetPassword({
+          collection: 'users',
+          data: { password: 'Replacement!123', token: resetToken },
+          overrideAccess: true,
+        }),
+      ).resolves.toMatchObject({ user: { id: viewer.id } })
     })
 
     it('limits non-administrators to reading their own account', async () => {

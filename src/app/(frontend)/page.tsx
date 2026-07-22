@@ -2,15 +2,17 @@ import { headers as getHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
 import { getAppRoles } from '@/access/appRoles'
+import { getServerEnv } from '@/config/env'
 import { getProductInfo } from '@/config/product'
 import { DatabaseManagerConnector } from '@/features/database-manager/connectors/DatabaseManagerConnector'
 import { AuthGate } from '@/features/database-manager/ui/AuthGate'
 import config from '@/payload.config'
+import { buildServerAuthHeaders } from '@/security/serverAuthHeaders'
 
 export default async function HomePage() {
   const product = getProductInfo()
   const payload = await getPayload({ config })
-  const headers = await getHeaders()
+  const headers = buildServerAuthHeaders(await getHeaders(), getServerEnv().DBMASON_PUBLIC_URL)
   const [{ user }, userCount] = await Promise.all([
     payload.auth({ headers }),
     payload.count({ collection: 'users' }),
