@@ -101,6 +101,7 @@ The development E2E web server emitted Next/Turbopack's known negative-timestamp
 | Types, full lint, line boundary, unit/RBAC/security | `pnpm check`                            | Pass: 66 frontend files within 250 lines; 31 test files, 150/150 tests |
 | Real MySQL 8.4.10 integration                       | `pnpm test:mysql`                       | Pass: 2 files, 11/11 tests                                             |
 | PostgreSQL regression                               | `pnpm test:postgres`                    | Pass: 5 files, 40/40 tests                                             |
+| PostgreSQL catalog-churn stress                     | 1 normal + 3 concurrent real suites     | Pass: 20 files, 160/160 tests                                          |
 | PostgreSQL Chromium lifecycle                       | `pnpm test:e2e:mvp`                     | Pass: 7/7 tests in 2.5 minutes                                         |
 | MySQL Chromium lifecycle                            | `pnpm test:e2e:mysql`                   | Pass: 7/7 tests in 1.8 minutes                                         |
 | Dependency audit                                    | `pnpm audit --audit-level low`          | Pass: zero known vulnerabilities                                       |
@@ -113,6 +114,12 @@ read-only server-rendered home fills a missing `Origin` from the validated
 public URL, while preserving a caller-supplied foreign `Origin` unchanged so it
 cannot be converted into a trusted request. Manager mutations and workspace
 requests retain their exact-origin CSRF and role checks.
+
+The catalog-churn stress followed a hosted timing failure where another worker
+removed a database while PostgreSQL was sampling its size. DBMason now samples
+by catalog OID, whose missing-object result is nullable, so a concurrent drop no
+longer aborts the entire server snapshot. The ordinary suite and three suites
+running concurrently against the same PostgreSQL 17 harness all passed.
 
 The fail-closed third-party provenance gate covers 306 production/runtime
 package versions. Its Next.js compiled-dependency closure retains 137 legal

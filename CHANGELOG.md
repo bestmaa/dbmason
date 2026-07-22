@@ -47,6 +47,8 @@ All notable changes to DBMason are recorded here. The project follows
 
 - Replace shared PostgreSQL-shaped database summaries with strict,
   engine-specific PostgreSQL and MySQL variants.
+- Keep PostgreSQL catalog snapshots available when a database is removed
+  concurrently while its size is being sampled.
 - Display exact running version, AGPL license, and corresponding-source URL in
   network-served builds.
 

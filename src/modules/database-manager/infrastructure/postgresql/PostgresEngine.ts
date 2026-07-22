@@ -237,7 +237,7 @@ export class PostgresEngine implements DatabaseEngine {
           datallowconn AS "allowConnections",
           has_database_privilege('public', datname, 'CONNECT') AS "publicConnect",
           has_database_privilege('public', datname, 'TEMPORARY') AS "publicTemporary",
-          pg_database_size(datname)::text AS "sizeBytes"
+          pg_database_size(pg_database.oid)::text AS "sizeBytes"
         FROM pg_database
         WHERE NOT datistemplate
         ORDER BY datname
