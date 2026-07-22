@@ -1,6 +1,6 @@
 {
   "name": "dbmason",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A lightweight, self-hosted database access control plane built with Payload.",
   "license": "AGPL-3.0-only",
   "homepage": "https://github.com/bestmaa/dbmason#readme",
