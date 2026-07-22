@@ -1,22 +1,24 @@
 import { Database, Plus, Server } from 'lucide-react'
 import type { MouseEventHandler } from 'react'
 
-import type { ConnectionSummary } from '@/modules/database-manager/domain/contracts'
+import type { ConnectionSummary, EngineId } from '@/modules/database-manager/domain/contracts'
 
 interface ConnectionRailProps {
   canAdd: boolean
   connections: readonly ConnectionSummary[]
+  engineLabels: Readonly<Record<EngineId, string>>
   onAdd: () => void
   onSelect: MouseEventHandler<HTMLButtonElement>
+  productName: string
   selectedId: string | null
 }
 
-export function ConnectionRail({ canAdd, connections, onAdd, onSelect, selectedId }: ConnectionRailProps) {
+export function ConnectionRail({ canAdd, connections, engineLabels, onAdd, onSelect, productName, selectedId }: ConnectionRailProps) {
   return (
     <aside className="connection-rail">
       <div className="brand">
         <span className="brand__mark"><Database aria-hidden="true" size={20} /></span>
-        <span><strong>DBMason</strong><small>Access manager</small></span>
+        <span><strong>{productName}</strong><small>Access manager</small></span>
       </div>
 
       <div className="rail-heading">
@@ -36,7 +38,7 @@ export function ConnectionRail({ canAdd, connections, onAdd, onSelect, selectedI
             <span className="connection-item__icon"><Server aria-hidden="true" size={16} /></span>
             <span className="connection-item__copy">
               <strong>{connection.name}</strong>
-              <small>{connection.host}:{connection.port}</small>
+              <small>{engineLabels[connection.engine]} · {connection.host}:{connection.port}</small>
             </span>
             <span className={`status-dot status-dot--${connection.status}`} title={connection.status} />
           </button>

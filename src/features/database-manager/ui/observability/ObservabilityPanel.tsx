@@ -15,7 +15,7 @@ interface ObservabilityPanelProps {
 
 export function ObservabilityPanel({ actions, model }: ObservabilityPanelProps) {
   return (
-    <section aria-label="PostgreSQL observability" className="observability-panel">
+    <section aria-label={model.sectionAriaLabel} className="observability-panel">
       <header className="observability-header">
         <div>
           <p className="eyebrow">On-demand server snapshot</p>
@@ -50,7 +50,7 @@ export function ObservabilityPanel({ actions, model }: ObservabilityPanelProps) 
       {model.state === 'loading' && (
         <div aria-live="polite" className="observability-state">
           <DatabaseZap className="spin" size={23} />
-          <strong>Collecting PostgreSQL statistics</strong>
+          <strong>{model.loadingLabel}</strong>
           <span>No background polling is used.</span>
         </div>
       )}
@@ -73,14 +73,14 @@ export function ObservabilityPanel({ actions, model }: ObservabilityPanelProps) 
               {model.error}
             </div>
           )}
-          <ObservabilityMetricCards metrics={model.metrics} />
+          <ObservabilityMetricCards ariaLabel={model.loadAriaLabel} metrics={model.metrics} />
           <div className="tracking-strip">
             {model.trackingNotes.map((note) => (
               <span key={note}>{note}</span>
             ))}
           </div>
-          <ObservabilityIoPanel metrics={model.ioMetrics} note={model.ioNote} />
-          <ObservabilityDatabaseTable rows={model.databaseRows} />
+          <ObservabilityIoPanel model={model.detailPanel} />
+          <ObservabilityDatabaseTable model={model.databaseTable} />
         </>
       )}
     </section>

@@ -16,6 +16,7 @@
 /.next/
 /.next-app-test/
 /.next-e2e/
+/.next-e2e-mysql/
 /out/
 
 # production
@@ -33,6 +34,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env.postgres-test
+.env.mysql-test
 .env.app-test
 
 # vercel

@@ -1,0 +1,2 @@
+# Retained upstream legal evidence is byte-for-byte provenance material.
+legal/third-party/** -text whitespace=-trailing-space

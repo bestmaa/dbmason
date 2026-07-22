@@ -16,7 +16,7 @@ export function OverviewCards({ databaseCount, loginCount, protectedCount }: Ove
       </article>
       <article className="metric-card">
         <span className="metric-card__icon metric-card__icon--violet"><KeyRound size={17} /></span>
-        <div><span>Login roles</span><strong>{loginCount}</strong></div>
+        <div><span>Login accounts</span><strong>{loginCount}</strong></div>
         <small>Can authenticate</small>
       </article>
       <article className="metric-card">

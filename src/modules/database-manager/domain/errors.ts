@@ -19,6 +19,26 @@ export function toManagerError(error: unknown): ManagerError {
   if (error instanceof ManagerError) return error
 
   const code = readErrorCode(error)
+  if (code === 'ER_ACCESS_DENIED_ERROR')
+    return new ManagerError('AUTH_FAILED', 'MySQL rejected the credentials.', 502)
+  if (code === 'ER_BAD_DB_ERROR')
+    return new ManagerError('DATABASE_NOT_FOUND', 'The MySQL database does not exist.', 404)
+  if (code === 'ER_DB_CREATE_EXISTS' || code === 'ER_USER_ALREADY_EXISTS') {
+    return new ManagerError('ALREADY_EXISTS', 'A MySQL resource with that name already exists.', 409)
+  }
+  if (code === 'ER_DB_DROP_EXISTS' || code === 'ER_NO_SUCH_USER') {
+    return new ManagerError('RESOURCE_NOT_FOUND', 'The MySQL resource does not exist.', 404)
+  }
+  if (
+    code === 'ER_DBACCESS_DENIED_ERROR' ||
+    code === 'ER_SPECIFIC_ACCESS_DENIED_ERROR' ||
+    code === 'ER_TABLEACCESS_DENIED_ERROR'
+  ) {
+    return new ManagerError('INSUFFICIENT_PRIVILEGE', 'The administrator lacks permission.', 403)
+  }
+  if (code === 'ER_CON_COUNT_ERROR' || code === 'MYSQL_CAPACITY') {
+    return new ManagerError('SERVER_BUSY', 'The database manager is busy. Try again shortly.', 503)
+  }
   if (code === '28P01')
     return new ManagerError('AUTH_FAILED', 'PostgreSQL rejected the credentials.', 502)
   if (code === '3D000')
@@ -55,6 +75,9 @@ export function toManagerError(error: unknown): ManagerError {
     return new ManagerError('CONNECTION_REFUSED', 'The server refused the connection.', 502)
   if (code === 'ENOTFOUND')
     return new ManagerError('HOST_NOT_FOUND', 'The database host could not be resolved.', 502)
+  if (code === 'ETIMEDOUT' || code === 'PROTOCOL_SEQUENCE_TIMEOUT') {
+    return new ManagerError('CONNECTION_TIMEOUT', 'The database connection timed out.', 504)
+  }
 
   return new ManagerError(
     'DATABASE_OPERATION_FAILED',

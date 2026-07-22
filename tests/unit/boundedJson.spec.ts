@@ -2,7 +2,10 @@ import type { PayloadRequest } from 'payload'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
-import { parseBoundedJson } from '@/modules/database-manager/transport/endpointSupport'
+import {
+  parseBoundedJson,
+  parseJson,
+} from '@/modules/database-manager/transport/endpointSupport'
 
 const schema = z.object({ value: z.string() }).strict()
 
@@ -36,6 +39,14 @@ describe('bounded JSON parser', () => {
     await expect(result).rejects.toMatchObject({
       code: 'INVALID_INPUT',
       status: 400,
+    })
+  })
+
+  it('bounds ordinary manager endpoint bodies before validation', async () => {
+    const result = parseJson(payloadRequest(JSON.stringify({ value: 'x'.repeat(70_000) })), schema)
+    await expect(result).rejects.toMatchObject({
+      code: 'REQUEST_TOO_LARGE',
+      status: 413,
     })
   })
 })

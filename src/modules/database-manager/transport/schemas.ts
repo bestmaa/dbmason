@@ -1,11 +1,22 @@
 import { z } from 'zod'
 
-import { accessLevels, sslModes } from '../domain/contracts'
+import type { EngineId } from '../domain/contracts'
+import { accessLevels, engineIds, sslModes } from '../domain/contracts'
+
+interface ConnectionDefaults {
+  maintenanceDatabase: string
+  port: number
+}
+
+const connectionDefaults = {
+  mysql: { maintenanceDatabase: 'mysql', port: 3306 },
+  postgresql: { maintenanceDatabase: 'postgres', port: 5432 },
+} as const satisfies Readonly<Record<EngineId, ConnectionDefaults>>
 
 export const identifierSchema = z
   .string()
   .min(1)
-  .max(63)
+  .max(320)
   .refine((value) => !value.includes('\0'), 'Identifier cannot contain a null character')
 
 const hostSchema = z
@@ -15,14 +26,24 @@ const hostSchema = z
   .max(253)
   .refine((value) => !/[\s/\\\0]/u.test(value), 'Enter a hostname or IP address')
 
-export const createConnectionSchema = z.object({
+const createConnectionFields = z.object({
+  engine: z.enum(engineIds).default('postgresql'),
   host: hostSchema,
-  maintenanceDatabase: identifierSchema.default('postgres'),
+  maintenanceDatabase: identifierSchema.optional(),
   name: z.string().trim().min(1).max(80),
   password: z.string().min(1).max(1024),
-  port: z.number().int().min(1).max(65535).default(5432),
+  port: z.number().int().min(1).max(65535).optional(),
   sslMode: z.enum(sslModes).default('verify-full'),
   username: identifierSchema,
+})
+
+export const createConnectionSchema = createConnectionFields.transform((input) => {
+  const defaults = connectionDefaults[input.engine]
+  return {
+    ...input,
+    maintenanceDatabase: input.maintenanceDatabase ?? defaults.maintenanceDatabase,
+    port: input.port ?? defaults.port,
+  }
 })
 
 export const createDatabaseSchema = z.object({

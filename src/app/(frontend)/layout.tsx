@@ -1,9 +1,10 @@
 import React from 'react'
+import { productName } from '@/config/product'
 import './styles.css'
 
 export const metadata = {
   description: 'A lightweight, self-hosted database access manager.',
-  title: 'DBMason',
+  title: productName,
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

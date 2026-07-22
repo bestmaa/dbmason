@@ -28,6 +28,7 @@ const child = spawn(
         'e2e0000000000000000000000000000000000000000000000000000000000000',
       DATABASE_HOST_ALLOWLIST: '127.0.0.1,localhost',
       DATABASE_URL: e2eDatabaseURL,
+      DBMASON_PUBLIC_URL: `http://127.0.0.1:${e2ePort}`,
       DEV_ALLOWED_ORIGINS: '',
       NEXT_DIST_DIR: '.next-e2e',
       NODE_OPTIONS: '--no-deprecation',

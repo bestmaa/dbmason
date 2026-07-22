@@ -1,10 +1,11 @@
 import { z } from 'zod'
 
-import { accessLevels } from '@/modules/database-manager/domain/contracts'
+import { accessLevels, engineIds } from '@/modules/database-manager/domain/contracts'
 import type {
   AccessLevel,
   ConnectionSummary,
   CreatePrincipalResult,
+  EngineId,
   ServerSnapshot,
   SslMode,
 } from '@/modules/database-manager/domain/contracts'
@@ -12,6 +13,7 @@ import type {
 import { requestJson } from './managerHttpClient'
 
 interface CreateConnectionRequest {
+  engine: EngineId
   host: string
   maintenanceDatabase: string
   name: string
@@ -22,7 +24,7 @@ interface CreateConnectionRequest {
 }
 
 const connectionSummarySchema = z.object({
-  engine: z.literal('postgresql'),
+  engine: z.enum(engineIds),
   host: z.string(),
   id: z.string().uuid(),
   lastCheckedAt: z.string().nullable(),
@@ -33,42 +35,65 @@ const connectionSummarySchema = z.object({
   status: z.enum(['offline', 'online', 'unknown']),
 })
 
-const snapshotSchema = z.object({
-  capabilities: z.object({
-    accessLevels: z.array(z.enum(accessLevels)),
-    canCreateDatabase: z.boolean(),
-    canCreatePrincipal: z.boolean(),
-    supportsDefaultPrivileges: z.boolean(),
-    supportsObservability: z.boolean(),
-    supportsReadOnlyWorkspace: z.boolean(),
-    supportsSchemas: z.boolean(),
-  }),
+const capabilitiesSchema = z.object({
+  accessLevels: z.array(z.enum(accessLevels)),
+  canCreateDatabase: z.boolean(),
+  canCreatePrincipal: z.boolean(),
+  supportsDatabaseOwners: z.boolean(),
+  supportsDefaultPrivileges: z.boolean(),
+  supportsObservability: z.boolean(),
+  supportsReadOnlyWorkspace: z.boolean(),
+  supportsSchemas: z.boolean(),
+}).strict()
+
+const principalSummarySchema = z.object({
+  canCreateDatabase: z.boolean(),
+  canCreateRole: z.boolean(),
+  canLogin: z.boolean(),
+  isSuperuser: z.boolean(),
+  memberships: z.array(z.string()),
+  name: z.string(),
+  validUntil: z.string().nullable(),
+}).strict()
+
+const snapshotBaseShape = {
+  capabilities: capabilitiesSchema,
   currentUser: z.string(),
-  databases: z.array(
-    z.object({
-      allowConnections: z.boolean(),
-      encoding: z.string(),
-      name: z.string(),
-      owner: z.string(),
-      publicConnect: z.boolean(),
-      publicTemporary: z.boolean(),
-      sizeBytes: z.number().nullable(),
-    }),
-  ),
-  engine: z.literal('postgresql'),
-  principals: z.array(
-    z.object({
-      canCreateDatabase: z.boolean(),
-      canCreateRole: z.boolean(),
-      canLogin: z.boolean(),
-      isSuperuser: z.boolean(),
-      memberships: z.array(z.string()),
-      name: z.string(),
-      validUntil: z.string().nullable(),
-    }),
-  ),
+  principals: z.array(principalSummarySchema),
   serverVersion: z.string(),
-})
+}
+
+const postgresDatabaseSchema = z.object({
+  allowConnections: z.boolean(),
+  encoding: z.string(),
+  engine: z.literal('postgresql'),
+  name: z.string(),
+  owner: z.string(),
+  publicConnect: z.boolean(),
+  publicTemporary: z.boolean(),
+  sizeBytes: z.number().nullable(),
+}).strict()
+
+const mysqlDatabaseSchema = z.object({
+  defaultCharacterSet: z.string(),
+  defaultCollation: z.string(),
+  engine: z.literal('mysql'),
+  name: z.string(),
+  sizeBytes: z.number().nullable(),
+}).strict()
+
+const snapshotSchema = z.discriminatedUnion('engine', [
+  z.object({
+    ...snapshotBaseShape,
+    databases: z.array(postgresDatabaseSchema),
+    engine: z.literal('postgresql'),
+  }).strict(),
+  z.object({
+    ...snapshotBaseShape,
+    databases: z.array(mysqlDatabaseSchema),
+    engine: z.literal('mysql'),
+  }).strict(),
+])
 
 const principalResultSchema = z.object({
   oneTimePassword: z.string(),

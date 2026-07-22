@@ -1,0 +1,11 @@
+SQLite public-domain notice retained from libsql commit
+20147731c4a9d6e942b159f183215e9399fda2c3, libsql-sqlite3/src/main.c:
+
+2001 September 15
+
+The author disclaims copyright to this source code. In place of a legal
+notice, here is a blessing:
+
+May you do good and not evil.
+May you find forgiveness for yourself and forgive others.
+May you share freely, never taking more than you give.

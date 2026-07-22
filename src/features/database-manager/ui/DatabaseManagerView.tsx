@@ -13,14 +13,16 @@ import { DatabaseDialog } from './dialogs/DatabaseDialog'
 import { PrincipalDialog } from './dialogs/PrincipalDialog'
 import { PrincipalManagementDialog } from './dialogs/PrincipalManagementDialog'
 
-export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps) {
+export function DatabaseManagerView({ actions, model, product }: DatabaseManagerViewProps) {
   return (
     <div className="manager-shell">
       <ConnectionRail
         canAdd={model.capabilities.canCreateConnection}
         connections={model.connections}
+        engineLabels={model.engineLabels}
         onAdd={actions.openConnectionDialog}
         onSelect={actions.selectConnection}
+        productName={product.name}
         selectedId={model.selectedConnectionId}
       />
       <main className="workspace">
@@ -30,11 +32,12 @@ export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps
             <span>Encrypted control plane</span>
             <a
               className="source-link"
-              href="https://github.com/bestmaa/dbmason"
+              href={product.sourceUrl}
               rel="noreferrer"
               target="_blank"
             >
-              Source · AGPL-3.0
+              {product.copyrightNotice} · {product.licenseName} · {product.warrantyNotice} · Source
+              v{product.version}
             </a>
           </div>
           <div className="identity">
@@ -64,13 +67,14 @@ export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps
           <ErrorState message={model.error ?? 'Unknown error'} onRetry={actions.refresh} />
         )}
 
-        {model.selectedConnection && model.snapshot && (
+        {model.selectedConnection && model.snapshot && model.resourceDatabaseTable && (
           <div className="workspace-content">
             <WorkspaceHeader
               canCreateDatabase={model.capabilities.canCreateDatabase}
               canCreatePrincipal={model.capabilities.canCreatePrincipal}
               canDeleteConnection={model.capabilities.canDeleteConnection}
               connection={model.selectedConnection}
+              engineLabel={model.engineLabels[model.selectedConnection.engine]}
               loading={model.state === 'loading'}
               onCreateDatabase={actions.openDatabaseDialog}
               onCreatePrincipal={actions.openPrincipalDialog}
@@ -97,7 +101,8 @@ export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps
               onShowWorkspace={actions.showWorkspace}
               principalManagement={actions.principalManagement}
               principalRows={model.resourcePrincipalRows}
-              resourceDatabases={model.resourceDatabases}
+              presentation={model.selectedEnginePresentation ?? model.connectionFormPresentation}
+              resourceDatabaseTable={model.resourceDatabaseTable}
               resourceFilter={model.resourceFilter}
               snapshot={model.snapshot}
               workspaceActions={actions.workspace}
@@ -110,8 +115,10 @@ export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps
       {model.openDialog === 'connection' && (
         <ConnectionDialog
           actions={actions.connectionForm}
+          engineOptions={model.engineOptions}
           error={model.dialogError}
           onClose={actions.closeDialog}
+          presentation={model.connectionFormPresentation}
           submitting={model.submitting}
           value={model.connectionForm}
         />
@@ -121,16 +128,19 @@ export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps
           actions={actions.databaseForm}
           error={model.dialogError}
           onClose={actions.closeDialog}
+          presentation={(model.selectedEnginePresentation ?? model.connectionFormPresentation).database}
           submitting={model.submitting}
           value={model.databaseForm}
         />
       )}
       {model.openDialog === 'principal' && (
         <PrincipalDialog
+          accessOptions={model.accessOptions}
           actions={actions.principalForm}
-          databases={model.snapshot?.databases ?? []}
+          databases={model.databaseOptions}
           error={model.dialogError}
           onClose={actions.closeDialog}
+          presentation={(model.selectedEnginePresentation ?? model.connectionFormPresentation).principal}
           submitting={model.submitting}
           value={model.principalForm}
         />
@@ -145,9 +155,11 @@ export function DatabaseManagerView({ actions, model }: DatabaseManagerViewProps
         />
       )}
       <PrincipalManagementDialog
+        accessOptions={model.accessOptions}
         actions={actions.principalManagement}
-        databases={model.snapshot?.databases ?? []}
+        databases={model.databaseOptions}
         model={model.principalManagement}
+        presentation={(model.selectedEnginePresentation ?? model.connectionFormPresentation).principal}
       />
       <ConnectionRemovalDialog
         actions={actions.connectionRemoval}

@@ -6,6 +6,8 @@ production database and it does not join the application's Compose network.
 ## Isolation and safety
 
 - The project name is `db-control-postgres-test`.
+- The image is the digest-pinned PostgreSQL 17 Alpine manifest recorded in
+  `docker-compose.postgres-test.yml`.
 - PostgreSQL is published only on the loopback address at `127.0.0.1:55432`.
 - The bridge network and data volume belong only to this Compose project.
 - Credentials are conspicuously test-only and must never be reused.

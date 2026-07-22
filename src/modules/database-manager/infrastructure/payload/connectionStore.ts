@@ -93,7 +93,7 @@ export async function createConnectionRecord(
     data: {
       createdBy: req.user.id,
       encryptedSecret: encryptConnectionSecret(publicId, secret),
-      engine: 'postgresql',
+      engine: input.engine,
       host: input.host,
       lastCheckedAt: new Date().toISOString(),
       lastLatencyMs: test.latencyMs,

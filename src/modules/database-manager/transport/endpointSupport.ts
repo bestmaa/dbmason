@@ -7,6 +7,8 @@ import { hasAppRole } from '@/access/appRoles'
 import type { ApiErrorBody } from '../domain/contracts'
 import { ManagerError, toManagerError } from '../domain/errors'
 
+const maximumManagerJsonBytes = 64 * 1024
+
 export function requireAuthenticated(req: PayloadRequest): void {
   if (!req.user) throw new ManagerError('UNAUTHENTICATED', 'Sign in is required.', 401)
 }
@@ -27,9 +29,7 @@ export function getRouteParam(req: PayloadRequest, key: string): string {
 }
 
 export async function parseJson<T>(req: PayloadRequest, schema: z.ZodType<T>): Promise<T> {
-  if (!req.json) throw new ManagerError('INVALID_INPUT', 'A JSON body is required.', 400)
-  const body: unknown = await req.json()
-  return schema.parse(body)
+  return parseBoundedJson(req, schema, maximumManagerJsonBytes)
 }
 
 export async function parseBoundedJson<T>(

@@ -1,0 +1,44 @@
+/*
+** Name:        rijndael.c
+** Purpose:     Implementation of the Rijndael cipher
+** Author:      Ulrich Telle
+** Created:     2006-12-06
+** Copyright:   (c) 2006-2020 Ulrich Telle
+** License:     MIT
+**
+** Adjustments were made to make this code work with the wxSQLite3's
+** SQLite encryption extension.
+** The original code is public domain (see comments below).
+*/
+
+/*
+/// \file rijndael.cpp Implementation of the Rijndael cipher
+//
+// File : rijndael.cpp
+// Creation date : Sun Nov 5 2000 03:22:10 CEST
+// Author : Szymon Stefanek (stefanek@tin.it)
+//
+// Another implementation of the Rijndael cipher.
+// This is intended to be an easily usable library file.
+// This code is public domain.
+// Based on the Vincent Rijmen and K.U.Leuven implementation 2.4.
+//
+// Original Copyright notice:
+//
+//    rijndael-alg-fst.c   v2.4   April '2000
+//    rijndael-alg-fst.h
+//    rijndael-api-fst.c
+//    rijndael-api-fst.h
+//
+//    Optimised ANSI C code
+//
+//    authors: v1.0: Antoon Bosselaers
+//             v2.0: Vincent Rijmen, K.U.Leuven
+//             v2.3: Paulo Barreto
+//             v2.4: Vincent Rijmen, K.U.Leuven
+//
+//    This code is placed in the public domain.
+//
+// This implementation works on 128 , 192 , 256 bit keys
+// and on 128 bit blocks
+*/

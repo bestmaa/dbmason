@@ -7,7 +7,7 @@ import type {
   WorkspaceQueryResult,
 } from './workspace'
 
-export const engineIds = ['postgresql'] as const
+export const engineIds = ['postgresql', 'mysql'] as const
 export type EngineId = (typeof engineIds)[number]
 
 export const sslModes = ['disable', 'prefer', 'require', 'verify-full'] as const
@@ -39,15 +39,28 @@ export interface ConnectionSummary {
   status: ConnectionStatus
 }
 
-export interface DatabaseSummary {
+interface DatabaseSummaryBase {
+  engine: EngineId
+  name: string
+  sizeBytes: number | null
+}
+
+export interface PostgresDatabaseSummary extends DatabaseSummaryBase {
   allowConnections: boolean
   encoding: string
-  name: string
+  engine: 'postgresql'
   owner: string
   publicConnect: boolean
   publicTemporary: boolean
-  sizeBytes: number | null
 }
+
+export interface MysqlDatabaseSummary extends DatabaseSummaryBase {
+  defaultCharacterSet: string
+  defaultCollation: string
+  engine: 'mysql'
+}
+
+export type DatabaseSummary = MysqlDatabaseSummary | PostgresDatabaseSummary
 
 export interface PrincipalSummary {
   canCreateDatabase: boolean
@@ -63,20 +76,31 @@ export interface EngineCapabilities {
   accessLevels: readonly AccessLevel[]
   canCreateDatabase: boolean
   canCreatePrincipal: boolean
+  supportsDatabaseOwners: boolean
   supportsDefaultPrivileges: boolean
   supportsObservability: boolean
   supportsReadOnlyWorkspace: boolean
   supportsSchemas: boolean
 }
 
-export interface ServerSnapshot {
+interface ServerSnapshotBase {
   capabilities: EngineCapabilities
   currentUser: string
-  databases: readonly DatabaseSummary[]
-  engine: EngineId
   principals: readonly PrincipalSummary[]
   serverVersion: string
 }
+
+export interface PostgresServerSnapshot extends ServerSnapshotBase {
+  databases: readonly PostgresDatabaseSummary[]
+  engine: 'postgresql'
+}
+
+export interface MysqlServerSnapshot extends ServerSnapshotBase {
+  databases: readonly MysqlDatabaseSummary[]
+  engine: 'mysql'
+}
+
+export type ServerSnapshot = MysqlServerSnapshot | PostgresServerSnapshot
 
 export interface ConnectionTestResult {
   latencyMs: number

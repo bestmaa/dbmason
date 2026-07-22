@@ -1,16 +1,20 @@
 import type { ChangeEventHandler, FormEventHandler, MouseEventHandler } from 'react'
 
 import type { AppRole } from '@/access/appRoles'
+import type { ProductInfo } from '@/config/product'
 import type {
   AccessLevel,
   ConnectionSummary,
   CreatePrincipalResult,
-  DatabaseSummary,
+  EngineId,
   ServerSnapshot,
   SslMode,
 } from '@/modules/database-manager/domain/contracts'
 
+import type { EnginePresentation } from './enginePresentation'
 import type { ManagerCapabilities } from './managerCapabilities'
+import type { AccessLevelOption } from './accessLevelOptions'
+import type { DatabaseOption, DatabaseTableViewModel } from './databaseResources'
 import type {
   ConnectionRemovalActions,
   ConnectionRemovalModel,
@@ -31,6 +35,7 @@ export interface ManagerIdentity {
 }
 
 export interface ConnectionFormValue {
+  engine: EngineId
   host: string
   maintenanceDatabase: string
   name: string
@@ -52,13 +57,18 @@ export interface PrincipalFormValue {
 }
 
 export interface ManagerViewModel {
+  accessOptions: readonly AccessLevelOption[]
   activeTab: ResourceTab
   capabilities: ManagerCapabilities
   connectionForm: ConnectionFormValue
+  connectionFormPresentation: EnginePresentation
   connectionRemoval: ConnectionRemovalModel
   connections: readonly ConnectionSummary[]
+  engineOptions: readonly { label: string; value: EngineId }[]
+  engineLabels: Readonly<Record<EngineId, string>>
   credential: CreatePrincipalResult | null
   credentialCopied: boolean
+  databaseOptions: readonly DatabaseOption[]
   databaseForm: DatabaseFormValue
   dialogError: string | null
   error: string | null
@@ -68,11 +78,12 @@ export interface ManagerViewModel {
   principalForm: PrincipalFormValue
   principalManagement: PrincipalManagementModel
   principalRows: readonly PrincipalRowViewModel[]
-  resourceDatabases: readonly DatabaseSummary[]
+  resourceDatabaseTable: DatabaseTableViewModel | null
   resourceFilter: string
   resourcePrincipalRows: readonly PrincipalRowViewModel[]
   selectedConnection: ConnectionSummary | null
   selectedConnectionId: string | null
+  selectedEnginePresentation: EnginePresentation | null
   snapshot: ServerSnapshot | null
   state: WorkspaceState
   submitting: boolean
@@ -101,6 +112,7 @@ export interface ManagerActions {
   observability: ObservabilityPanelActions
   connectionRemoval: ConnectionRemovalActions
   connectionForm: {
+    onEngineChange: ChangeEventHandler<HTMLSelectElement>
     onHostChange: ChangeEventHandler<HTMLInputElement>
     onMaintenanceDatabaseChange: ChangeEventHandler<HTMLInputElement>
     onNameChange: ChangeEventHandler<HTMLInputElement>
@@ -128,4 +140,5 @@ export interface ManagerActions {
 export interface DatabaseManagerViewProps {
   actions: ManagerActions
   model: ManagerViewModel
+  product: ProductInfo
 }

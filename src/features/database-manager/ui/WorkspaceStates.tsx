@@ -11,7 +11,7 @@ export function EmptyState({ canAdd, onAdd }: EmptyStateProps) {
       <span className="workspace-state__icon"><Database size={26} /></span>
       <p className="eyebrow">No saved servers</p>
       <h1>Connect your first database</h1>
-      <p>{canAdd ? 'Add a PostgreSQL administrator connection. Credentials are encrypted before they reach SQLite.' : 'No connections are available to your read-only account. Ask an operator to add one.'}</p>
+        <p>{canAdd ? 'Add a database administrator connection. Credentials are encrypted before they reach SQLite.' : 'No connections are available to your read-only account. Ask an operator to add one.'}</p>
       {canAdd && <button className="button button--primary" onClick={onAdd} type="button"><Plus size={16} /> Add connection</button>}
     </section>
   )

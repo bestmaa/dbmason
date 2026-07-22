@@ -4,45 +4,36 @@ import { useEffect, useRef, useState } from 'react'
 
 import type {
   DatabaseSummary,
+  EngineId,
   PrincipalSummary,
 } from '@/modules/database-manager/domain/contracts'
 import type { RelationSummary } from '@/modules/database-manager/domain/workspace'
 
+import { databaseIsWorkspaceSelectable } from '../model/databaseResources'
+import { buildWorkspaceRelationRows, buildWorkspaceResultView } from '../model/workspaceMappers'
+import {
+  workspaceEngineStrategy,
+  workspaceStarterQuery,
+} from '../model/workspaceEngineStrategy'
 import type {
   WorkspaceController,
   WorkspaceCredentialValue,
 } from '../model/workspaceViewModels'
-import { buildWorkspaceRelationRows, buildWorkspaceResultView } from '../model/workspaceMappers'
 import { workspaceClient } from '../services/workspaceClient'
 import { managerErrorMessage } from './managerHookSupport'
 
 const pageSize = 100
-const starterQuery = `SELECT current_database() AS database,
-  current_user AS role,
-  now() AS checked_at`
 
-interface UsePostgresWorkspaceInput {
+interface UseDatabaseWorkspaceInput {
   connectionId: string | null
   currentUser: string | null
   databases: readonly DatabaseSummary[]
+  engine: EngineId | null
   principals: readonly PrincipalSummary[]
 }
 
-function availableRoles(
-  principals: readonly PrincipalSummary[],
-  currentUser: string | null,
-): readonly PrincipalSummary[] {
-  return principals.filter(
-    (principal) =>
-      principal.canLogin &&
-      !principal.isSuperuser &&
-      !principal.canCreateDatabase &&
-      !principal.canCreateRole &&
-      principal.name !== currentUser,
-  )
-}
-
-export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): WorkspaceController {
+export function useDatabaseWorkspace(input: UseDatabaseWorkspaceInput): WorkspaceController {
+  const strategy = workspaceEngineStrategy(input.engine ?? 'postgresql')
   const [credential, setCredential] = useState<WorkspaceCredentialValue>({
     database: '',
     password: '',
@@ -52,16 +43,18 @@ export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): Workspac
   const [selectedRelation, setSelectedRelation] = useState<RelationSummary | null>(null)
   const [result, setResult] = useState<WorkspaceController['model']['result']>(null)
   const [resultLabel, setResultLabel] = useState('Query result')
-  const [querySql, setQuerySql] = useState(starterQuery)
+  const [querySql, setQuerySql] = useState(workspaceStarterQuery)
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const requestRef = useRef<AbortController | null>(null)
 
-  const roles = availableRoles(input.principals, input.currentUser)
+  const principals = input.principals.filter((principal) =>
+    strategy.principalIsEligible(principal, input.currentUser),
+  )
   const database =
-    credential.database || input.databases.find((item) => item.allowConnections)?.name || ''
-  const principal = credential.principal || roles[0]?.name || ''
+    credential.database || input.databases.find(databaseIsWorkspaceSelectable)?.name || ''
+  const principal = credential.principal || principals[0]?.name || ''
   const effectiveCredential = { ...credential, database, principal }
 
   useEffect(() => {
@@ -71,11 +64,12 @@ export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): Workspac
       setCatalog(null)
       setSelectedRelation(null)
       setResult(null)
+      setQuerySql(workspaceStarterQuery)
       setError(null)
       setOffset(0)
     }, 0)
     return () => clearTimeout(timer)
-  }, [input.connectionId])
+  }, [input.connectionId, input.engine])
 
   useEffect(() => () => requestRef.current?.abort(), [])
 
@@ -155,7 +149,10 @@ export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): Workspac
             }
           })
           .catch((loadError: unknown) => {
-            if (!controller.signal.aborted) setError(managerErrorMessage(loadError))
+            if (!controller.signal.aborted) {
+              setCredential({ ...effectiveCredential, password: '' })
+              setError(managerErrorMessage(loadError))
+            }
           })
           .finally(() => finishRequest(controller))
       },
@@ -164,8 +161,9 @@ export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): Workspac
         if (selectedRelation) void loadRelation(selectedRelation, offset + pageSize)
       },
       onDatabaseChange: (event) =>
-        clearWorkspace({ ...effectiveCredential, database: event.target.value }),
-      onPasswordChange: (event) => setCredential({ ...effectiveCredential, password: event.target.value }),
+        clearWorkspace({ ...effectiveCredential, database: event.target.value, password: '' }),
+      onPasswordChange: (event) =>
+        setCredential({ ...effectiveCredential, password: event.target.value }),
       onPrincipalChange: (event) =>
         clearWorkspace({ ...effectiveCredential, password: '', principal: event.target.value }),
       onQueryChange: (event) => setQuerySql(event.target.value),
@@ -203,9 +201,10 @@ export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): Workspac
       canSubmitCredential: Boolean(database && principal && credential.password && !loading),
       catalog,
       connected: catalog !== null,
+      copy: strategy.copy,
       credential: effectiveCredential,
       databaseOptions: input.databases
-        .filter((item) => item.allowConnections)
+        .filter(databaseIsWorkspaceSelectable)
         .map((item) => ({ label: item.name, value: item.name })),
       error,
       loading,
@@ -215,10 +214,10 @@ export function usePostgresWorkspace(input: UsePostgresWorkspaceInput): Workspac
       result,
       resultLabel,
       resultView: buildWorkspaceResultView(result),
-      roleOptions: roles.map((item) => ({ label: item.name, value: item.name })),
+      roleOptions: principals.map((item) => ({ label: item.name, value: item.name })),
       selectedRelation,
     },
     selectDatabase: (nextDatabase) =>
-      clearWorkspace({ ...effectiveCredential, database: nextDatabase }),
+      clearWorkspace({ ...effectiveCredential, database: nextDatabase, password: '' }),
   }
 }

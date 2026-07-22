@@ -1,8 +1,11 @@
-import type { ObservabilitySnapshot } from '@/modules/database-manager/domain/observability'
+import type {
+  MysqlObservabilitySnapshot,
+  PostgresObservabilitySnapshot,
+} from '@/modules/database-manager/domain/observability'
 
 export function observabilityFixture(
-  overrides: Partial<ObservabilitySnapshot> = {},
-): ObservabilitySnapshot {
+  overrides: Partial<PostgresObservabilitySnapshot> = {},
+): PostgresObservabilitySnapshot {
   return {
     activity: {
       data: {
@@ -82,6 +85,64 @@ export function observabilityFixture(
     serverStartedAt: '2026-07-18T10:00:00.000Z',
     source: 'postgresql-statistics',
     tracking: { activities: true, counts: true, ioTiming: true },
+    ...overrides,
+  }
+}
+
+export function mysqlObservabilityFixture(
+  overrides: Partial<MysqlObservabilitySnapshot> = {},
+): MysqlObservabilitySnapshot {
+  return {
+    activity: {
+      data: {
+        active: 2,
+        blocked: 0,
+        idle: 3,
+        idleInTransaction: 0,
+        longRunning: 1,
+        waiting: 1,
+      },
+      status: 'available',
+    },
+    collectionLagHintMs: 1_000,
+    connections: {
+      configuredMaximum: 151,
+      observed: 5,
+      regularCapacity: 150,
+      reserved: 1,
+      superuserReserved: 0,
+      utilizationPercent: 3.31,
+    },
+    currentDatabase: 'mysql',
+    databases: [
+      {
+        currentConnections: 2,
+        database: 'app',
+        defaultCharacterSet: 'utf8mb4',
+        defaultCollation: 'utf8mb4_0900_ai_ci',
+        sizeBytes: '1048576',
+      },
+    ],
+    engine: 'mysql',
+    hostTelemetry: { reason: 'external-provider-required', status: 'unavailable' },
+    longQueryThresholdMs: 30_000,
+    readOnlyServer: false,
+    sampledAt: '2026-07-20T12:00:00.000Z',
+    scope: 'server',
+    serverStartedAt: '2026-07-20T10:00:00.000Z',
+    serverStatus: {
+      abortedConnects: '2',
+      bytesReceived: '1048576',
+      bytesSent: '2097152',
+      connections: '42',
+      createdTemporaryDiskTables: '3',
+      queries: '120',
+      questions: '100',
+      slowQueries: '1',
+      threadsRunning: 2,
+    },
+    source: 'mysql-server-status',
+    tracking: { activities: true, counts: true, ioTiming: false },
     ...overrides,
   }
 }

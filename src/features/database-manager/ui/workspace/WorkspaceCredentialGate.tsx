@@ -9,7 +9,7 @@ interface WorkspaceCredentialGateProps {
   >
   model: Pick<
     WorkspaceModel,
-    'canSubmitCredential' | 'credential' | 'databaseOptions' | 'loading' | 'roleOptions'
+    'canSubmitCredential' | 'copy' | 'credential' | 'databaseOptions' | 'loading' | 'roleOptions'
   >
 }
 
@@ -21,13 +21,13 @@ export function WorkspaceCredentialGate({ actions, model }: WorkspaceCredentialG
           <KeyRound size={20} />
         </span>
         <p className="eyebrow">Transient query identity</p>
-        <h2>Connect a restricted PostgreSQL role</h2>
+        <h2>{model.copy.credentialHeading}</h2>
         <p>
           The password is sent with each authenticated workspace request but is never persisted,
           logged, or audited. SQL never uses the stored administrator credential.
         </p>
       </div>
-      <form className="workspace-gate__form" onSubmit={actions.connect}>
+      <form autoComplete="off" className="workspace-gate__form" onSubmit={actions.connect}>
         <label>
           <span>Database</span>
           <select onChange={actions.onDatabaseChange} value={model.credential.database}>
@@ -39,10 +39,10 @@ export function WorkspaceCredentialGate({ actions, model }: WorkspaceCredentialG
           </select>
         </label>
         <label>
-          <span>Restricted login role</span>
+          <span>{model.copy.principalLabel}</span>
           <select onChange={actions.onPrincipalChange} value={model.credential.principal}>
             {model.roleOptions.length === 0 && (
-              <option value="">No safe login role available</option>
+              <option value="">No safe login account available</option>
             )}
             {model.roleOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -52,7 +52,7 @@ export function WorkspaceCredentialGate({ actions, model }: WorkspaceCredentialG
           </select>
         </label>
         <label>
-          <span>Role password</span>
+          <span>{model.copy.passwordLabel}</span>
           <input
             autoComplete="off"
             onChange={actions.onPasswordChange}

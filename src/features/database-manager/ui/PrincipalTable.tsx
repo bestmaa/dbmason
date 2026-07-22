@@ -13,8 +13,8 @@ export function PrincipalTable({ canManage, onManage, principals }: PrincipalTab
   return (
     <div className="resource-table-wrap">
       <table className="resource-table">
-        <caption className="sr-only">PostgreSQL users and roles</caption>
-        <thead><tr><th>User or role</th><th>Login</th><th>Memberships</th><th>Capabilities</th>{canManage && <th><span className="sr-only">Actions</span></th>}</tr></thead>
+        <caption className="sr-only">Database accounts and roles</caption>
+        <thead><tr><th>Account or role</th><th>Login</th><th>Memberships</th><th>Capabilities</th>{canManage && <th><span className="sr-only">Actions</span></th>}</tr></thead>
         <tbody>
           {principals.map((principal) => (
             <tr key={principal.name}>
@@ -30,7 +30,7 @@ export function PrincipalTable({ canManage, onManage, principals }: PrincipalTab
                 <div className="tag-list">
                   {principal.isSuperuser && <span className="tag tag--danger">Superuser</span>}
                   {principal.canCreateDatabase && <span className="tag">Create DB</span>}
-                  {principal.canCreateRole && <span className="tag">Create role</span>}
+                  {principal.canCreateRole && <span className="tag">Manage principals</span>}
                   {!principal.isSuperuser && !principal.canCreateDatabase && !principal.canCreateRole && 'Standard'}
                 </div>
               </td>

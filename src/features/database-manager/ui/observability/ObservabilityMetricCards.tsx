@@ -5,12 +5,14 @@ import type { ObservabilityMetricViewModel } from '../../model/observabilityView
 const icons = [Network, Activity, LockKeyhole, CircleDot, Clock3] as const
 
 export function ObservabilityMetricCards({
+  ariaLabel,
   metrics,
 }: {
+  ariaLabel: string
   metrics: readonly ObservabilityMetricViewModel[]
 }) {
   return (
-    <section aria-label="PostgreSQL load" className="observability-metrics">
+    <section aria-label={ariaLabel} className="observability-metrics">
       {metrics.map((metric, index) => {
         const Icon = icons[index] ?? Activity
         return (

@@ -1,6 +1,6 @@
 import type { ChangeEventHandler, FormEventHandler, MouseEventHandler } from 'react'
 
-import type { AccessLevel, ConnectionSummary, DatabaseSummary } from '@/modules/database-manager/domain/contracts'
+import type { AccessLevel, ConnectionSummary } from '@/modules/database-manager/domain/contracts'
 
 import type { PrincipalRowViewModel } from './principalRows'
 
@@ -15,7 +15,7 @@ export interface PrincipalManagementModel {
   dropConfirmation: string
   error: string | null
   principal: PrincipalRowViewModel | null
-  selectedDatabase: DatabaseSummary | null
+  selectedDatabaseHasPublicConnect: boolean
   submitting: boolean
   warnings: readonly string[]
 }

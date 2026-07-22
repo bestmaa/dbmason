@@ -7,6 +7,7 @@ interface WorkspaceHeaderProps {
   canCreatePrincipal: boolean
   canDeleteConnection: boolean
   connection: ConnectionSummary
+  engineLabel: string
   loading: boolean
   onCreateDatabase: () => void
   onCreatePrincipal: () => void
@@ -27,7 +28,7 @@ export function WorkspaceHeader(props: WorkspaceHeaderProps) {
             </span>
           </div>
           <p>
-            PostgreSQL · {props.connection.host}:{props.connection.port}
+            {props.engineLabel} · {props.connection.host}:{props.connection.port}
             {props.connection.serverVersion ? ` · v${props.connection.serverVersion}` : ''}
           </p>
         </div>

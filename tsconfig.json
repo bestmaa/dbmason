@@ -46,7 +46,9 @@
     ".next-app-test/types/**/*.ts",
     ".next-app-test/dev/types/**/*.ts",
     ".next-e2e/types/**/*.ts",
-    ".next-e2e/dev/types/**/*.ts"
+    ".next-e2e/dev/types/**/*.ts",
+    ".next-e2e-mysql/types/**/*.ts",
+    ".next-e2e-mysql/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

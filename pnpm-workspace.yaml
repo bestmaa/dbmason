@@ -4,4 +4,7 @@ allowBuilds:
   unrs-resolver: true
   workerd: true
 overrides:
+  "@esbuild-kit/core-utils>esbuild": 0.25.12
+  "monaco-editor>dompurify": 3.4.12
+  "next>postcss": 8.5.10
   sharp: 0.35.3

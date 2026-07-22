@@ -3,6 +3,7 @@ import type { EngineId } from './contracts'
 export type DecimalCounter = string
 
 export type MetricUnavailableReason =
+  | 'performance-schema-disabled'
   | 'remote-stats-privilege-required'
   | 'tracking-disabled'
 
@@ -75,27 +76,62 @@ export interface ClusterIoCounters {
   writes: DecimalCounter
 }
 
-export interface ObservabilitySnapshot {
+interface ObservabilitySnapshotBase {
   activity: MetricAvailability<ActivityMetrics>
-  clusterIo: ClusterIoCounters
   collectionLagHintMs: number
   connections: ConnectionCapacityMetrics
   currentDatabase: string
-  databases: readonly DatabaseMetricCounters[]
   engine: EngineId
   hostTelemetry: {
     reason: 'external-provider-required'
     status: 'unavailable'
   }
-  inRecovery: boolean
   longQueryThresholdMs: number
   sampledAt: string
-  scope: 'cluster'
   serverStartedAt: string
-  source: 'postgresql-statistics'
   tracking: {
     activities: boolean
     counts: boolean
     ioTiming: boolean
   }
 }
+
+export interface PostgresObservabilitySnapshot extends ObservabilitySnapshotBase {
+  clusterIo: ClusterIoCounters
+  databases: readonly DatabaseMetricCounters[]
+  engine: 'postgresql'
+  inRecovery: boolean
+  scope: 'cluster'
+  source: 'postgresql-statistics'
+}
+
+export interface MysqlDatabaseMetrics {
+  currentConnections: number | null
+  database: string
+  defaultCharacterSet: string
+  defaultCollation: string
+  sizeBytes: DecimalCounter | null
+}
+
+export interface MysqlServerStatusCounters {
+  abortedConnects: DecimalCounter
+  bytesReceived: DecimalCounter
+  bytesSent: DecimalCounter
+  connections: DecimalCounter
+  createdTemporaryDiskTables: DecimalCounter
+  queries: DecimalCounter
+  questions: DecimalCounter
+  slowQueries: DecimalCounter
+  threadsRunning: number
+}
+
+export interface MysqlObservabilitySnapshot extends ObservabilitySnapshotBase {
+  databases: readonly MysqlDatabaseMetrics[]
+  engine: 'mysql'
+  readOnlyServer: boolean
+  scope: 'server'
+  serverStatus: MysqlServerStatusCounters
+  source: 'mysql-server-status'
+}
+
+export type ObservabilitySnapshot = MysqlObservabilitySnapshot | PostgresObservabilitySnapshot

@@ -10,45 +10,60 @@ import {
   guardUserChange,
   guardUserDelete,
 } from '@/access/userManagement'
+import { enforceUserPasswordPolicy } from '@/access/userPasswordPolicy'
 
-export const Users: CollectionConfig = {
-  slug: 'users',
-  access: {
-    create: canCreateUser,
-    delete: canDeleteUser,
-    read: canReadUser,
-    update: canUpdateUser,
-  },
-  admin: {
-    useAsTitle: 'email',
-  },
-  auth: {
-    lockTime: 10 * 60 * 1000,
-    maxLoginAttempts: 5,
-    tokenExpiration: 2 * 60 * 60,
-  },
-  hooks: {
-    beforeChange: [guardUserChange],
-    beforeDelete: [guardUserDelete],
-  },
-  fields: [
-    {
-      name: 'name',
-      type: 'text',
-      required: true,
+type UsersCollectionOptions = {
+  secureCookies: boolean
+}
+
+export function createUsersCollection({ secureCookies }: UsersCollectionOptions): CollectionConfig {
+  return {
+    slug: 'users',
+    access: {
+      create: canCreateUser,
+      delete: canDeleteUser,
+      read: canReadUser,
+      update: canUpdateUser,
     },
-    {
-      name: 'roles',
-      type: 'select',
-      access: {
-        create: canSetUserRoles,
-        update: canSetUserRoles,
+    admin: {
+      useAsTitle: 'email',
+    },
+    auth: {
+      cookies: {
+        sameSite: 'Lax',
+        secure: secureCookies,
       },
-      defaultValue: ['viewer'],
-      hasMany: true,
-      options: appRoles.map((role) => ({ label: role[0]?.toUpperCase() + role.slice(1), value: role })),
-      required: true,
-      saveToJWT: true,
+      lockTime: 10 * 60 * 1000,
+      maxLoginAttempts: 5,
+      tokenExpiration: 2 * 60 * 60,
     },
-  ],
+    hooks: {
+      beforeChange: [guardUserChange],
+      beforeDelete: [guardUserDelete],
+      beforeOperation: [enforceUserPasswordPolicy],
+    },
+    fields: [
+      {
+        name: 'name',
+        type: 'text',
+        required: true,
+      },
+      {
+        name: 'roles',
+        type: 'select',
+        access: {
+          create: canSetUserRoles,
+          update: canSetUserRoles,
+        },
+        defaultValue: ['viewer'],
+        hasMany: true,
+        options: appRoles.map((role) => ({
+          label: role[0]?.toUpperCase() + role.slice(1),
+          value: role,
+        })),
+        required: true,
+        saveToJWT: true,
+      },
+    ],
+  }
 }

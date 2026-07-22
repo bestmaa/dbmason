@@ -1,0 +1,212 @@
+name: Publish container
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify release source
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CONNECTION_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      DATABASE_HOST_ALLOWLIST: 127.0.0.1,localhost
+      DBMASON_PUBLIC_URL: http://localhost:3000
+      PAYLOAD_SECRET: release-verification-only-secret-2026
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          cache: pnpm
+          node-version: 24.18.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify tag, package version, and main ancestry
+        run: |
+          package_version="$(node --print "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${package_version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package version ${package_version}."
+            exit 1
+          fi
+          if [ "$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")" != "tag" ]; then
+            echo "Release tags must be annotated."
+            exit 1
+          fi
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+      - name: Run quality gate
+        run: pnpm check
+      - name: Verify generated files are committed
+        run: |
+          changes="$(git status --porcelain --untracked-files=all)"
+          if [ -n "${changes}" ]; then
+            printf '%s\n' "${changes}"
+            exit 1
+          fi
+      - name: Audit dependencies
+        run: pnpm audit --audit-level low
+      - name: Build standalone application
+        run: pnpm build
+      - name: Enforce the production runtime boundary
+        run: pnpm check:runtime
+      - name: Verify third-party license inventory
+        run: |
+          legal_root="$(mktemp -d)"
+          pnpm --config.optional=false licenses list --prod --json > "${legal_root}/production.json"
+          node scripts/collect-third-party-licenses.mjs \
+            node_modules "${legal_root}/third-party-licenses" \
+            .next/standalone/node_modules "${legal_root}/production.json"
+          test -s "${legal_root}/third-party-licenses/INDEX.json"
+
+  database-integration:
+    name: Release ${{ matrix.engine }} integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [PostgreSQL, MySQL]
+        include:
+          - engine: PostgreSQL
+            env_example: .env.postgres-test.example
+            env_file: .env.postgres-test
+            test_command: pnpm test:postgres
+            down_command: pnpm postgres:test:down
+          - engine: MySQL
+            env_example: .env.mysql-test.example
+            env_file: .env.mysql-test
+            test_command: pnpm test:mysql
+            down_command: pnpm mysql:test:down
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          cache: pnpm
+          node-version: 24.18.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prepare isolated test environment
+        run: cp "${{ matrix.env_example }}" "${{ matrix.env_file }}"
+      - name: Run real database integration suite
+        run: ${{ matrix.test_command }}
+      - name: Stop isolated database harness
+        if: always()
+        run: ${{ matrix.down_command }}
+
+  browser:
+    name: Release ${{ matrix.engine }} Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [PostgreSQL, MySQL]
+        include:
+          - engine: PostgreSQL
+            env_example: .env.postgres-test.example
+            env_file: .env.postgres-test
+            test_command: pnpm test:e2e:mvp
+            down_command: pnpm postgres:test:down
+          - engine: MySQL
+            env_example: .env.mysql-test.example
+            env_file: .env.mysql-test
+            test_command: pnpm test:e2e:mysql
+            down_command: pnpm mysql:test:down
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          cache: pnpm
+          node-version: 24.18.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium runtime
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Prepare isolated test environment
+        run: cp "${{ matrix.env_example }}" "${{ matrix.env_file }}"
+      - name: Run browser workflow
+        run: ${{ matrix.test_command }}
+      - name: Stop isolated database harness
+        if: always()
+        run: ${{ matrix.down_command }}
+
+  publish:
+    name: Build and publish
+    needs: [verify, database-integration, browser]
+    environment: ghcr-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up emulation
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+      - name: Derive image metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          labels: |
+            org.opencontainers.image.licenses=AGPL-3.0-only
+            org.opencontainers.image.vendor=DBMason
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+      - name: Build and push image
+        id: push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: .
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          provenance: mode=max
+          push: true
+          sbom: true
+          tags: ${{ steps.meta.outputs.tags }}
+      - name: Sign build provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          push-to-registry: true
+          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-name: ghcr.io/${{ github.repository }}

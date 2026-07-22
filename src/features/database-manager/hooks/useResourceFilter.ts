@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react'
 
 import type { DatabaseSummary } from '@/modules/database-manager/domain/contracts'
 
+import { databaseSearchValues } from '../model/databaseResources'
 import type { PrincipalRowViewModel } from '../model/principalRows'
 
 function includesFilter(values: readonly string[], filter: string): boolean {
@@ -21,7 +22,7 @@ export function useResourceFilter(
       normalized.length === 0
         ? databases
         : databases.filter((database) =>
-            includesFilter([database.name, database.owner, database.encoding], normalized),
+            includesFilter(databaseSearchValues(database), normalized),
           ),
     [databases, normalized],
   )
