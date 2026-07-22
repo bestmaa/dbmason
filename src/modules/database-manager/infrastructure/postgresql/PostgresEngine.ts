@@ -235,8 +235,14 @@ export class PostgresEngine implements DatabaseEngine {
           pg_get_userbyid(datdba) AS owner,
           pg_encoding_to_char(encoding) AS encoding,
           datallowconn AS "allowConnections",
-          has_database_privilege('public', datname, 'CONNECT') AS "publicConnect",
-          has_database_privilege('public', datname, 'TEMPORARY') AS "publicTemporary",
+          COALESCE(
+            has_database_privilege('public', pg_database.oid, 'CONNECT'),
+            false
+          ) AS "publicConnect",
+          COALESCE(
+            has_database_privilege('public', pg_database.oid, 'TEMPORARY'),
+            false
+          ) AS "publicTemporary",
           pg_database_size(pg_database.oid)::text AS "sizeBytes"
         FROM pg_database
         WHERE NOT datistemplate

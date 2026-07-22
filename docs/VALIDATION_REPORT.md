@@ -116,10 +116,11 @@ cannot be converted into a trusted request. Manager mutations and workspace
 requests retain their exact-origin CSRF and role checks.
 
 The catalog-churn stress followed a hosted timing failure where another worker
-removed a database while PostgreSQL was sampling its size. DBMason now samples
-by catalog OID, whose missing-object result is nullable, so a concurrent drop no
-longer aborts the entire server snapshot. The ordinary suite and three suites
-running concurrently against the same PostgreSQL 17 harness all passed.
+removed a database while PostgreSQL was sampling its privileges and size.
+DBMason now samples catalog and observability rows by OID; missing-object
+privileges become `false` and missing size becomes nullable, so a concurrent
+drop no longer aborts the entire server snapshot. The ordinary suite and three
+suites running concurrently against the same PostgreSQL 17 harness all passed.
 
 The fail-closed third-party provenance gate covers 306 production/runtime
 package versions. Its Next.js compiled-dependency closure retains 137 legal
