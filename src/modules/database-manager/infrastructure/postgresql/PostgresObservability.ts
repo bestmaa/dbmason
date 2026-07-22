@@ -80,8 +80,8 @@ const databaseMetricsSql = `
       0
     ) AS "currentConnections",
     CASE
-      WHEN has_database_privilege(current_user, stat.datname, 'CONNECT')
-        THEN pg_database_size(stat.datname)::text
+      WHEN has_database_privilege(current_user, stat.datid, 'CONNECT')
+        THEN pg_database_size(stat.datid)::text
       ELSE NULL
     END AS "sizeBytes",
     stat.xact_commit::text AS "transactionsCommitted",
