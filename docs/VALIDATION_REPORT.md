@@ -8,9 +8,10 @@
 `5482a23d83992ec210c326e365498590e5259a54`; the GitHub release was deliberately
 left as a draft after the invalid-configuration health gap described below.
 
-**v0.2.1 correction:** Local source, image, fail-closed health, real-server, and
-browser gates passed. Hosted verification remains required on the exact squash-
-merged release SHA before the protected tag is created.
+**v0.2.1 stable release:** Local and hosted source, fail-closed health, real-
+server, browser, image, provenance, and public-registry gates passed on exact
+main commit `6d956d8ce0535cac6be69ad8312f28db5972ebe1`. The release is public,
+latest, and immutable.
 
 **Evidence window:** 20–22 July 2026.
 
@@ -258,6 +259,51 @@ exit. The valid container applied its initial migration, returned
 `{ "status": "ok" }`, rendered the first-owner screen with `Source v0.2.1`, and
 had zero browser-console entries in the manual Chrome inspection.
 
+## v0.2.1 hosted and published release evidence
+
+Pull request [#9](https://github.com/bestmaa/dbmason/pull/9) passed all required
+quality/build/audit, PostgreSQL, MySQL, Chromium, and CodeQL checks. Its
+protected squash merge produced GitHub-verified main commit
+`6d956d8ce0535cac6be69ad8312f28db5972ebe1`; the exact main CI run
+`29934574362` and CodeQL run `29934575419` both passed before tagging.
+
+Protected annotated tag `v0.2.1` has tag object
+`7b05afdbe4f54eebcaafde37a5b3dd0ae65a3df6` and peels to that exact main
+commit. The local environment had no tag-signing key, so the annotated tag is
+unsigned; it cannot be updated or deleted under the active tag ruleset. Release
+workflow [29934886126](https://github.com/bestmaa/dbmason/actions/runs/29934886126)
+then passed source, audit, runtime/legal, both real databases, both Chromium
+suites, multi-architecture publishing, SBOM, provenance, and attestation gates.
+
+The public tags `0.2.1`, `0.2`, and `latest` all resolve to OCI index digest
+`sha256:5721f21d9460f8691161d43316f3b3a6273b00780870242497aa98e97af729e3`.
+Its platform manifests are:
+
+- `linux/amd64`: `sha256:4476d5f856b446b6bdc1c4fdc63a6267faa66168c8720888158e883dc83ab745`
+- `linux/arm64`: `sha256:b71cf7c72457228a954509a9fdf09482ffe0fb087a14d55f2436b76adb0b277d`
+
+Each platform has attached SPDX and SLSA v1 in-toto layers. Strict GitHub
+[attestation 36594737](https://github.com/bestmaa/dbmason/attestations/36594737)
+verification required the DBMason repository, release workflow, exact source
+digest, `refs/tags/v0.2.1`, and a GitHub-hosted runner. A fresh anonymous Docker
+configuration inspected and pulled the exact index digest successfully.
+
+The pulled amd64 image is `71,547,827` bytes, runs as non-root `nextjs`, and
+has exact source, revision, version, license, and vendor OCI labels. The three
+fresh-container health cases above were repeated against this registry digest:
+both invalid configurations became Docker `unhealthy` while remaining running,
+and the fresh valid volume became healthy with HTTP `200`. No secret value or
+fatal marker appeared in any log. The valid image used `84.8 MiB`, 13 PIDs, and
+`0.00%` CPU in the recorded warm sample; Chrome rendered `Source v0.2.1` with
+zero console entries.
+
+The source archive returned HTTP `200`, GitHub detected `AGPL-3.0`, and the
+[v0.2.1 release](https://github.com/bestmaa/dbmason/releases/tag/v0.2.1) is
+public, latest, and immutable. Dependabot, code-scanning, and secret-scanning
+open alert counts were all zero at publication. The v0.2.0 GitHub release
+remains a clearly named superseded, unpublished draft; no tag or artifact was
+deleted or moved.
+
 ## Security results
 
 - The test PostgreSQL target used an explicit local-only plaintext/TLS-disabled selection. Production remote targets should use `verify-full`.
@@ -298,12 +344,8 @@ and WAL/SHM companions. They do not touch normal development or app-test
 SQLite files. No Git reset, branch deletion, or broad repository cleanup was
 performed during validation.
 
-## Pending release gates and follow-ups
+## Post-release follow-ups
 
-- **Release blocker:** merge v0.2.1 through the protected pull-request path,
-  record all required hosted CI and CodeQL checks on the exact main SHA, then
-  verify its immutable tag workflow, GHCR digest, SBOM, signed provenance,
-  anonymous pull, and fresh-volume health smokes before publishing stable.
 - Add an independent cancellation deadline to DNS resolution; the current global limiter bounds concurrent exposure but not resolver duration.
 - Add saved administrator credential rotation and connection editing.
 - Expand the grant planner beyond the PostgreSQL `public` schema before claiming multi-schema coverage.
