@@ -38,9 +38,11 @@ Every release must be reproducible from a Git tag and described in
 2. Create an annotated `vX.Y.Z` tag on that commit. Sign the annotated tag when
    maintainer signing is configured and available. Never publish a lightweight
    or moved release tag.
-3. Create release notes from the matching changelog section as a **draft**,
-   including upgrade steps, rollback, and known limitations, then push the tag.
-   Do not make the GitHub release public yet.
+3. Push the annotated tag, verify the remote tag still resolves to the exact
+   release commit and has Git object type `tag`, then create release notes from
+   the matching changelog section as a **draft** with `--verify-tag`. Include
+   upgrade steps, rollback, and known limitations. Never let the release command
+   create the tag, and do not make the GitHub release public yet.
 4. The tag workflow reruns source, audit, PostgreSQL, MySQL, and Chromium gates
    before publishing multi-platform GHCR images. Verify the immutable image
    digest, non-root runtime, health endpoint, OCI source/license/version labels,

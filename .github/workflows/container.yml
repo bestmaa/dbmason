@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 20
     env:
       CONNECTION_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      DATABASE_URL: file:./release-control.db
       DATABASE_HOST_ALLOWLIST: 127.0.0.1,localhost
       DBMASON_PUBLIC_URL: http://localhost:3000
       PAYLOAD_SECRET: release-verification-only-secret-2026
