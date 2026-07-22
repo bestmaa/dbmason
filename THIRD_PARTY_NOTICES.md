@@ -3,7 +3,7 @@
 DBMason depends on open-source packages that remain under their own licenses.
 The dependency license does not change DBMason's `AGPL-3.0-only` license.
 
-The direct runtime dependency inventory for DBMason v0.2.0 is:
+The direct runtime dependency inventory for DBMason v0.2.1 is:
 
 | Package                 | Resolved version | License      |
 | ----------------------- | ---------------: | ------------ |

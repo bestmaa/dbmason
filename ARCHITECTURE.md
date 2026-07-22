@@ -304,6 +304,7 @@ apply per-step results.
 ## API surface
 
 ```text
+GET  /api/health
 GET  /api/db-manager/v1/connections
 POST /api/db-manager/v1/connections
 POST /api/db-manager/v1/connections/:id/test
@@ -330,6 +331,14 @@ workspace bodies above 256 KiB. Every response uses `Cache-Control: no-store`,
 and infrastructure errors become safe response codes. Observability is
 available to every authenticated application role, while workspace endpoints
 allow only owner, admin, and operator.
+
+`GET /api/health` is the only unauthenticated operational endpoint. It validates
+the runtime environment, initializes Payload and production migrations, and
+performs one read against the control-plane user schema. It returns only
+detail-free `ok` or `unhealthy` JSON. Concurrent checks share one probe and only
+the boolean outcome is cached for five seconds, limiting public probe traffic
+without retaining error details. It does not probe target databases or claim
+host CPU/RAM health.
 
 Local API calls acting for a user use `overrideAccess: false`. Intentional system writes (encrypted connection records and audits) use privileged Local API only after explicit endpoint authorization and thread `req` through nested operations.
 

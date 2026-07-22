@@ -5,6 +5,16 @@ All notable changes to DBMason are recorded here. The project follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-22
+
+### Fixed
+
+- Make `/api/health` validate the runtime environment, initialize migrations,
+  probe the control-plane schema, and return a detail-free `503` when readiness
+  fails, so container orchestrators cannot route traffic to a broken instance.
+- Deduplicate readiness work and briefly cache only its boolean result, limiting
+  unauthenticated health traffic without retaining sensitive failure details.
+
 ## [0.2.0] - 2026-07-22
 
 ### Added
@@ -71,7 +81,8 @@ All notable changes to DBMason are recorded here. The project follows
 - SQLite-backed Payload control plane, Docker deployment, real PostgreSQL 17
   integration tests, Chromium end-to-end tests, and operator documentation.
 
-[Unreleased]: https://github.com/bestmaa/dbmason/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bestmaa/dbmason/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/bestmaa/dbmason/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/bestmaa/dbmason/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/bestmaa/dbmason/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/bestmaa/dbmason/releases/tag/v0.1.0
