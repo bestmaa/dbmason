@@ -1,0 +1,43 @@
+import type { CollectionConfig } from 'payload'
+
+import { authenticated, ownersAndAdmins } from '@/access/appRoles'
+
+export const AccessProfiles: CollectionConfig = {
+  slug: 'access-profiles',
+  access: {
+    create: ownersAndAdmins,
+    delete: ownersAndAdmins,
+    read: authenticated,
+    update: ownersAndAdmins,
+  },
+  admin: {
+    defaultColumns: ['name', 'engine', 'level', 'builtIn'],
+    group: 'Database Manager',
+    useAsTitle: 'name',
+  },
+  fields: [
+    { name: 'name', type: 'text', index: true, required: true },
+    { name: 'code', type: 'text', index: true, required: true, unique: true },
+    {
+      name: 'engine',
+      type: 'select',
+      defaultValue: 'postgresql',
+      options: [{ label: 'PostgreSQL', value: 'postgresql' }],
+      required: true,
+    },
+    {
+      name: 'level',
+      type: 'select',
+      options: [
+        { label: 'Connect only', value: 'connect' },
+        { label: 'Read only', value: 'read' },
+        { label: 'Read and write', value: 'write' },
+        { label: 'Developer', value: 'developer' },
+      ],
+      required: true,
+    },
+    { name: 'description', type: 'textarea', required: true },
+    { name: 'builtIn', type: 'checkbox', defaultValue: false, required: true },
+  ],
+  timestamps: true,
+}

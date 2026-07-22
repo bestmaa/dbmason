@@ -68,7 +68,9 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
-    media: Media;
+    'database-connections': DatabaseConnection;
+    'access-profiles': AccessProfile;
+    'audit-events': AuditEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -77,14 +79,16 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    'database-connections': DatabaseConnectionsSelect<false> | DatabaseConnectionsSelect<true>;
+    'access-profiles': AccessProfilesSelect<false> | AccessProfilesSelect<true>;
+    'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
   globals: {};
@@ -122,7 +126,9 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  name: string;
+  roles: ('owner' | 'admin' | 'operator' | 'viewer')[];
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -143,30 +149,68 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Connection metadata. Changes are performed through the manager UI.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "database-connections".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface DatabaseConnection {
+  id: number;
+  publicId: string;
+  name: string;
+  engine: 'postgresql';
+  host: string;
+  port: number;
+  maintenanceDatabase: string;
+  username: string;
+  sslMode: 'verify-full' | 'require' | 'prefer' | 'disable';
+  encryptedSecret: string;
+  status: 'unknown' | 'online' | 'offline';
+  serverVersion?: string | null;
+  lastCheckedAt?: string | null;
+  lastLatencyMs?: number | null;
+  createdBy: number | User;
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "access-profiles".
+ */
+export interface AccessProfile {
+  id: number;
+  name: string;
+  code: string;
+  engine: 'postgresql';
+  level: 'connect' | 'read' | 'write' | 'developer';
+  description: string;
+  builtIn: boolean;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events".
+ */
+export interface AuditEvent {
+  id: number;
+  requestId: string;
+  action: string;
+  outcome: 'requested' | 'succeeded' | 'failed';
+  target: string;
+  message?: string | null;
+  durationMs?: number | null;
+  actor: number | User;
+  connection?: (number | null) | DatabaseConnection;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -183,20 +227,28 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
+        relationTo: 'database-connections';
+        value: number | DatabaseConnection;
+      } | null)
+    | ({
+        relationTo: 'access-profiles';
+        value: number | AccessProfile;
+      } | null)
+    | ({
+        relationTo: 'audit-events';
+        value: number | AuditEvent;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +258,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,7 +281,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -240,6 +292,8 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  roles?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -259,21 +313,55 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
+ * via the `definition` "database-connections_select".
  */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
+export interface DatabaseConnectionsSelect<T extends boolean = true> {
+  publicId?: T;
+  name?: T;
+  engine?: T;
+  host?: T;
+  port?: T;
+  maintenanceDatabase?: T;
+  username?: T;
+  sslMode?: T;
+  encryptedSecret?: T;
+  status?: T;
+  serverVersion?: T;
+  lastCheckedAt?: T;
+  lastLatencyMs?: T;
+  createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "access-profiles_select".
+ */
+export interface AccessProfilesSelect<T extends boolean = true> {
+  name?: T;
+  code?: T;
+  engine?: T;
+  level?: T;
+  description?: T;
+  builtIn?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events_select".
+ */
+export interface AuditEventsSelect<T extends boolean = true> {
+  requestId?: T;
+  action?: T;
+  outcome?: T;
+  target?: T;
+  message?: T;
+  durationMs?: T;
+  actor?: T;
+  connection?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

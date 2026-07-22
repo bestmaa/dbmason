@@ -1,0 +1,14 @@
+.git
+.next
+.next-*
+.env
+.env.*
+!.env.example
+data
+node_modules
+playwright-report
+test-results
+coverage
+*.db
+*.db-shm
+*.db-wal

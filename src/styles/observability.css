@@ -1,0 +1,236 @@
+.observability-panel {
+  min-height: 360px;
+}
+.observability-header {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 17px;
+  border-bottom: 1px solid var(--border);
+}
+.observability-header h2,
+.observability-databases h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.observability-header .eyebrow,
+.observability-databases .eyebrow {
+  margin-bottom: 4px;
+}
+.observability-header small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+.observability-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.observability-header__actions > small {
+  margin: 0;
+}
+.host-telemetry-note {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  margin: 14px 15px 0;
+  padding: 11px 13px;
+  border: 1px solid rgb(114 167 255 / 20%);
+  border-radius: 9px;
+  background: rgb(114 167 255 / 6%);
+}
+.host-telemetry-note > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: rgb(114 167 255 / 11%);
+  color: var(--blue);
+}
+.host-telemetry-note strong,
+.host-telemetry-note p {
+  margin: 0;
+}
+.host-telemetry-note strong {
+  font-size: 10px;
+}
+.host-telemetry-note p {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.host-telemetry-note > small {
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-soft);
+  font-size: 8px;
+}
+.observability-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  padding: 14px 15px;
+}
+.load-card {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 31px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+}
+.load-card__icon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-3);
+  color: var(--text-soft);
+}
+.load-card--warning .load-card__icon {
+  background: rgb(246 189 96 / 9%);
+  color: var(--amber);
+}
+.load-card--danger .load-card__icon {
+  background: rgb(255 122 144 / 9%);
+  color: var(--red);
+}
+.load-card div > span,
+.load-card strong,
+.load-card small {
+  display: block;
+}
+.load-card div > span {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.load-card strong {
+  margin-top: 3px;
+  font-size: 16px;
+}
+.load-card small {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 1.4;
+}
+.tracking-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 15px 14px;
+}
+.tracking-strip span {
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+.observability-databases {
+  border-top: 1px solid var(--border);
+}
+.observability-databases > header {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 15px;
+}
+.observability-databases > header > small {
+  max-width: 330px;
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 1.5;
+  text-align: right;
+}
+.observability-table td {
+  font-variant-numeric: tabular-nums;
+}
+.observability-empty {
+  margin: 0;
+  padding: 22px;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-align: center;
+}
+.observability-state {
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--accent);
+  text-align: center;
+}
+.observability-state strong {
+  color: var(--text);
+  font-size: 12px;
+}
+.observability-state span {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.observability-state--error {
+  color: var(--red);
+}
+.observability-warning {
+  margin: 12px 15px 0;
+  padding: 9px 11px;
+  border: 1px solid rgb(246 189 96 / 20%);
+  border-radius: 8px;
+  background: rgb(246 189 96 / 6%);
+  color: var(--amber);
+  font-size: 9px;
+}
+
+@media (max-width: 1100px) {
+  .observability-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .observability-header,
+  .observability-databases > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .observability-header__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .host-telemetry-note {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+  .host-telemetry-note > small {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .observability-metrics {
+    grid-template-columns: 1fr;
+  }
+  .observability-databases > header > small {
+    text-align: left;
+  }
+}

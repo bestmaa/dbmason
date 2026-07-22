@@ -1,15 +1,19 @@
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
-import sharp from 'sharp'
 
+import { AccessProfiles } from './collections/AccessProfiles'
+import { AuditEvents } from './collections/AuditEvents'
+import { DatabaseConnections } from './collections/DatabaseConnections'
 import { Users } from './collections/Users'
-import { Media } from './collections/Media'
+import { getServerEnv } from './config/env'
+import { migrations } from './migrations'
+import { managerEndpoints } from './modules/database-manager/transport/managerEndpoints'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const env = getServerEnv()
 
 export default buildConfig({
   admin: {
@@ -18,17 +22,24 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
-  editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  collections: [Users, DatabaseConnections, AccessProfiles, AuditEvents],
+  endpoints: managerEndpoints,
+  secret: env.PAYLOAD_SECRET,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: sqliteAdapter({
+    busyTimeout: 5_000,
     client: {
-      url: process.env.DATABASE_URL || '',
+      url: env.DATABASE_URL,
+    },
+    prodMigrations: migrations,
+    transactionOptions: { behavior: 'immediate' },
+    wal: {
+      journalSizeLimit: 16 * 1024 * 1024,
+      synchronous: 'FULL',
     },
   }),
-  sharp,
+  graphQL: { disable: true },
   plugins: [],
 })

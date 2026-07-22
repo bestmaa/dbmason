@@ -5,8 +5,15 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
+const allowedDevOrigins =
+  process.env.DEV_ALLOWED_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? []
 
 const nextConfig: NextConfig = {
+  ...(allowedDevOrigins.length > 0 ? { allowedDevOrigins } : {}),
+  distDir: process.env.NEXT_DIST_DIR?.trim() || '.next',
+  output: 'standalone',
   images: {
     localPatterns: [
       {

@@ -14,6 +14,8 @@
 
 # next.js
 /.next/
+/.next-app-test/
+/.next-e2e/
 /out/
 
 # production
@@ -30,6 +32,8 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.postgres-test
+.env.app-test
 
 # vercel
 .vercel
@@ -41,6 +45,11 @@ next-env.d.ts
 .env
 
 /media
+/data/*
+!/data/.gitkeep
+*.db
+*.db-shm
+*.db-wal
 
 # Playwright
 node_modules/

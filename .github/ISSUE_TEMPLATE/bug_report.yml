@@ -1,0 +1,47 @@
+name: Bug report
+description: Report a reproducible DBMason defect without sensitive data.
+title: "[Bug]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not submit vulnerabilities or credentials here. Use private vulnerability reporting for security issues.
+  - type: input
+    id: version
+    attributes:
+      label: DBMason version
+      placeholder: v0.2.0 or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Managed database engine
+      options: [PostgreSQL, MySQL, Control plane only, Not sure]
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide minimal steps and sanitized configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs
+      render: shell
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed passwords, tokens, connection URLs, private hostnames, query results, and personal data.
+          required: true

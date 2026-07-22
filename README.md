@@ -1,67 +1,94 @@
-# Payload Blank Template
+# DBMason
 
-This template comes configured with the bare minimum to get started on anything you need.
+> Self-hosted database access control plane.
 
-## Quick start
+DBMason is a lightweight, self-hosted database access manager. The first engine is PostgreSQL: save an administrator connection, inspect live databases and roles, create databases, create login roles with one-time passwords, manage their lifecycle through allowlisted access presets, inspect native PostgreSQL activity counters, and browse/query data through a guarded read-only workspace.
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+The application is one Payload + Next.js process with SQLite for control-plane metadata. Managed PostgreSQL servers remain the source of truth; DBMason does not copy their catalogs into SQLite or keep idle pools open.
 
-## Quick Start - local setup
+## Start locally
 
-To spin up this template locally, follow these steps:
+Requirements: Node.js 20.9+ and pnpm 9+.
 
-### Clone
+```bash
+cp .env.example .env
+# Replace both secrets in .env with cryptographically random values.
+pnpm install
+pnpm dev
+```
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+`PORT` in `.env` controls the local port (the example uses `3010`). The dev/start scripts preload `.env` before Next chooses its listener. Open `http://localhost:3010`; on first run, create the owner account through the Payload admin screen.
 
-### Development
+Generate suitable secrets with:
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+```bash
+openssl rand -hex 32
+```
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+## Docker
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+After preparing `.env`:
 
-#### Docker (Optional)
+```bash
+docker compose up --build -d
+```
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+SQLite is stored in the named `db-control-data` volume. Back it up with a SQLite-consistent backup process before upgrades.
+Committed Payload migrations run automatically when the production process initializes. Run only one application replica while SQLite is the control-plane store.
+Docker publishes its internal port `3000` on the host port selected by `PORT`.
 
-To do so, follow these steps:
+## Local PostgreSQL test target
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+The dedicated test-only PostgreSQL Compose project is separate from the DB
+Control application and binds to `127.0.0.1:55432` by default. Prepare its
+ignored environment file, validate the configuration, and start it with:
 
-## How it works
+```bash
+cp .env.postgres-test.example .env.postgres-test
+pnpm postgres:test:config
+pnpm postgres:test:up
+```
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+See [docs/POSTGRES_TEST_HARNESS.md](./docs/POSTGRES_TEST_HARNESS.md) for test
+credentials, connection fields, logs, stop, and isolated reset commands.
 
-### Collections
+The complete user workflow and production screenshots are in
+[docs/USER_GUIDE.md](./docs/USER_GUIDE.md). The recorded release evidence is in
+[docs/VALIDATION_REPORT.md](./docs/VALIDATION_REPORT.md).
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+## Quality checks
 
-- #### Users (Authentication)
+```bash
+pnpm check
+pnpm test:postgres
+pnpm test:e2e:mvp
+pnpm build
+pnpm payload migrate:status
+```
 
-  Users are auth-enabled collections that have access to the admin panel.
+`pnpm check` regenerates Payload types, type-checks strict TypeScript, enforces the props-only UI boundary and 250-line frontend limit, and runs unit tests.
+`pnpm build` intentionally uses an ignored build-only SQLite file; production migrations run against the configured persistent database when the server starts.
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+Read [ARCHITECTURE.md](./ARCHITECTURE.md), [SECURITY.md](./SECURITY.md), and [CONTRIBUTING.md](./CONTRIBUTING.md) before extending an engine or permission model.
 
-- #### Media
+## Current scope
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+- PostgreSQL connections, live database/role inventory
+- Encrypted connection secrets
+- Database creation
+- LOGIN role creation with a password shown once
+- Connect/read/write/developer access presets for the `public` schema
+- Existing-role access replacement and explicit-grant revocation with `PUBLIC` warnings
+- Login enable/disable, one-time password rotation, and dependency-safe role deletion
+- Control-plane-only saved connection removal
+- On-demand PostgreSQL connection, activity, cache, temporary-file, deadlock, size, and rendered `pg_stat_io` counters/timing
+- Guarded relation browsing and row-returning read-only SQL under a transient, nonprivileged PostgreSQL login
+- Payload application RBAC and append-only audit events
 
-### Docker
+PostgreSQL core statistics do not expose reliable host/container CPU or RAM utilization. DBMason reports that boundary instead of inventing a percentage; an external metrics provider is required for host telemetry.
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+Write/DDL SQL, saved queries/history, backups, saved administrator credential rotation, multi-schema grant planning, MySQL, and HA control-plane storage remain outside the current PostgreSQL release. MySQL comes later through a separate engine adapter.
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+DBMason is licensed under [AGPL-3.0-only](./LICENSE). Modified network
+deployments must offer their corresponding source to their users. The DBMason
+name and logo remain subject to the separate [trademark policy](./TRADEMARKS.md).

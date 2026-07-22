@@ -1,9 +1,16 @@
 import { getPayload } from 'payload'
 import config from '../../src/payload.config.js'
 
-export const testUser = {
+export const testUser: {
+  email: string
+  name: string
+  password: string
+  roles: Array<'owner'>
+} = {
   email: 'dev@payloadcms.com',
+  name: 'Payload Test User',
   password: 'test',
+  roles: ['owner'],
 }
 
 /**
@@ -12,9 +19,9 @@ export const testUser = {
 export async function seedTestUser(): Promise<void> {
   const payload = await getPayload({ config })
 
-  // Delete existing test user if any
-  await payload.delete({
+  const existing = await payload.find({
     collection: 'users',
+    limit: 1,
     where: {
       email: {
         equals: testUser.email,
@@ -22,7 +29,16 @@ export async function seedTestUser(): Promise<void> {
     },
   })
 
-  // Create fresh test user
+  const existingUser = existing.docs[0]
+  if (existingUser) {
+    await payload.update({
+      collection: 'users',
+      data: testUser,
+      id: existingUser.id,
+    })
+    return
+  }
+
   await payload.create({
     collection: 'users',
     data: testUser,
@@ -35,12 +51,23 @@ export async function seedTestUser(): Promise<void> {
 export async function cleanupTestUser(): Promise<void> {
   const payload = await getPayload({ config })
 
+  const [matchingUsers, owners] = await Promise.all([
+    payload.find({
+      collection: 'users',
+      limit: 1,
+      where: { email: { equals: testUser.email } },
+    }),
+    payload.count({
+      collection: 'users',
+      where: { roles: { contains: 'owner' } },
+    }),
+  ])
+
+  const existingUser = matchingUsers.docs[0]
+  if (!existingUser || (existingUser.roles?.includes('owner') && owners.totalDocs <= 1)) return
+
   await payload.delete({
     collection: 'users',
-    where: {
-      email: {
-        equals: testUser.email,
-      },
-    },
+    id: existingUser.id,
   })
 }

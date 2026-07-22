@@ -1,0 +1,38 @@
+services:
+  postgres-test:
+    image: postgres:17-alpine
+    init: true
+    restart: 'no'
+    environment:
+      POSTGRES_DB: ${POSTGRES_TEST_DATABASE:?Set POSTGRES_TEST_DATABASE in .env.postgres-test}
+      POSTGRES_USER: ${POSTGRES_TEST_USER:?Set POSTGRES_TEST_USER in .env.postgres-test}
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:?Set POSTGRES_TEST_PASSWORD in .env.postgres-test}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '${POSTGRES_TEST_HOST:-127.0.0.1}:${POSTGRES_TEST_PORT:-55432}:5432'
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    networks:
+      - postgres-test-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          pg_isready --host=127.0.0.1
+          --username="$${POSTGRES_USER}"
+          --dbname="$${POSTGRES_DB}"
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    shm_size: 128mb
+    stop_grace_period: 20s
+    labels:
+      com.db-control.purpose: integration-testing-only
+
+volumes:
+  postgres-test-data:
+
+networks:
+  postgres-test-network:
+    driver: bridge

@@ -1,0 +1,37 @@
+@media (max-width: 980px) {
+  .manager-shell { grid-template-columns: 78px minmax(0, 1fr); }
+  .brand { justify-content: center; padding: 0; }
+  .brand > span:last-child, .rail-heading span:first-child, .connection-item__copy, .rail-add { display: none; }
+  .rail-heading { justify-content: center; padding-inline: 0; }
+  .connection-item { grid-template-columns: 1fr; justify-items: center; }
+  .connection-item .status-dot { position: absolute; margin: 23px 0 0 23px; }
+  .connection-list { padding-inline: 12px; }
+  .connection-rail::after { display: grid; width: 40px; height: 40px; place-items: center; align-self: center; margin: 10px 0; border: 1px dashed var(--border-strong); border-radius: 10px; color: var(--accent); content: '+'; font-size: 20px; }
+  .overview-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .manager-shell { display: block; }
+  .connection-rail { position: static; width: 100%; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  .brand { justify-content: flex-start; padding: 0 16px; }
+  .brand > span:last-child { display: block; }
+  .rail-heading, .connection-list, .connection-rail::after { display: none; }
+  .workspace-topbar { height: 56px; padding: 0 16px; }
+  .workspace-topbar > div:first-child { display: none; }
+  .workspace-topbar { justify-content: flex-end; }
+  .workspace-content { padding: 20px 14px; }
+  .workspace-header { align-items: flex-start; flex-direction: column; }
+  .header-actions { width: 100%; flex-wrap: wrap; }
+  .header-actions .button { flex: 1; }
+  .resource-panel__header { align-items: stretch; flex-direction: column; padding: 0 10px 10px; }
+  .tabs { min-height: 48px; }
+  .tabs button { flex: 1; justify-content: center; }
+  .search-field { width: 100%; }
+  .metric-card { grid-template-columns: 34px 1fr; }
+  .metric-card small { display: none; }
+  .form-grid { grid-template-columns: 1fr; }
+  .field--wide { grid-column: auto; }
+  .modal-backdrop { align-items: end; padding: 0; }
+  .modal { max-height: 92vh; border-radius: 16px 16px 0 0; }
+  .workspace-state { min-height: calc(100vh - 124px); padding: 26px; }
+}

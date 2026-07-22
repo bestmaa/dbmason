@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a focused DBMason capability.
+title: "[Feature]: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operator problem should DBMason solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed outcome
+      description: Describe behavior, not an arbitrary administrator SQL endpoint.
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Scope
+      options: [Engine-neutral, PostgreSQL, MySQL, Future engine, Control plane]
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Security and compatibility considerations

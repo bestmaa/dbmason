@@ -1,40 +1,67 @@
 {
-  "name": "",
-  "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
-  "license": "MIT",
+  "name": "dbmason",
+  "version": "0.1.0",
+  "description": "A lightweight, self-hosted database access control plane built with Payload.",
+  "license": "AGPL-3.0-only",
+  "homepage": "https://github.com/bestmaa/dbmason#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bestmaa/dbmason.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bestmaa/dbmason/issues"
+  },
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env DATABASE_URL=file:./build-control.db NODE_OPTIONS=\"--no-deprecation --max-old-space-size=2048\" next build",
+    "check": "pnpm run generate:types && pnpm run typecheck && pnpm run lint && pnpm run check:lines && pnpm run test:unit",
+    "check:lines": "node scripts/check-source-lines.mjs",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation node --require dotenv/config ./node_modules/next/dist/bin/next dev",
+    "dev:app-test": "cross-env DOTENV_CONFIG_PATH=.env.app-test NODE_OPTIONS=--no-deprecation node --require dotenv/config ./node_modules/next/dist/bin/next dev",
+    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation node --require dotenv/config ./node_modules/next/dist/bin/next dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "postgres:test:config": "node scripts/postgres-test-compose.mjs config",
+    "postgres:test:down": "node scripts/postgres-test-compose.mjs down",
+    "postgres:test:logs": "node scripts/postgres-test-compose.mjs logs",
+    "postgres:test:reset": "node scripts/postgres-test-compose.mjs reset",
+    "postgres:test:status": "node scripts/postgres-test-compose.mjs status",
+    "postgres:test:up": "node scripts/postgres-test-compose.mjs up",
+    "prepare:e2e:mvp": "node scripts/prepare-e2e.mjs",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation node --require dotenv/config ./node_modules/next/dist/bin/next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
+    "test:unit": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.unit.config.mts",
+    "test:postgres": "pnpm run postgres:test:up && cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.postgres.config.mts",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
-    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
+    "test:e2e:app-test": "cross-env DOTENV_CONFIG_PATH=.env.app-test NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
+    "test:e2e:mvp": "pnpm run postgres:test:up && cross-env NODE_OPTIONS=--no-deprecation playwright test --config=playwright.mvp.config.ts",
+    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@payloadcms/db-sqlite": "3.86.0",
     "@payloadcms/next": "3.86.0",
-    "@payloadcms/richtext-lexical": "3.86.0",
     "@payloadcms/ui": "3.86.0",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
+    "lucide-react": "^1.25.0",
     "next": "16.2.6",
     "payload": "3.86.0",
+    "pg": "^8.22.0",
+    "pg-cursor": "2.21.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "sharp": "0.34.2",
-    "@payloadcms/db-sqlite": "3.86.0"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
     "@testing-library/react": "16.3.0",
     "@types/node": "22.19.9",
+    "@types/pg": "^8.20.0",
+    "@types/pg-cursor": "2.7.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "4.5.2",
@@ -51,11 +78,5 @@
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10 || ^11"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "esbuild",
-      "unrs-resolver"
-    ]
-  }
+  "packageManager": "pnpm@11.10.0"
 }
