@@ -6,7 +6,9 @@
     "@libsql/isomorphic-fetch@0.3.1": "libsql-isomorphic-ts",
     "@libsql/isomorphic-ws@0.1.5": "libsql-isomorphic-ts",
     "@next/env@15.5.20": "next@15.5.20",
+    "@next/env@16.2.11": "next@16.2.6",
     "@next/env@16.2.6": "next@16.2.6",
+    "next@16.2.11": "next-compiled@16.2.6",
     "next@16.2.6": "next-compiled@16.2.6",
     "@tokenizer/token@0.3.0": "tokenizer-token@0.3.0",
     "client-only@0.0.1": "react-client-only@0.0.1",
@@ -32,6 +34,11 @@
       "directory": "esbuild@0.28.1",
       "namePrefix": "@esbuild/linux-",
       "version": "0.28.1"
+    },
+    {
+      "directory": "next@16.2.6",
+      "namePrefix": "@next/swc-linux-",
+      "version": "16.2.11"
     },
     {
       "directory": "next@16.2.6",

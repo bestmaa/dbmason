@@ -44,6 +44,20 @@ const nextCompiledPolicies = new Map([
       ]),
     },
   ],
+  [
+    'next@16.2.11',
+    {
+      expectedLegalFileCount: 137,
+      fallbackCoverage: new Map([
+        ['@edge-runtime/cookies', ['LICENSE-edge-runtime-MIT.txt']],
+        ['@edge-runtime/ponyfill', ['LICENSE-edge-runtime-MIT.txt']],
+        ['@edge-runtime/primitives', ['LICENSE-edge-runtime-MIT.txt']],
+        ['image-detector', ['dist/compiled/image-size/LICENSE']],
+        ['next-server', ['license.md']],
+        ['string-hash', ['NOTICE-string-hash-CC0-1.0.txt']],
+      ]),
+    },
+  ],
 ])
 
 function portablePath(filePath) {
