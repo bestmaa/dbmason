@@ -10,12 +10,16 @@ Every release must be reproducible from a Git tag and described in
    passed review rather than being assembled directly on the protected branch.
 2. Move completed entries from `Unreleased` to a dated version section and set
    exactly the same semantic version in `package.json`.
-3. From a frozen install, run `pnpm check`, `pnpm audit --audit-level low`,
+3. From a frozen install, run `pnpm check`,
+   `pnpm audit --prod --audit-level low`,
+   `pnpm audit --dev --audit-level low --ignore GHSA-mh99-v99m-4gvg`,
    `pnpm test:postgres`, `pnpm test:mysql`, `pnpm test:e2e:mvp`,
    `pnpm test:e2e:mysql`, `pnpm build`, `pnpm check:runtime`, and
-   `pnpm payload migrate:status`. Generate the third-party bundle from the
-   frozen non-optional production graph plus the exact standalone trace; the
-   same fail-closed command is recorded in the CI workflow.
+   `pnpm payload migrate:status`. The temporary dev-only exception is limited
+   to legacy ESLint plugins that require `brace-expansion` 1.x; no compatible
+   patched 1.x release exists. Generate the third-party bundle from the frozen
+   non-optional production graph plus the exact standalone trace; the same
+   fail-closed command is recorded in the CI workflow.
 4. Run `git diff --check`, then require an empty
    `git status --porcelain --untracked-files=all` after generated types so both
    tracked and newly generated files are caught. Record the results,

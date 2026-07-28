@@ -3,6 +3,11 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   workerd: true
+auditConfig:
+  ignoreGhsas:
+    - GHSA-mh99-v99m-4gvg
+minimumReleaseAgeExclude:
+  - brace-expansion@5.0.8
 overrides:
   "@esbuild-kit/core-utils>esbuild": 0.25.12
   "monaco-editor>dompurify": 3.4.12

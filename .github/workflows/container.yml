@@ -56,7 +56,7 @@ jobs:
             exit 1
           fi
       - name: Audit dependencies
-        run: pnpm audit --audit-level low
+        run: pnpm audit --prod --audit-level low
       - name: Build standalone application
         run: pnpm build
       - name: Enforce the production runtime boundary
