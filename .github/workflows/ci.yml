@@ -49,7 +49,11 @@ jobs:
             exit 1
           fi
       - name: Audit dependencies
-        run: pnpm audit --audit-level low
+        run: |
+          pnpm audit --prod --audit-level low
+          # GHSA-mh99-v99m-4gvg remains only through legacy ESLint plugins
+          # that require brace-expansion 1.x; no compatible patched 1.x exists.
+          pnpm audit --dev --audit-level low --ignore GHSA-mh99-v99m-4gvg
       - name: Build standalone application
         run: pnpm build
       - name: Enforce the production runtime boundary
