@@ -3,10 +3,14 @@
   .brand { justify-content: center; padding: 0; }
   .brand > span:last-child, .rail-heading span:first-child, .connection-item__copy, .rail-add { display: none; }
   .rail-heading { justify-content: center; padding-inline: 0; }
+  .connection-item-row { grid-template-columns: 1fr; justify-items: stretch; }
   .connection-item { grid-template-columns: 1fr; justify-items: center; }
   .connection-item .status-dot { position: absolute; margin: 23px 0 0 23px; }
+  .connection-item__remove { width: 40px; height: 26px; justify-self: center; }
   .connection-list { padding-inline: 12px; }
   .connection-rail::after { display: grid; width: 40px; height: 40px; place-items: center; align-self: center; margin: 10px 0; border: 1px dashed var(--border-strong); border-radius: 10px; color: var(--accent); content: '+'; font-size: 20px; }
+  .workspace-topbar { padding-inline: 18px; }
+  .source-link__legal, .identity small { display: none; }
   .overview-grid { grid-template-columns: 1fr; }
 }
 
@@ -15,8 +19,14 @@
   .connection-rail { position: static; width: 100%; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
   .brand { justify-content: flex-start; padding: 0 16px; }
   .brand > span:last-child { display: block; }
-  .rail-heading, .connection-list, .connection-rail::after { display: none; }
-  .workspace-topbar { height: 56px; padding: 0 16px; }
+  .rail-heading, .connection-rail::after { display: none; }
+  .connection-list { display: flex; flex: none; gap: 6px; overflow-x: auto; padding: 8px 12px; }
+  .connection-item-row { flex: 0 0 min(220px, calc(100vw - 24px)); grid-template-columns: minmax(0, 1fr) 30px; gap: 3px; }
+  .connection-item { grid-template-columns: 32px minmax(0, 1fr) 8px; justify-items: initial; padding: 9px; }
+  .connection-item__copy { display: block; }
+  .connection-item .status-dot { position: static; margin: 0; }
+  .connection-item__remove { width: 30px; height: 30px; justify-self: auto; }
+  .workspace-topbar { min-height: 56px; padding: 8px 16px; }
   .workspace-topbar > div:first-child { display: none; }
   .workspace-topbar { justify-content: flex-end; }
   .workspace-content { padding: 20px 14px; }
@@ -34,4 +44,9 @@
   .modal-backdrop { align-items: end; padding: 0; }
   .modal { max-height: 92vh; border-radius: 16px 16px 0 0; }
   .workspace-state { min-height: calc(100vh - 124px); padding: 26px; }
+}
+
+@media (max-width: 420px) {
+  .identity { display: none; }
+  .workspace-account-actions { margin-right: 0; }
 }

@@ -12,7 +12,9 @@ export const AccessProfiles: CollectionConfig = {
   },
   admin: {
     defaultColumns: ['name', 'engine', 'level', 'builtIn'],
-    group: 'Database Manager',
+    description: 'Reusable database access templates for DBMason operators.',
+    group: false,
+    hideAPIURL: true,
     useAsTitle: 'name',
   },
   fields: [
@@ -42,5 +44,9 @@ export const AccessProfiles: CollectionConfig = {
     { name: 'description', type: 'textarea', required: true },
     { name: 'builtIn', type: 'checkbox', defaultValue: false, required: true },
   ],
+  labels: {
+    plural: 'Access profiles',
+    singular: 'Access profile',
+  },
   timestamps: true,
 }

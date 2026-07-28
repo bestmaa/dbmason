@@ -35,6 +35,7 @@
 .tag { padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface-2); color: var(--text-soft); font-size: 8px; }
 .tag--danger { border-color: rgb(255 122 144 / 22%); background: rgb(255 122 144 / 7%); color: var(--red); }
 .tag--warning { border-color: rgb(246 189 96 / 22%); background: rgb(246 189 96 / 7%); color: var(--amber); }
+.table-actions { display: flex; justify-content: flex-end; gap: 5px; }
 .workspace-state { display: flex; min-height: calc(100vh - 68px); max-width: 520px; flex-direction: column; align-items: center; justify-content: center; margin: auto; padding: 40px; text-align: center; }
 .workspace-state__icon { display: grid; width: 58px; height: 58px; place-items: center; margin-bottom: 18px; border: 1px solid rgb(93 214 197 / 22%); border-radius: 17px; background: rgb(93 214 197 / 8%); color: var(--accent); }
 .workspace-state__icon--error { border-color: rgb(255 122 144 / 25%); background: rgb(255 122 144 / 8%); color: var(--red); }

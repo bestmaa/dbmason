@@ -22,8 +22,10 @@ interface ResourcePanelProps {
   activeTab: ResourceTab
   canManagePrincipals: boolean
   canUseWorkspace: boolean
+  canViewConnectionDetails: boolean
   canViewObservability: boolean
   onBrowseDatabase: MouseEventHandler<HTMLButtonElement>
+  onConnectionDetails: MouseEventHandler<HTMLButtonElement>
   onResourceFilterChange: ChangeEventHandler<HTMLInputElement>
   onShowDatabases: () => void
   onShowObservability: () => void
@@ -62,7 +64,8 @@ export function ResourcePanel(props: ResourcePanelProps) {
             role="tab"
             type="button"
           >
-            <Users size={15} /> {props.presentation.principal.listLabel} <span>{props.snapshot.principals.length}</span>
+            <Users size={15} /> {props.presentation.principal.listLabel}{' '}
+            <span>{props.snapshot.principals.length}</span>
           </button>
           {props.canViewObservability && (
             <button
@@ -107,8 +110,10 @@ export function ResourcePanel(props: ResourcePanelProps) {
       ) : props.activeTab === 'databases' ? (
         <DatabaseTable
           canBrowse={props.canUseWorkspace}
+          canViewDetails={props.canViewConnectionDetails}
           model={props.resourceDatabaseTable}
           onBrowse={props.onBrowseDatabase}
+          onDetails={props.onConnectionDetails}
         />
       ) : (
         <PrincipalTable

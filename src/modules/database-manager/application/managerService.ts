@@ -32,10 +32,12 @@ import {
   deleteConnectionRecord,
   listConnections,
   loadConnection,
+  loadConnectionDocument,
+  updateConnectionExternalEndpoint,
   updateConnectionHealth,
 } from '../infrastructure/payload/connectionStore'
 import { writeAuditEvent } from '../infrastructure/payload/auditWriter'
-import type { CreateConnectionInput } from '../transport/schemas'
+import type { CreateConnectionInput, UpdateExternalEndpointInput } from '../transport/schemas'
 
 interface AuditContext {
   action: string
@@ -116,12 +118,29 @@ export const managerService = {
   },
 
   async deleteSavedConnection(req: PayloadRequest, publicId: string): Promise<void> {
-    const stored = await loadConnection(req, publicId)
+    const document = await loadConnectionDocument(req, publicId)
     await withAudit(
       req,
-      { action: 'connection.delete.saved', target: stored.document.name },
+      { action: 'connection.delete.saved', target: document.name },
       // This deletes only the encrypted control-plane record. It never calls a remote engine.
-      () => deleteConnectionRecord(req, stored.document),
+      () => deleteConnectionRecord(req, document),
+    )
+  },
+
+  async updateExternalEndpoint(
+    req: PayloadRequest,
+    publicId: string,
+    input: UpdateExternalEndpointInput,
+  ): Promise<ConnectionSummary> {
+    const document = await loadConnectionDocument(req, publicId)
+    return withAudit(
+      req,
+      {
+        action: 'connection.endpoint.update',
+        connectionId: document.id,
+        target: document.name,
+      },
+      () => updateConnectionExternalEndpoint(req, document, input.external),
     )
   },
 

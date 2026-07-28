@@ -57,6 +57,7 @@ describe('engine capability-driven access presets', () => {
           dropConfirmation: '',
           error: null,
           principal: {
+            authenticationUsername: 'reader',
             canCreateDatabase: false,
             canCreateRole: false,
             canLogin: true,

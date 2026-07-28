@@ -20,10 +20,54 @@ const Users = createUsersCollection({ secureCookies: publicOrigin.startsWith('ht
 export default buildConfig({
   admin: {
     avatar: 'default',
-    user: Users.slug,
+    components: {
+      beforeNav: [
+        '/features/admin-shell/connectors/AdminNavConnector#AdminNavBrandConnector',
+      ],
+      beforeNavLinks: [
+        '/features/admin-shell/connectors/AdminNavConnector#AdminNavLinksConnector',
+      ],
+      graphics: {
+        Icon: '/features/admin-shell/ui/DBMasonIcon#DBMasonIcon',
+        Logo: '/features/admin-shell/ui/DBMasonLogo#DBMasonLogo',
+      },
+      views: {
+        createFirstUser: {
+          Component: '/auth/two-factor/TwoFactorBootstrapView#TwoFactorBootstrapView',
+        },
+        dashboard: {
+          Component:
+            '/features/admin-shell/connectors/AdminDashboardConnector#AdminDashboardConnector',
+        },
+        login: {
+          Component: '/auth/two-factor/TwoFactorLoginView#TwoFactorLoginView',
+        },
+      },
+    },
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      applicationName: 'DBMason',
+      defaultOGImageType: 'off',
+      description: 'DBMason database access control center.',
+      icons: {
+        icon: [{ type: 'image/svg+xml', url: '/dbmason-mark.svg' }],
+        shortcut: '/dbmason-mark.svg',
+      },
+      openGraph: {
+        description: 'A self-hosted database access control plane.',
+        siteName: 'DBMason',
+        title: 'DBMason control center',
+      },
+      robots: {
+        follow: false,
+        index: false,
+      },
+      titleSuffix: '· DBMason',
+    },
+    theme: 'dark',
+    user: Users.slug,
   },
   collections: [Users, DatabaseConnections, AccessProfiles, AuditEvents],
   cors: [publicOrigin],

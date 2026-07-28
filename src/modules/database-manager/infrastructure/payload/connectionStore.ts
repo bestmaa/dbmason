@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import type { PayloadRequest } from 'payload'
 
+import { hasAppRole } from '@/access/appRoles'
 import type { DatabaseConnection } from '@/payload-types'
 
 import type {
@@ -9,6 +10,7 @@ import type {
   ConnectionTestResult,
   DatabaseConnectionConfig,
   EngineId,
+  SslMode,
 } from '../../domain/contracts'
 import { ManagerError } from '../../domain/errors'
 import type { CreateConnectionInput } from '../../transport/schemas'
@@ -20,9 +22,19 @@ export interface StoredConnection {
   engine: EngineId
 }
 
-function toSummary(document: DatabaseConnection): ConnectionSummary {
+function canViewExternalEndpoint(req: PayloadRequest): boolean {
+  return hasAppRole(req.user, ['owner', 'admin'])
+}
+
+function toSummary(
+  document: DatabaseConnection,
+  includeExternalEndpoint: boolean,
+): ConnectionSummary {
   return {
     engine: document.engine,
+    externalHost: includeExternalEndpoint ? (document.externalHost ?? null) : null,
+    externalPort: includeExternalEndpoint ? (document.externalPort ?? null) : null,
+    externalSslMode: includeExternalEndpoint ? (document.externalSslMode ?? null) : null,
     host: document.host,
     id: document.publicId,
     lastCheckedAt: document.lastCheckedAt ?? null,
@@ -30,11 +42,15 @@ function toSummary(document: DatabaseConnection): ConnectionSummary {
     name: document.name,
     port: document.port,
     serverVersion: document.serverVersion ?? null,
+    sslMode: document.sslMode,
     status: document.status,
   }
 }
 
-async function findByPublicId(req: PayloadRequest, publicId: string): Promise<DatabaseConnection> {
+export async function loadConnectionDocument(
+  req: PayloadRequest,
+  publicId: string,
+): Promise<DatabaseConnection> {
   const result = await req.payload.find({
     collection: 'database-connections',
     depth: 0,
@@ -58,14 +74,15 @@ export async function listConnections(req: PayloadRequest): Promise<readonly Con
     sort: 'name',
     user: req.user,
   })
-  return result.docs.map(toSummary)
+  const includeExternalEndpoint = canViewExternalEndpoint(req)
+  return result.docs.map((document) => toSummary(document, includeExternalEndpoint))
 }
 
 export async function loadConnection(
   req: PayloadRequest,
   publicId: string,
 ): Promise<StoredConnection> {
-  const document = await findByPublicId(req, publicId)
+  const document = await loadConnectionDocument(req, publicId)
   return {
     config: decryptConnectionSecret(document.publicId, document.encryptedSecret),
     document,
@@ -109,7 +126,7 @@ export async function createConnectionRecord(
     overrideAccess: true,
     req,
   })
-  return toSummary(document)
+  return toSummary(document, canViewExternalEndpoint(req))
 }
 
 export async function updateConnectionHealth(
@@ -134,7 +151,7 @@ export async function updateConnectionHealth(
     overrideAccess: true,
     req,
   })
-  return toSummary(updated)
+  return toSummary(updated, canViewExternalEndpoint(req))
 }
 
 export async function deleteConnectionRecord(
@@ -147,4 +164,29 @@ export async function deleteConnectionRecord(
     overrideAccess: true,
     req,
   })
+}
+
+export async function updateConnectionExternalEndpoint(
+  req: PayloadRequest,
+  document: DatabaseConnection,
+  external: { host: string; port: number; sslMode: SslMode } | null,
+): Promise<ConnectionSummary> {
+  const updated = await req.payload.update({
+    collection: 'database-connections',
+    data: external
+      ? {
+          externalHost: external.host,
+          externalPort: external.port,
+          externalSslMode: external.sslMode,
+        }
+      : {
+          externalHost: null,
+          externalPort: null,
+          externalSslMode: null,
+        },
+    id: document.id,
+    overrideAccess: true,
+    req,
+  })
+  return toSummary(updated, true)
 }

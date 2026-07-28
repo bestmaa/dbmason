@@ -14,6 +14,7 @@ import { resolveWorkspaceState } from '../model/workspaceState'
 import { databaseManagerClient } from '../services/databaseManagerClient'
 import { managerErrorMessage, summarizeSnapshot } from './managerHookSupport'
 import { useConnectionRemoval } from './useConnectionRemoval'
+import { useConnectionDetails } from './useConnectionDetails'
 import { useObservability } from './useObservability'
 import { useDatabaseWorkspace } from './useDatabaseWorkspace'
 import { usePrincipalManagement } from './usePrincipalManagement'
@@ -22,7 +23,7 @@ import { useResourceFilter } from './useResourceFilter'
 
 export function useDatabaseManager(
   identity: ManagerIdentity,
-): Omit<DatabaseManagerViewProps, 'product'> {
+): Omit<DatabaseManagerViewProps, 'account' | 'product'> {
   const [connections, setConnections] = useState<readonly ConnectionSummary[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [snapshot, setSnapshot] = useState<DatabaseManagerViewProps['model']['snapshot']>(null)
@@ -80,6 +81,16 @@ export function useDatabaseManager(
   const capabilities = resolveManagerCapabilities(identity.roles, snapshot?.capabilities ?? null)
   const selectedConnection = connections.find((item) => item.id === selectedId) ?? null
   const principalRows = buildPrincipalRows(snapshot)
+  const connectionDetails = useConnectionDetails({
+    canEditExternal: capabilities.canDeleteConnection,
+    connection: selectedConnection,
+    currentUser: snapshot?.currentUser ?? null,
+    onConnectionUpdated: (updated) =>
+      setConnections((current) =>
+        current.map((connection) => (connection.id === updated.id ? updated : connection)),
+      ),
+    principals: snapshot?.principals ?? [],
+  })
   const resourceFilter = useResourceFilter(snapshot?.databases ?? [], principalRows)
   const databaseOptions = buildDatabaseOptions(snapshot?.databases ?? [])
   const resourceDatabaseTable = snapshot
@@ -89,6 +100,7 @@ export function useDatabaseManager(
     accessLevels: snapshot?.capabilities.accessLevels ?? [],
     capabilities,
     onConnectionCreated: (connection) => {
+      connectionDetails.actions.close()
       setConnections((current) => [...current, connection])
       setSnapshot(null)
       setSelectedId(connection.id)
@@ -99,10 +111,13 @@ export function useDatabaseManager(
   })
   const connectionRemoval = useConnectionRemoval({
     canDelete: capabilities.canDeleteConnection,
+    connections,
     onRemoved: (connectionId) => {
+      connectionDetails.actions.close()
       const remaining = connections.filter((connection) => connection.id !== connectionId)
       setConnections(remaining)
       if (selectedId === connectionId) {
+        setError(null)
         setSnapshot(null)
         setSelectedId(remaining[0]?.id ?? null)
       }
@@ -148,11 +163,13 @@ export function useDatabaseManager(
         setActiveTab('workspace')
       },
       connectionRemoval: connectionRemoval.actions,
+      connectionDetails: connectionDetails.actions,
       observability: observability.actions,
       onResourceFilterChange: resourceFilter.onChange,
       principalManagement: principalManagement.actions,
       refresh,
       selectConnection: (event) => {
+        connectionDetails.actions.close()
         setError(null)
         setSnapshot(null)
         setSelectedId(event.currentTarget.dataset.connectionId ?? null)
@@ -171,6 +188,7 @@ export function useDatabaseManager(
       activeTab,
       capabilities,
       connectionRemoval: connectionRemoval.model,
+      connectionDetails: connectionDetails.model,
       connectionFormPresentation: enginePresentation(creation.model.connectionForm.engine),
       connections,
       databaseOptions,

@@ -13,7 +13,8 @@ export const DatabaseConnections: CollectionConfig = {
   admin: {
     defaultColumns: ['name', 'engine', 'host', 'port', 'status', 'lastCheckedAt'],
     description: 'Connection metadata. Changes are performed through the manager UI.',
-    group: 'Database Manager',
+    group: false,
+    hideAPIURL: true,
     useAsTitle: 'name',
   },
   fields: [
@@ -46,6 +47,32 @@ export const DatabaseConnections: CollectionConfig = {
       required: true,
     },
     {
+      name: 'externalHost',
+      type: 'text',
+      admin: {
+        description:
+          'Optional public or cross-network hostname. DBMason never opens network access automatically.',
+      },
+    },
+    {
+      name: 'externalPort',
+      type: 'number',
+      admin: { description: 'Optional external listener port.' },
+      min: 1,
+      max: 65535,
+    },
+    {
+      name: 'externalSslMode',
+      type: 'select',
+      admin: { description: 'TLS expectation for the optional external endpoint.' },
+      options: [
+        { label: 'Verify certificate (recommended)', value: 'verify-full' },
+        { label: 'Require TLS (certificate not verified)', value: 'require' },
+        { label: 'Prefer (legacy; may be plaintext)', value: 'prefer' },
+        { label: 'Disabled (plaintext)', value: 'disable' },
+      ],
+    },
+    {
       name: 'encryptedSecret',
       type: 'text',
       access: { read: () => false },
@@ -71,5 +98,9 @@ export const DatabaseConnections: CollectionConfig = {
       required: true,
     },
   ],
+  labels: {
+    plural: 'Connection records',
+    singular: 'Connection record',
+  },
   timestamps: true,
 }

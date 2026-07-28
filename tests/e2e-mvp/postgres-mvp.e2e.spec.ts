@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test'
 
 import {
+  disableTwoFactorForTest,
+  enableTwoFactorForTest,
+  loginWithTwoFactor,
+} from '../helpers/twoFactorLogin'
+import {
   cleanupRemoteResources,
   readSeededLabels,
   readTestPostgresSettings,
@@ -25,14 +30,6 @@ const viewer = {
 } as const
 const connectionName = 'Isolated PostgreSQL E2E'
 
-async function login(page: import('@playwright/test').Page, user: typeof owner | typeof viewer) {
-  await page.goto('/admin/login')
-  await page.locator('#field-email').fill(user.email)
-  await page.locator('#field-password').fill(user.password)
-  await page.locator('form').getByRole('button', { name: /log\s*in/i }).click()
-  await expect(page).toHaveURL(/\/admin(?:\/)?$/u)
-}
-
 test.describe.serial('PostgreSQL MVP through Chromium', () => {
   let connectionId = ''
   let currentPassword = ''
@@ -45,7 +42,9 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await cleanupRemoteResources()
   })
 
-  test('bootstraps the first owner and saves the isolated PostgreSQL connection', async ({ page }) => {
+  test('bootstraps the first owner and saves the isolated PostgreSQL connection', async ({
+    page,
+  }) => {
     const postgres = readTestPostgresSettings()
 
     await page.goto('/')
@@ -57,10 +56,13 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await page.locator('#field-email').fill(owner.email)
     await page.locator('#field-password').fill(owner.password)
     await page.locator('#field-confirm-password').fill(owner.password)
-    await page.locator('form').getByRole('button', { name: /create/i }).click()
-    await expect(page).toHaveURL(/\/admin(?:\/)?$/u)
+    await page
+      .locator('form')
+      .getByRole('button', { name: /create/i })
+      .click()
+    await expect(page).toHaveURL(/\/login/u)
+    await loginWithTwoFactor(page, owner)
 
-    await page.goto('/')
     await expect(page.locator('.identity')).toContainText(owner.email)
     await page.locator('.connection-rail').getByRole('button', { name: 'Add connection' }).click()
 
@@ -102,7 +104,7 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
   })
 
   test('creates a database and a role whose one-time password is read-only', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await expect(page.getByRole('heading', { name: connectionName })).toBeVisible()
     await page.getByRole('button', { name: 'Database', exact: true }).click()
@@ -110,7 +112,9 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     const databaseDialog = page.getByRole('dialog', { name: 'Create database' })
     await databaseDialog.getByLabel('Database name').fill(remoteResources.database)
     await databaseDialog.getByRole('button', { name: 'Create database' }).click()
-    await expect(page.getByRole('row', { name: new RegExp(remoteResources.database, 'u') })).toBeVisible()
+    await expect(
+      page.getByRole('row', { name: new RegExp(remoteResources.database, 'u') }),
+    ).toBeVisible()
     await seedReadableTable()
 
     await page.getByRole('button', { name: 'Create user' }).click()
@@ -134,23 +138,74 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
 
     await page.reload()
     await expect(page.getByRole('heading', { name: connectionName })).toBeVisible()
-    await expect(page.getByRole('row', { name: new RegExp(remoteResources.database, 'u') })).toBeVisible()
+    await expect(
+      page.getByRole('row', { name: new RegExp(remoteResources.database, 'u') }),
+    ).toBeVisible()
+  })
+
+  test('lets the owner opt in to 2FA and later return to password-only login', async ({ page }) => {
+    await loginWithTwoFactor(page, owner)
+    await enableTwoFactorForTest(page, owner)
+
+    await loginWithTwoFactor(page, owner)
+    await expect(page.locator('.identity')).toContainText(owner.email)
+    await disableTwoFactorForTest(page, owner)
+
+    await loginWithTwoFactor(page, owner)
+    await expect(page.locator('#field-two-factor-code')).toHaveCount(0)
+    await expect(page.locator('.identity')).toContainText(owner.email)
+  })
+
+  test('shows safe per-database connection URLs without revealing the saved administrator secret', async ({
+    page,
+  }) => {
+    const postgres = readTestPostgresSettings()
+    await loginWithTwoFactor(page, owner)
+    await page.goto('/')
+    await page
+      .getByRole('button', {
+        name: `Connection details for ${remoteResources.database}`,
+        exact: true,
+      })
+      .click()
+
+    const dialog = page.getByRole('dialog', { name: 'Database connection details' })
+    await expect(dialog).toContainText(`${postgres.host}:${postgres.port}`)
+    await expect(dialog).toContainText(
+      `postgresql://${remoteResources.principal}:PASSWORD@${postgres.host}:${postgres.port}/${remoteResources.database}`,
+    )
+    await expect(dialog).not.toContainText(postgres.password)
+
+    const password = dialog.getByLabel(/Password/u)
+    await password.fill(currentPassword)
+    await dialog.getByLabel('External hostname or IP').fill('db.example.test')
+    await expect(password).toHaveValue('')
+    await dialog.getByLabel('External port').fill('6543')
+    await dialog.getByLabel('TLS mode').selectOption('require')
+    await dialog.getByRole('button', { name: 'Save external' }).click()
+
+    await expect(dialog).toContainText('db.example.test:6543')
+    await expect(dialog).toContainText(
+      `postgresql://${remoteResources.principal}:PASSWORD@db.example.test:6543/${remoteResources.database}`,
+    )
   })
 
   test('shows live observability and runs the guarded read-only workspace', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await expect(page.getByRole('heading', { name: connectionName })).toBeVisible()
 
-    const metricsResponse = page.waitForResponse(
-      (response) => response.url().endsWith(`/connections/${connectionId}/observability`),
+    const metricsResponse = page.waitForResponse((response) =>
+      response.url().endsWith(`/connections/${connectionId}/observability`),
     )
     await page.getByRole('tab', { name: /Observability/u }).click()
     expect((await metricsResponse).status()).toBe(200)
     await expect(page.getByRole('heading', { name: 'Observability' })).toBeVisible()
     await expect(page.getByText('Host CPU and RAM', { exact: true })).toBeVisible()
     await expect(page.getByText(/external metrics provider/u)).toBeVisible()
-    await expect(page.getByRole('row', { name: new RegExp(remoteResources.database, 'u') })).toBeVisible()
+    await expect(
+      page.getByRole('row', { name: new RegExp(remoteResources.database, 'u') }),
+    ).toBeVisible()
 
     await page.getByRole('tab', { name: /Data & SQL/u }).click()
     await expect(
@@ -184,9 +239,7 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     )
 
     const editor = page.getByLabel('Read-only SQL query')
-    await editor.fill(
-      `SELECT id, label FROM public."${remoteResources.table}" ORDER BY id`,
-    )
+    await editor.fill(`SELECT id, label FROM public."${remoteResources.table}" ORDER BY id`)
     const queryResponse = page.waitForResponse((response) =>
       response.url().endsWith(`/connections/${connectionId}/workspace/query`),
     )
@@ -222,7 +275,7 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
   })
 
   test('keeps duplicate failures visible in the dialog', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await expect(page.getByRole('heading', { name: connectionName })).toBeVisible()
     await page.getByRole('button', { name: 'Database', exact: true }).click()
@@ -235,8 +288,11 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await dialog.getByRole('button', { name: 'Cancel' }).click()
   })
 
-  test('creates a viewer, hides mutations, and rejects a direct manager mutation', async ({ browser, page }) => {
-    await login(page, owner)
+  test('creates a viewer, hides mutations, and rejects a direct manager mutation', async ({
+    browser,
+    page,
+  }) => {
+    await loginWithTwoFactor(page, owner)
     const createViewer = await page.evaluate(async (newViewer) => {
       const response = await fetch('/api/users', {
         body: JSON.stringify({ ...newViewer, roles: ['viewer'] }),
@@ -251,7 +307,7 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     const viewerContext = await browser.newContext()
     const viewerPage = await viewerContext.newPage()
     try {
-      await login(viewerPage, viewer)
+      await loginWithTwoFactor(viewerPage, viewer)
       await viewerPage.goto('/')
 
       await expect(viewerPage.locator('.identity')).toContainText(viewer.email)
@@ -259,6 +315,12 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
       await expect(viewerPage.getByRole('button', { name: 'Add connection' })).toHaveCount(0)
       await expect(viewerPage.getByRole('button', { name: 'Database', exact: true })).toHaveCount(0)
       await expect(viewerPage.getByRole('button', { name: 'Create user' })).toHaveCount(0)
+      await expect(
+        viewerPage.getByRole('button', {
+          name: `Connection details for ${remoteResources.database}`,
+          exact: true,
+        }),
+      ).toHaveCount(0)
       await expect(viewerPage.getByRole('tab', { name: /Data & SQL/u })).toHaveCount(0)
 
       const viewerMetricsResponse = viewerPage.waitForResponse((response) =>
@@ -270,21 +332,18 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
 
       const workspaceStatus = await viewerPage.evaluate(
         async ({ database, id, principal }) => {
-          const response = await fetch(
-            `/api/db-manager/v1/connections/${id}/workspace/query`,
-            {
-              body: JSON.stringify({
-                database,
-                maxRows: 1,
-                password: 'invalid-viewer-test-credential',
-                principal,
-                sql: 'SELECT 1',
-              }),
-              credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json' },
-              method: 'POST',
-            },
-          )
+          const response = await fetch(`/api/db-manager/v1/connections/${id}/workspace/query`, {
+            body: JSON.stringify({
+              database,
+              maxRows: 1,
+              password: 'invalid-viewer-test-credential',
+              principal,
+              sql: 'SELECT 1',
+            }),
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          })
           return response.status
         },
         {
@@ -314,11 +373,13 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
   })
 
   test('manages access, login, password rotation, and safe role deletion', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await page.getByRole('tab', { name: /Users & roles/u }).click()
 
-    await expect(page.getByRole('button', { name: `Manage ${readTestPostgresSettings().user}` })).toBeDisabled()
+    await expect(
+      page.getByRole('button', { name: `Manage ${readTestPostgresSettings().user}` }),
+    ).toBeDisabled()
     await page.getByRole('button', { name: `Manage ${remoteResources.principal}` }).click()
     let dialog = page.getByRole('dialog', { name: `Manage ${remoteResources.principal}` })
     await dialog.getByLabel('Database').selectOption(remoteResources.database)
@@ -350,16 +411,25 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await expect(dialog).toContainText('PUBLIC still grants CONNECT')
     expect(await verifySelectAccess(currentPassword)).toBe(false)
 
-    await dialog.getByLabel(`Type ${remoteResources.principal} to confirm`).fill(remoteResources.principal)
+    await dialog
+      .getByLabel(`Type ${remoteResources.principal} to confirm`)
+      .fill(remoteResources.principal)
     await dialog.getByRole('button', { name: 'Drop role' }).click()
     await expect(dialog).toBeHidden()
-    await expect(page.getByRole('button', { name: `Manage ${remoteResources.principal}` })).toHaveCount(0)
+    await expect(
+      page.getByRole('button', { name: `Manage ${remoteResources.principal}` }),
+    ).toHaveCount(0)
   })
 
   test('removes only the saved control-plane connection', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
-    await page.getByRole('button', { name: 'Remove saved connection' }).click()
+    await page
+      .getByRole('button', {
+        exact: true,
+        name: `Remove saved connection ${connectionName}`,
+      })
+      .click()
     const dialog = page.getByRole('dialog', { name: 'Remove saved connection' })
     await dialog.getByLabel(`Type ${connectionName} to confirm`).fill(connectionName)
     await dialog.getByRole('button', { name: 'Remove connection' }).click()

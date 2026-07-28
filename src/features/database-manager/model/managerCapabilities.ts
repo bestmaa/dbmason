@@ -8,6 +8,7 @@ export interface ManagerCapabilities {
   canDeleteConnection: boolean
   canManagePrincipals: boolean
   canUseWorkspace: boolean
+  canViewConnectionDetails: boolean
   canViewObservability: boolean
 }
 
@@ -29,6 +30,7 @@ export function resolveManagerCapabilities(
     canDeleteConnection,
     canManagePrincipals,
     canUseWorkspace: canOperate && Boolean(engine?.supportsReadOnlyWorkspace),
+    canViewConnectionDetails: canDeleteConnection,
     canViewObservability: Boolean(engine?.supportsObservability),
   }
 }

@@ -47,6 +47,11 @@ describe('application security configuration', () => {
       const users = config.collections.find(({ slug }) => slug === 'users')
 
       expect(config.admin.avatar).toBe('default')
+      expect(config.admin.components.graphics.Icon).toBeTruthy()
+      expect(config.admin.components.graphics.Logo).toBeTruthy()
+      expect(config.admin.components.views.dashboard).toBeTruthy()
+      expect(config.admin.meta.titleSuffix).toContain('DBMason')
+      expect(config.admin.theme).toBe('dark')
       expect(config.cors).toEqual(['https://dbmason.example'])
       expect(config.csrf).toEqual(['https://dbmason.example'])
       expect(config.serverURL).toBe('https://dbmason.example')
@@ -94,6 +99,10 @@ describe('application security configuration', () => {
         },
         { key: 'Permissions-Policy', value: expect.stringContaining('camera=()') },
         { key: 'Referrer-Policy', value: 'no-referrer' },
+        {
+          key: 'Strict-Transport-Security',
+          value: 'max-age=31536000; includeSubDomains',
+        },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'DENY' },
       ]),

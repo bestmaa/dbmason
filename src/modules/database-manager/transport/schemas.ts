@@ -19,12 +19,12 @@ export const identifierSchema = z
   .max(320)
   .refine((value) => !value.includes('\0'), 'Identifier cannot contain a null character')
 
-const hostSchema = z
+export const hostSchema = z
   .string()
   .trim()
   .min(1)
   .max(253)
-  .refine((value) => !/[\s/\\\0]/u.test(value), 'Enter a hostname or IP address')
+  .refine((value) => !/[\s/\\\0@?#%[\]]/u.test(value), 'Enter a hostname or IP address')
 
 const createConnectionFields = z.object({
   engine: z.enum(engineIds).default('postgresql'),
@@ -45,6 +45,21 @@ export const createConnectionSchema = createConnectionFields.transform((input) =
     port: input.port ?? defaults.port,
   }
 })
+
+export const updateExternalEndpointSchema = z
+  .object({
+    external: z
+      .object({
+        host: hostSchema,
+        port: z.number().int().min(1).max(65535),
+        sslMode: z.enum(sslModes),
+      })
+      .strict()
+      .nullable(),
+  })
+  .strict()
+
+export type UpdateExternalEndpointInput = z.infer<typeof updateExternalEndpointSchema>
 
 export const createDatabaseSchema = z.object({
   name: identifierSchema,

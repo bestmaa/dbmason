@@ -22,7 +22,7 @@ export default async function HomePage() {
     const firstRun = userCount.totalDocs === 0
     return (
       <AuthGate
-        actionHref="/admin"
+        actionHref={firstRun ? '/setup' : '/login'}
         actionLabel={firstRun ? 'Create owner account' : 'Sign in'}
         description={
           firstRun

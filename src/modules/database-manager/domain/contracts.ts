@@ -29,6 +29,9 @@ export interface DatabaseConnectionConfig {
 
 export interface ConnectionSummary {
   engine: EngineId
+  externalHost: string | null
+  externalPort: number | null
+  externalSslMode: SslMode | null
   host: string
   id: string
   lastCheckedAt: string | null
@@ -36,6 +39,7 @@ export interface ConnectionSummary {
   name: string
   port: number
   serverVersion: string | null
+  sslMode: SslMode
   status: ConnectionStatus
 }
 
@@ -63,6 +67,7 @@ export interface MysqlDatabaseSummary extends DatabaseSummaryBase {
 export type DatabaseSummary = MysqlDatabaseSummary | PostgresDatabaseSummary
 
 export interface PrincipalSummary {
+  authenticationUsername: string
   canCreateDatabase: boolean
   canCreateRole: boolean
   canLogin: boolean

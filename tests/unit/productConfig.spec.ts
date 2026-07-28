@@ -24,7 +24,7 @@ describe('running-build source disclosure', () => {
     const product = getProductInfo()
     const html = renderToStaticMarkup(
       createElement(AuthGate, {
-        actionHref: '/admin',
+        actionHref: '/login',
         actionLabel: 'Sign in',
         description: 'Welcome back.',
         product,
@@ -32,6 +32,7 @@ describe('running-build source disclosure', () => {
       }),
     )
 
+    expect(html).toContain('href="/login"')
     expect(html).toContain('https://code.example/dbmason/tree/deployment-7')
     expect(html).toContain(`Source v${manifest.version}`)
     expect(html).toContain('AGPL-3.0-only')

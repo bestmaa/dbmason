@@ -9,12 +9,24 @@ import {
   requireAuthenticated,
   requireRole,
 } from './endpointSupport'
-import { createConnectionSchema } from './schemas'
+import { createConnectionSchema, updateExternalEndpointSchema } from './schemas'
 
 const operators = ['owner', 'admin', 'operator'] as const
 const connectionAdministrators = ['owner', 'admin'] as const
 
 export const connectionEndpoints: readonly Endpoint[] = [
+  {
+    handler: (req) =>
+      handleEndpoint(async () => {
+        requireRole(req, connectionAdministrators)
+        const connectionId = getRouteParam(req, 'connectionId')
+        const input = await parseJson(req, updateExternalEndpointSchema)
+        const connection = await managerService.updateExternalEndpoint(req, connectionId, input)
+        return jsonResponse({ connection })
+      }),
+    method: 'patch',
+    path: '/db-manager/v1/connections/:connectionId/endpoint',
+  },
   {
     handler: (req) =>
       handleEndpoint(async () => {

@@ -54,6 +54,7 @@ interface DatabaseRow extends RowDataPacket {
 }
 
 interface PrincipalRow extends RowDataPacket {
+  authenticationUsername: string
   canCreateDatabase: unknown
   canCreateRole: unknown
   canLogin: unknown
@@ -334,6 +335,7 @@ export class MysqlEngine implements DatabaseEngine {
       `)
       const [principalRows] = await connection.query<PrincipalRow[]>(`
         SELECT CONCAT(user.User, '@', user.Host) AS name,
+          user.User AS authenticationUsername,
           user.account_locked = 'N' AS canLogin,
           user.Super_priv = 'Y' AS isSuperuser,
           user.Create_priv = 'Y' AS canCreateDatabase,
@@ -371,6 +373,7 @@ export class MysqlEngine implements DatabaseEngine {
         engine: this.id,
         principals: principalRows.map(
           (row): PrincipalSummary => ({
+            authenticationUsername: row.authenticationUsername,
             canCreateDatabase: mysqlBoolean(row.canCreateDatabase),
             canCreateRole: mysqlBoolean(row.canCreateRole),
             canLogin: mysqlBoolean(row.canLogin),

@@ -193,6 +193,7 @@ describe('query workspace presentational safety', () => {
 
   it('keeps MySQL role-linked accounts out of the transient workspace selector', () => {
     const account = {
+      authenticationUsername: 'app_reader',
       canCreateDatabase: false,
       canCreateRole: false,
       canLogin: true,

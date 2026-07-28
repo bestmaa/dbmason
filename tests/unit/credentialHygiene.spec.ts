@@ -57,6 +57,7 @@ const capabilities = {
   canDeleteConnection: true,
   canManagePrincipals: true,
   canUseWorkspace: true,
+  canViewConnectionDetails: true,
   canViewObservability: true,
 }
 
@@ -215,7 +216,7 @@ describe('transient workspace credential parity', () => {
       { defaultCharacterSet: 'utf8mb4', defaultCollation: 'utf8mb4_0900_ai_ci', engine: 'mysql' as const, name: 'other', sizeBytes: 0 },
     ],
     engine: 'mysql' as const,
-    principals: [{ canCreateDatabase: false, canCreateRole: false, canLogin: true, isSuperuser: false, memberships: [], name: 'reader@%', validUntil: null }],
+    principals: [{ authenticationUsername: 'reader', canCreateDatabase: false, canCreateRole: false, canLogin: true, isSuperuser: false, memberships: [], name: 'reader@%', validUntil: null }],
   }
 
   it('clears the transient password when identity scope changes', () => {

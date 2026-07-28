@@ -12,7 +12,9 @@ export const AuditEvents: CollectionConfig = {
   },
   admin: {
     defaultColumns: ['action', 'outcome', 'target', 'actor', 'createdAt'],
-    group: 'Database Manager',
+    description: 'Append-only DBMason control-plane activity.',
+    group: false,
+    hideAPIURL: true,
     useAsTitle: 'action',
   },
   fields: [
@@ -35,5 +37,9 @@ export const AuditEvents: CollectionConfig = {
       maxDepth: 0,
     },
   ],
+  labels: {
+    plural: 'Audit trail',
+    singular: 'Audit event',
+  },
   timestamps: true,
 }

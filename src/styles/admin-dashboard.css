@@ -1,0 +1,185 @@
+.dbmason-admin-dashboard {
+  width: min(76rem, 100%);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+  color: var(--dbmason-admin-text);
+}
+
+.dbmason-admin-hero {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 1.55fr) minmax(17rem, 0.75fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding: clamp(1.6rem, 4vw, 3.2rem);
+  border: 1px solid var(--dbmason-admin-border);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 82% 0, rgb(114 167 255 / 16%), transparent 34%),
+    linear-gradient(145deg, rgb(17 23 37 / 96%), rgb(10 14 23 / 96%));
+  box-shadow: 0 2rem 5rem rgb(0 0 0 / 28%);
+}
+
+.dbmason-admin-hero::after {
+  position: absolute;
+  right: -4rem;
+  bottom: -8rem;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid rgb(93 214 197 / 12%);
+  border-radius: 50%;
+  content: '';
+}
+
+.dbmason-admin-hero__copy {
+  position: relative;
+  z-index: 1;
+}
+
+.dbmason-admin-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.65rem;
+  color: var(--dbmason-admin-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.dbmason-admin-hero h1 {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.dbmason-admin-hero__copy > p:not(.dbmason-admin-eyebrow) {
+  max-width: 42rem;
+  margin: 1.15rem 0 0;
+  color: var(--dbmason-admin-text-soft);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.dbmason-admin-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.6rem;
+}
+
+.dbmason-admin-action {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--dbmason-admin-border-strong);
+  border-radius: 0.65rem;
+  background: var(--dbmason-admin-surface-raised);
+  color: var(--dbmason-admin-text);
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.dbmason-admin-action:hover {
+  border-color: var(--dbmason-admin-accent);
+  transform: translateY(-1px);
+}
+
+.dbmason-admin-action--primary {
+  border-color: transparent;
+  background: var(--dbmason-admin-accent);
+  color: var(--dbmason-admin-accent-ink);
+}
+
+.dbmason-admin-identity {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-self: center;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.8rem;
+  padding: 1.05rem;
+  border: 1px solid var(--dbmason-admin-border-strong);
+  border-radius: 0.85rem;
+  background: rgb(8 11 18 / 68%);
+}
+
+.dbmason-admin-identity > span {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgb(93 214 197 / 30%);
+  border-radius: 0.8rem;
+  background: rgb(93 214 197 / 12%);
+  color: var(--dbmason-admin-accent);
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.dbmason-admin-identity small,
+.dbmason-admin-identity strong,
+.dbmason-admin-identity p {
+  display: block;
+}
+
+.dbmason-admin-identity small {
+  color: var(--dbmason-admin-text-muted);
+  font-size: 0.6rem;
+}
+
+.dbmason-admin-identity strong {
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+}
+
+.dbmason-admin-identity p {
+  overflow: hidden;
+  margin: 0.2rem 0 0;
+  color: var(--dbmason-admin-text-soft);
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbmason-admin-identity em {
+  grid-column: 1 / -1;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--dbmason-admin-border);
+  color: var(--dbmason-admin-text-muted);
+  font-size: 0.62rem;
+  font-style: normal;
+  text-transform: capitalize;
+}
+
+.dbmason-admin-areas {
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+.dbmason-admin-areas > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.dbmason-admin-areas h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.025em;
+}
+
+.dbmason-admin-areas > header > p {
+  margin: 0;
+  color: var(--dbmason-admin-text-muted);
+  font-size: 0.7rem;
+}

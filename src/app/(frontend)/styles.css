@@ -1,7 +1,10 @@
 @import '../../styles/tokens.css';
 @import '../../styles/base.css';
+@import '../../styles/auth.css';
+@import '../../styles/security.css';
 @import '../../styles/shell.css';
 @import '../../styles/resources.css';
+@import '../../styles/connection-details.css';
 @import '../../styles/forms.css';
 @import '../../styles/lifecycle.css';
 @import '../../styles/observability.css';

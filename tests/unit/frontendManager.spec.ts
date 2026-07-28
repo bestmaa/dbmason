@@ -13,6 +13,7 @@ import { engineLabels } from '@/features/database-manager/model/enginePresentati
 import { buildDatabaseTableViewModel } from '@/features/database-manager/model/databaseResources'
 import { ConnectionRail } from '@/features/database-manager/ui/ConnectionRail'
 import { DatabaseTable } from '@/features/database-manager/ui/DatabaseTable'
+import { SignOutButton } from '@/features/database-manager/ui/SignOutButton'
 import { WorkspaceHeader } from '@/features/database-manager/ui/WorkspaceHeader'
 import { Modal } from '@/ui/Modal'
 
@@ -36,6 +37,7 @@ describe('database manager frontend authorization', () => {
       canDeleteConnection: role !== 'operator',
       canManagePrincipals: true,
       canUseWorkspace: true,
+      canViewConnectionDetails: role !== 'operator',
       canViewObservability: true,
     })
   })
@@ -48,15 +50,18 @@ describe('database manager frontend authorization', () => {
       canDeleteConnection: false,
       canManagePrincipals: false,
       canUseWorkspace: false,
+      canViewConnectionDetails: false,
       canViewObservability: true,
     })
 
     const rail = renderToStaticMarkup(
       createElement(ConnectionRail, {
         canAdd: false,
+        canDelete: false,
         connections: [],
         engineLabels,
         onAdd: () => undefined,
+        onRemove: () => undefined,
         onSelect: () => undefined,
         productName: 'DBMason',
         selectedId: null,
@@ -69,6 +74,9 @@ describe('database manager frontend authorization', () => {
         canDeleteConnection: false,
         connection: {
           engine: 'postgresql',
+          externalHost: null,
+          externalPort: null,
+          externalSslMode: null,
           host: 'localhost',
           id: 'connection-id',
           lastCheckedAt: null,
@@ -76,6 +84,7 @@ describe('database manager frontend authorization', () => {
           name: 'Test',
           port: 5432,
           serverVersion: null,
+          sslMode: 'verify-full',
           status: 'online',
         },
         engineLabel: 'PostgreSQL',
@@ -91,6 +100,41 @@ describe('database manager frontend authorization', () => {
     expect(header).not.toContain('Create user')
     expect(header).not.toContain('> Database</button>')
     expect(header).toContain('Refresh')
+  })
+
+  it('shows an explicit per-connection removal action only to connection administrators', () => {
+    const connection = {
+      engine: 'postgresql' as const,
+      externalHost: null,
+      externalPort: null,
+      externalSslMode: null,
+      host: 'postgres.internal',
+      id: 'd75b3975-9377-497b-9349-5ef373d85bbc',
+      lastCheckedAt: null,
+      lastLatencyMs: null,
+      name: 'Production Database',
+      port: 5432,
+      serverVersion: null,
+      sslMode: 'verify-full' as const,
+      status: 'online' as const,
+    }
+    const renderRail = (canDelete: boolean) =>
+      renderToStaticMarkup(
+        createElement(ConnectionRail, {
+          canAdd: false,
+          canDelete,
+          connections: [connection],
+          engineLabels,
+          onAdd: () => undefined,
+          onRemove: () => undefined,
+          onSelect: () => undefined,
+          productName: 'DBMason',
+          selectedId: connection.id,
+        }),
+      )
+
+    expect(renderRail(true)).toContain('aria-label="Remove saved connection Production Database"')
+    expect(renderRail(false)).not.toContain('Remove saved connection Production Database')
   })
 
   it('uses certificate verification for new remote connections by default', () => {
@@ -112,6 +156,7 @@ describe('database manager frontend authorization', () => {
     const html = renderToStaticMarkup(
       createElement(DatabaseTable, {
         canBrowse: false,
+        canViewDetails: false,
         model: buildDatabaseTableViewModel('postgresql', [
           {
             allowConnections: true,
@@ -125,6 +170,7 @@ describe('database manager frontend authorization', () => {
           },
         ]),
         onBrowse: () => undefined,
+        onDetails: () => undefined,
       }),
     )
 
@@ -132,6 +178,46 @@ describe('database manager frontend authorization', () => {
     expect(html).toContain('CONNECT')
     expect(html).toContain('TEMPORARY')
     expect(html).not.toContain('Browse app')
+    expect(html).not.toContain('Connection details for app')
+  })
+
+  it.each(['owner', 'admin', 'operator', 'viewer'] as const)(
+    'shows connection details to the %s role only when it administers saved connections',
+    (role) => {
+      const capabilities = resolveManagerCapabilities([role], engineCapabilities)
+      const html = renderToStaticMarkup(
+        createElement(DatabaseTable, {
+          canBrowse: capabilities.canUseWorkspace,
+          canViewDetails: capabilities.canViewConnectionDetails,
+          model: buildDatabaseTableViewModel('postgresql', [
+            {
+              allowConnections: true,
+              encoding: 'UTF8',
+              engine: 'postgresql',
+              name: 'app',
+              owner: 'postgres',
+              publicConnect: false,
+              publicTemporary: false,
+              sizeBytes: 1024,
+            },
+          ]),
+          onBrowse: () => undefined,
+          onDetails: () => undefined,
+        }),
+      )
+
+      if (role === 'owner' || role === 'admin') {
+        expect(html).toContain('aria-label="Connection details for app"')
+      } else {
+        expect(html).not.toContain('Connection details for app')
+      }
+    },
+  )
+
+  it('does not let an operator use workspace permission as details permission', () => {
+    const capabilities = resolveManagerCapabilities(['operator'], engineCapabilities)
+    expect(capabilities.canUseWorkspace).toBe(true)
+    expect(capabilities.canViewConnectionDetails).toBe(false)
   })
 
   it('renders MySQL identity without PostgreSQL-only owner or PUBLIC columns', () => {
@@ -142,6 +228,9 @@ describe('database manager frontend authorization', () => {
         canDeleteConnection: false,
         connection: {
           engine: 'mysql',
+          externalHost: null,
+          externalPort: null,
+          externalSslMode: null,
           host: 'mysql.internal',
           id: 'mysql-id',
           lastCheckedAt: null,
@@ -149,6 +238,7 @@ describe('database manager frontend authorization', () => {
           name: 'MySQL test',
           port: 3306,
           serverVersion: '8.4.6',
+          sslMode: 'verify-full',
           status: 'online',
         },
         engineLabel: 'MySQL',
@@ -162,14 +252,18 @@ describe('database manager frontend authorization', () => {
     const table = renderToStaticMarkup(
       createElement(DatabaseTable, {
         canBrowse: false,
-        model: buildDatabaseTableViewModel('mysql', [{
-          defaultCharacterSet: 'utf8mb4',
-          defaultCollation: 'utf8mb4_0900_ai_ci',
-          engine: 'mysql',
-          name: 'app',
-          sizeBytes: 1024,
-        }]),
+        canViewDetails: false,
+        model: buildDatabaseTableViewModel('mysql', [
+          {
+            defaultCharacterSet: 'utf8mb4',
+            defaultCollation: 'utf8mb4_0900_ai_ci',
+            engine: 'mysql',
+            name: 'app',
+            sizeBytes: 1024,
+          },
+        ]),
         onBrowse: () => undefined,
+        onDetails: () => undefined,
       }),
     )
 
@@ -210,5 +304,19 @@ describe('database manager error presentation', () => {
     expect(html).toContain('role="alert"')
     expect(html).toContain('Could not create the database.')
     expect(html).toContain('Dialog content')
+  })
+
+  it('shows sign-out failures without changing the action name', () => {
+    const html = renderToStaticMarkup(
+      createElement(SignOutButton, {
+        error: 'Sign out failed. Check your connection and try again.',
+        onSignOut: () => undefined,
+        signingOut: false,
+      }),
+    )
+
+    expect(html).toContain('aria-label="Sign out"')
+    expect(html).toContain('role="alert"')
+    expect(html).toContain('Sign out failed. Check your connection and try again.')
   })
 })

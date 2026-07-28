@@ -10,6 +10,12 @@ matrix and real-server CI.
 
 The application is one Payload + Next.js process with SQLite for control-plane metadata. Managed database servers remain the source of truth; DBMason does not copy their catalogs into SQLite or keep idle pools open. PostgreSQL and MySQL behavior lives in isolated adapters rather than shared SQL conditionals.
 
+First-owner setup and sign-in run on DBMason's `/setup` and `/login` pages and
+return to the main workspace. Each user can opt into authenticator 2FA from
+`/security`. Owners and admins can open the branded
+`/admin` control center for team accounts, access profiles, connection records,
+account settings, and audit inspection.
+
 ## Start locally
 
 Requirements: Node.js 22 or 24 and pnpm 9–11.
@@ -21,7 +27,20 @@ pnpm install
 pnpm dev
 ```
 
-`PORT` in `.env` controls the local port (the example uses `3010`). The dev/start scripts preload `.env` before Next chooses its listener. `DBMASON_PUBLIC_URL` must match the exact browser-facing origin; HTTP is accepted only for `localhost`, `127.0.0.1`, or `[::1]`, while every non-loopback deployment requires HTTPS. Open `http://localhost:3010`; on first run, create the owner account through the Payload admin screen with a password of at least 12 characters.
+`PORT` in `.env` controls the local port (the example uses `3010`). The dev/start scripts preload `.env` before Next chooses its listener. `DBMASON_PUBLIC_URL` must match the exact browser-facing origin; HTTP is accepted only for `localhost`, `127.0.0.1`, or `[::1]`, while every non-loopback deployment requires HTTPS. Open `http://localhost:3010`; on first run, create the owner account with a password of at least 12 characters and sign in.
+
+Two-factor authentication is optional per DBMason account and strongly
+recommended for owners and admins. Open **Security**, confirm the current
+password, then scan the locally generated QR code with Google Authenticator,
+Microsoft Authenticator, or another RFC 6238 TOTP app. Enabling or disabling
+2FA revokes every existing session and requires a fresh sign-in. TOTP seeds are
+encrypted with a dedicated subkey derived from `CONNECTION_ENCRYPTION_KEY`;
+recovery codes are shown once and stored only as keyed hashes. No additional
+environment variable is required.
+
+Keep `CONNECTION_ENCRYPTION_KEY` stable and backed up; changing
+it without a data migration makes saved database credentials and TOTP seeds
+unreadable.
 
 Official builds link to the GitHub tag matching the running `package.json` version. If you
 publish a modified network build, set runtime variable `DBMASON_SOURCE_URL` to the public
@@ -132,9 +151,11 @@ Read [ARCHITECTURE.md](./ARCHITECTURE.md), [SECURITY.md](./SECURITY.md), and [CO
 - Engine-mapped connect/read/write/developer access presets
 - Existing-principal access reconciliation, login enable/disable, one-time password rotation, and protected deletion
 - Control-plane-only saved connection removal
+- Owner/admin-only per-database internal/external connection URL templates built from restricted accounts, without revealing the saved administrator password
 - On-demand PostgreSQL statistics/`pg_stat_io` and MySQL server-status/schema metrics
 - Guarded relation browsing and row-returning read-only SQL under a transient, nonprivileged engine account
 - Payload application RBAC and append-only audit events
+- Optional per-account authenticator 2FA with session revocation, encrypted TOTP seeds, replay protection, lockout, and one-use recovery codes
 
 Neither PostgreSQL nor MySQL SQL statistics expose trustworthy host/container
 CPU or RAM utilization. DBMason reports that boundary instead of inventing a
