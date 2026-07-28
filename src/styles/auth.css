@@ -1,0 +1,186 @@
+.dbmason-auth-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 50% 0%, rgb(93 214 197 / 13%), transparent 35%),
+    radial-gradient(circle at 90% 90%, rgb(114 167 255 / 9%), transparent 30%),
+    #080b12;
+}
+
+.dbmason-auth {
+  width: min(100%, 32rem);
+  margin: 0 auto;
+  padding: 2.25rem;
+  border: 1px solid #202a3d;
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, rgb(255 255 255 / 3%), transparent), #0d111b;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 38%);
+  color: #f5f7fb;
+}
+
+.dbmason-auth__brand {
+  display: grid;
+  width: 3.4rem;
+  height: 3.4rem;
+  margin-bottom: 1.15rem;
+  place-items: center;
+  border: 1px solid rgb(93 214 197 / 28%);
+  border-radius: 1rem;
+  background: rgb(93 214 197 / 10%);
+  color: #5dd6c5;
+}
+
+.dbmason-auth__eyebrow {
+  margin: 0 0 0.4rem;
+  color: #5dd6c5;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.dbmason-auth h1,
+.dbmason-auth h2 {
+  margin: 0 0 0.75rem;
+  color: #f5f7fb;
+  letter-spacing: -0.025em;
+}
+
+.dbmason-auth h1 {
+  font-size: clamp(1.65rem, 4vw, 2rem);
+}
+
+.dbmason-auth__intro,
+.dbmason-auth__setup p,
+.dbmason-auth__recovery p {
+  color: #aab4c7;
+  line-height: 1.65;
+}
+
+.dbmason-auth__form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.dbmason-auth__form label {
+  margin-top: 0.4rem;
+  color: #f5f7fb;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.dbmason-auth__form input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #2b3850;
+  border-radius: 0.65rem;
+  outline: none;
+  background: #111725;
+  color: #f5f7fb;
+}
+
+.dbmason-auth__form input:focus {
+  border-color: #5dd6c5;
+  box-shadow: 0 0 0 3px rgb(93 214 197 / 12%);
+}
+
+.dbmason-auth__form small {
+  color: #8793a9;
+}
+
+.dbmason-auth__form button,
+.dbmason-auth__recovery button {
+  min-height: 3rem;
+  margin-top: 0.75rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: #5dd6c5;
+  color: #041c18;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.dbmason-auth__form button:hover,
+.dbmason-auth__recovery button:hover {
+  background: #76e5d5;
+}
+
+.dbmason-auth__form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.dbmason-auth__form .dbmason-auth__secondary {
+  margin-top: 0;
+  border: 1px solid #2b3850;
+  background: transparent;
+  color: #aab4c7;
+}
+
+.dbmason-auth__setup {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+}
+
+.dbmason-auth__setup img {
+  max-width: 100%;
+  border: 6px solid #fff;
+  border-radius: 0.65rem;
+  background: #fff;
+}
+
+.dbmason-auth__setup code,
+.dbmason-auth__recovery code {
+  word-break: break-all;
+}
+
+.dbmason-auth__error {
+  margin: 0.5rem 0 0;
+  color: #ff7a90;
+}
+
+.dbmason-auth__recovery ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 1rem;
+  padding: 1rem;
+  border: 1px solid #202a3d;
+  border-radius: 0.65rem;
+  background: #111725;
+  list-style: none;
+}
+
+.dbmason-auth__legal {
+  display: block;
+  margin-top: 1.35rem;
+  color: #8793a9;
+  font-size: 0.68rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.dbmason-auth__legal a {
+  color: #aab4c7;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .dbmason-auth-page {
+    padding: 16px;
+  }
+
+  .dbmason-auth {
+    padding: 1.35rem;
+  }
+
+  .dbmason-auth__recovery ul {
+    grid-template-columns: 1fr;
+  }
+}

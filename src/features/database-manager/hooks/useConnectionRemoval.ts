@@ -14,6 +14,7 @@ import { managerErrorMessage } from './managerHookSupport'
 
 interface ConnectionRemovalInput {
   canDelete: boolean
+  connections: readonly ConnectionSummary[]
   onRemoved: (connectionId: string) => void
   selectedConnection: ConnectionSummary | null
 }
@@ -28,6 +29,13 @@ export function useConnectionRemoval(input: ConnectionRemovalInput): ConnectionR
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  const open = (connection: ConnectionSummary | null) => {
+    if (!input.canDelete || !connection) return
+    setConfirmation('')
+    setError(null)
+    setTarget(connection)
+  }
 
   const close = () => {
     if (submitting) return
@@ -60,11 +68,12 @@ export function useConnectionRemoval(input: ConnectionRemovalInput): ConnectionR
       onConfirmationChange: (event: ChangeEvent<HTMLInputElement>) =>
         setConfirmation(event.target.value),
       onSubmit,
-      open: () => {
-        if (!input.canDelete || !input.selectedConnection) return
-        setConfirmation('')
-        setError(null)
-        setTarget(input.selectedConnection)
+      openSelected: () => open(input.selectedConnection),
+      openTarget: (event) => {
+        const connection = input.connections.find(
+          (item) => item.id === event.currentTarget.dataset.connectionId,
+        )
+        open(connection ?? null)
       },
     },
     model: {

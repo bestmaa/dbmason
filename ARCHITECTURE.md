@@ -63,7 +63,13 @@ adapter. The engine registry is the only concrete construction boundary.
 
 ## Frontend architecture
 
-The product UI is separate from Payload Admin. Payload Admin is reserved for owner account bootstrap, application-user administration, access profiles, connection metadata inspection, and audit inspection.
+The product UI owns first-owner setup, sign-in, optional authenticator
+enrollment/disable, and the database workspace. Authenticated setup and ordinary sign-in return to `/`.
+The branded `/admin` control center is reserved for application-user
+administration, access profiles, connection metadata inspection, account
+settings, and audit inspection. It keeps Payload's access-controlled CRUD
+views behind DBMason navigation and styling; hiding framework branding is a
+product presentation choice, not a security boundary.
 
 ```text
 DatabaseManagerConnector
@@ -71,6 +77,7 @@ DatabaseManagerConnector
       -> useResourceCreation
       -> usePrincipalManagement
       -> useConnectionRemoval
+      -> useConnectionDetails
       -> useObservability
       -> useDatabaseWorkspace (engine strategy)
       -> browser API clients
@@ -112,12 +119,20 @@ Stores only connection metadata and a versioned encrypted credential envelope:
 
 - public UUID, display name, engine
 - host, port, maintenance database, administrator username
-- TLS mode
+- TLS mode and optional external endpoint display metadata
 - status, last health time/latency, server version
 - creator relationship
 - AES-256-GCM envelope (never readable through collection access)
 
 Remote databases and roles are never mirrored here. Connection passwords are never returned to the browser.
+
+Per-database URL templates combine this non-secret endpoint metadata with a
+selected standard login from the live snapshot. The saved administrator secret
+is not decrypted. A restricted account password may be entered transiently in
+the browser for a one-time clipboard copy, but the rendered URL keeps a
+`PASSWORD` placeholder and the password is never persisted. Only owners and
+admins receive the details action; connection-list responses redact external
+endpoint metadata for operators and viewers.
 
 The data workspace does not reuse the saved administrator password for user SQL.
 Its selected database, restricted engine principal, and password are

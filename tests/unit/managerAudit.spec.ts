@@ -7,7 +7,7 @@ vi.mock('@/modules/database-manager/infrastructure/payload/auditWriter', () => (
   writeAuditEvent: auditMock,
 }))
 
-import { withAudit } from '@/modules/database-manager/application/managerService'
+import { managerService, withAudit } from '@/modules/database-manager/application/managerService'
 
 function requestWithLogger(logger: ReturnType<typeof vi.fn>): PayloadRequest {
   return { payload: { logger: { error: logger } } } as unknown as PayloadRequest
@@ -58,5 +58,34 @@ describe('manager mutation auditing', () => {
     await expect(withAudit(requestWithLogger(logger), context, async () => 'created')).resolves.toBe(
       'created',
     )
+  })
+
+  it('can forget a saved connection without decrypting its credential', async () => {
+    const document = {
+      encryptedSecret: 'corrupt-or-encrypted-with-an-old-key',
+      id: 7,
+      name: 'Unrecoverable connection',
+      publicId: 'ea1fc4b2-a180-4aa7-af04-524a9f029698',
+    }
+    const deleteRecord = vi.fn().mockResolvedValue(document)
+    const findRecord = vi.fn().mockResolvedValue({ docs: [document] })
+    const req = {
+      payload: {
+        delete: deleteRecord,
+        find: findRecord,
+        logger: { error: vi.fn() },
+      },
+    } as unknown as PayloadRequest
+    auditMock.mockResolvedValue(undefined)
+
+    await expect(
+      managerService.deleteSavedConnection(req, document.publicId),
+    ).resolves.toBeUndefined()
+    expect(deleteRecord).toHaveBeenCalledWith({
+      collection: 'database-connections',
+      id: document.id,
+      overrideAccess: true,
+      req,
+    })
   })
 })

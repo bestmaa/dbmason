@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { accessLevels, engineIds } from '@/modules/database-manager/domain/contracts'
+import { accessLevels, engineIds, sslModes } from '@/modules/database-manager/domain/contracts'
 import type {
   AccessLevel,
   ConnectionSummary,
@@ -25,6 +25,9 @@ interface CreateConnectionRequest {
 
 const connectionSummarySchema = z.object({
   engine: z.enum(engineIds),
+  externalHost: z.string().nullable(),
+  externalPort: z.number().int().nullable(),
+  externalSslMode: z.enum(sslModes).nullable(),
   host: z.string(),
   id: z.string().uuid(),
   lastCheckedAt: z.string().nullable(),
@@ -32,6 +35,7 @@ const connectionSummarySchema = z.object({
   name: z.string(),
   port: z.number().int(),
   serverVersion: z.string().nullable(),
+  sslMode: z.enum(sslModes),
   status: z.enum(['offline', 'online', 'unknown']),
 })
 
@@ -47,6 +51,7 @@ const capabilitiesSchema = z.object({
 }).strict()
 
 const principalSummarySchema = z.object({
+  authenticationUsername: z.string(),
   canCreateDatabase: z.boolean(),
   canCreateRole: z.boolean(),
   canLogin: z.boolean(),
@@ -126,6 +131,18 @@ export const databaseManagerClient = {
       '/api/db-manager/v1/connections',
       z.object({ connection: connectionSummarySchema }),
       { body: JSON.stringify(input), method: 'POST' },
+    )
+    return result.connection
+  },
+
+  async updateExternalEndpoint(
+    connectionId: string,
+    external: { host: string; port: number; sslMode: SslMode } | null,
+  ): Promise<ConnectionSummary> {
+    const result = await requestJson(
+      `/api/db-manager/v1/connections/${connectionId}/endpoint`,
+      z.object({ connection: connectionSummarySchema }),
+      { body: JSON.stringify({ external }), method: 'PATCH' },
     )
     return result.connection
   },

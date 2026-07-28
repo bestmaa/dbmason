@@ -19,6 +19,7 @@ The direct runtime dependency inventory for DBMason v0.2.1 is:
 | `payload`               |           3.86.0 | MIT          |
 | `pg`                    |           8.22.0 | MIT          |
 | `pg-cursor`             |           2.21.0 | MIT          |
+| `qrcode`                |            1.5.4 | MIT          |
 | `react`                 |           19.2.6 | MIT          |
 | `react-dom`             |           19.2.6 | MIT          |
 | `zod`                   |            4.4.3 | MIT          |

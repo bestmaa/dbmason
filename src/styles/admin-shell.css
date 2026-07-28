@@ -1,0 +1,199 @@
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --dbmason-admin-bg: #080b12;
+  --dbmason-admin-surface: #0d111b;
+  --dbmason-admin-surface-raised: #111725;
+  --dbmason-admin-surface-hover: #172033;
+  --dbmason-admin-border: #202a3d;
+  --dbmason-admin-border-strong: #2b3850;
+  --dbmason-admin-text: #f5f7fb;
+  --dbmason-admin-text-soft: #aab4c7;
+  --dbmason-admin-text-muted: #8793a9;
+  --dbmason-admin-accent: #5dd6c5;
+  --dbmason-admin-accent-ink: #041c18;
+  --theme-bg: var(--dbmason-admin-bg);
+  --theme-input-bg: var(--dbmason-admin-surface-raised);
+  --theme-text: var(--dbmason-admin-text);
+  --theme-elevation-0: var(--dbmason-admin-bg);
+  --theme-elevation-50: var(--dbmason-admin-surface);
+  --theme-elevation-100: var(--dbmason-admin-surface-raised);
+  --theme-elevation-150: var(--dbmason-admin-surface-hover);
+  --theme-elevation-200: #1b2539;
+  --theme-elevation-250: var(--dbmason-admin-border-strong);
+  --theme-success-500: var(--dbmason-admin-accent);
+  --theme-success-600: #2eb8a6;
+}
+
+body {
+  background:
+    radial-gradient(circle at 70% -20%, rgb(65 98 150 / 14%), transparent 38%),
+    var(--dbmason-admin-bg);
+}
+
+.template-default,
+.template-default__wrap {
+  background: transparent;
+}
+
+.template-default__wrap {
+  min-height: 100vh;
+}
+
+.template-default .app-header {
+  border-bottom: 1px solid var(--dbmason-admin-border);
+  background: rgb(8 11 18 / 82%);
+  backdrop-filter: blur(18px);
+}
+
+.template-default .nav {
+  border-right: 1px solid var(--dbmason-admin-border);
+  background: rgb(10 14 23 / 94%);
+  backdrop-filter: blur(18px);
+}
+
+.template-default .nav__wrap {
+  padding-top: 0;
+}
+
+.template-default .nav__controls {
+  border-top-color: var(--dbmason-admin-border);
+}
+
+.dbmason-admin-icon {
+  width: 100%;
+  height: 100%;
+  color: var(--dbmason-admin-accent);
+}
+
+.dbmason-admin-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--dbmason-admin-text);
+}
+
+.dbmason-admin-logo__mark,
+.dbmason-admin-nav-brand__mark {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(93 214 197 / 28%);
+  background: rgb(93 214 197 / 10%);
+  color: var(--dbmason-admin-accent);
+}
+
+.dbmason-admin-logo__mark {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.8rem;
+}
+
+.dbmason-admin-logo__copy strong,
+.dbmason-admin-logo__copy small,
+.dbmason-admin-nav-brand strong,
+.dbmason-admin-nav-brand small {
+  display: block;
+}
+
+.dbmason-admin-logo__copy strong {
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+.dbmason-admin-logo__copy small,
+.dbmason-admin-nav-brand small {
+  margin-top: 0.15rem;
+  color: var(--dbmason-admin-text-muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+}
+
+.dbmason-admin-nav-brand {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0 1.15rem;
+  border-bottom: 1px solid var(--dbmason-admin-border);
+  color: var(--dbmason-admin-text);
+  text-decoration: none;
+}
+
+.dbmason-admin-nav-brand:hover {
+  background: rgb(93 214 197 / 4%);
+}
+
+.dbmason-admin-nav-brand__mark {
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.65rem;
+}
+
+.dbmason-admin-nav-brand strong {
+  font-size: 0.9rem;
+  letter-spacing: -0.02em;
+}
+
+.dbmason-admin-nav-links {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1.2rem 0.7rem;
+}
+
+.dbmason-admin-nav-links > p {
+  margin: 0 0 0.35rem;
+  padding: 0 0.55rem;
+  color: var(--dbmason-admin-text-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dbmason-admin-nav-links > a {
+  display: flex;
+  min-height: 2.55rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  color: var(--dbmason-admin-text-soft);
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.dbmason-admin-nav-links > a:hover {
+  border-color: var(--dbmason-admin-border);
+  background: var(--dbmason-admin-surface-raised);
+  color: var(--dbmason-admin-text);
+}
+
+.dbmason-admin-nav-links > a.is-active {
+  border-color: rgb(93 214 197 / 22%);
+  background: linear-gradient(100deg, rgb(93 214 197 / 13%), rgb(93 214 197 / 4%));
+  color: var(--dbmason-admin-accent);
+}
+
+.dbmason-admin-nav-links > a:focus-visible,
+.dbmason-admin-nav-brand:focus-visible {
+  outline: 2px solid var(--dbmason-admin-accent);
+  outline-offset: -2px;
+}
+
+@media (max-width: 1024px) {
+  .dbmason-admin-nav-brand {
+    padding-left: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dbmason-admin-nav-links > a {
+    transition: none;
+  }
+}

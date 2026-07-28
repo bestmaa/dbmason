@@ -4,6 +4,7 @@ import path from 'node:path'
 import type { Payload } from 'payload'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
+import { passwordCheckContext } from '@/auth/two-factor/loginContext'
 import type { User } from '@/payload-types'
 
 type Harness = {
@@ -265,7 +266,45 @@ describe.sequential('users RBAC', () => {
           data: { password: 'Replacement!123', token: resetToken },
           overrideAccess: true,
         }),
+      ).rejects.toMatchObject({
+        message: 'Two-factor authentication is required.',
+        status: 401,
+      })
+
+      await expect(
+        payload.login({
+          collection: 'users',
+          context: passwordCheckContext(),
+          data: { email: viewer.email, password: 'Testing!123456' },
+        }),
       ).resolves.toMatchObject({ user: { id: viewer.id } })
+    })
+
+    it('rejects the ordinary Payload login route before it creates a session', async () => {
+      const before = await harness.payload.findByID({
+        collection: 'users',
+        id: owner.id,
+        overrideAccess: true,
+        showHiddenFields: true,
+      })
+
+      await expect(
+        harness.payload.login({
+          collection: 'users',
+          data: { email: owner.email, password: 'Testing!123456' },
+        }),
+      ).rejects.toMatchObject({
+        message: 'Two-factor authentication is required.',
+        status: 401,
+      })
+
+      const after = await harness.payload.findByID({
+        collection: 'users',
+        id: owner.id,
+        overrideAccess: true,
+        showHiddenFields: true,
+      })
+      expect(after.sessions ?? []).toEqual(before.sessions ?? [])
     })
 
     it('limits non-administrators to reading their own account', async () => {

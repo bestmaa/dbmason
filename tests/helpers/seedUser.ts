@@ -7,9 +7,9 @@ export const testUser: {
   password: string
   roles: Array<'owner'>
 } = {
-  email: 'dev@payloadcms.com',
-  name: 'Payload Test User',
-  password: 'test',
+  email: 'owner@dbmason.test',
+  name: 'DBMason Test Owner',
+  password: 'Payload_Test_Only_2026!',
   roles: ['owner'],
 }
 
@@ -30,10 +30,18 @@ export async function seedTestUser(): Promise<void> {
   })
 
   const existingUser = existing.docs[0]
+  const resetTwoFactor = {
+    twoFactorEnabled: false,
+    twoFactorFailedAttempts: 0,
+    twoFactorLastCounter: null,
+    twoFactorLockedUntil: null,
+    twoFactorRecoveryCodeHashes: [],
+    twoFactorSecret: null,
+  }
   if (existingUser) {
     await payload.update({
       collection: 'users',
-      data: testUser,
+      data: { ...testUser, ...resetTwoFactor },
       id: existingUser.id,
     })
     return
@@ -41,7 +49,7 @@ export async function seedTestUser(): Promise<void> {
 
   await payload.create({
     collection: 'users',
-    data: testUser,
+    data: { ...testUser, ...resetTwoFactor },
   })
 }
 

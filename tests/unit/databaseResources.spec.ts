@@ -45,6 +45,7 @@ const capabilities = {
 }
 
 const principal = {
+  authenticationUsername: 'standard_login',
   canCreateDatabase: false,
   canCreateRole: false,
   canLogin: true,

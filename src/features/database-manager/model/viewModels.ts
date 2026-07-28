@@ -12,6 +12,10 @@ import type {
 } from '@/modules/database-manager/domain/contracts'
 
 import type { EnginePresentation } from './enginePresentation'
+import type {
+  ConnectionDetailsActions,
+  ConnectionDetailsModel,
+} from './connectionDetailsViewModels'
 import type { ManagerCapabilities } from './managerCapabilities'
 import type { AccessLevelOption } from './accessLevelOptions'
 import type { DatabaseOption, DatabaseTableViewModel } from './databaseResources'
@@ -61,6 +65,7 @@ export interface ManagerViewModel {
   activeTab: ResourceTab
   capabilities: ManagerCapabilities
   connectionForm: ConnectionFormValue
+  connectionDetails: ConnectionDetailsModel
   connectionFormPresentation: EnginePresentation
   connectionRemoval: ConnectionRemovalModel
   connections: readonly ConnectionSummary[]
@@ -111,6 +116,7 @@ export interface ManagerActions {
   showWorkspace: () => void
   observability: ObservabilityPanelActions
   connectionRemoval: ConnectionRemovalActions
+  connectionDetails: ConnectionDetailsActions
   connectionForm: {
     onEngineChange: ChangeEventHandler<HTMLSelectElement>
     onHostChange: ChangeEventHandler<HTMLInputElement>
@@ -137,7 +143,17 @@ export interface ManagerActions {
   workspace: WorkspaceActions
 }
 
+export interface AccountActionsViewProps {
+  canOpenControlCenter: boolean
+  error: string
+  onOpenControlCenter: () => void
+  onOpenSecuritySettings: () => void
+  onSignOut: () => void
+  signingOut: boolean
+}
+
 export interface DatabaseManagerViewProps {
+  account: AccountActionsViewProps
   actions: ManagerActions
   model: ManagerViewModel
   product: ProductInfo

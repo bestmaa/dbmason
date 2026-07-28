@@ -122,6 +122,8 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * DBMason application accounts and product roles.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -129,6 +131,20 @@ export interface User {
   id: number;
   name: string;
   roles: ('owner' | 'admin' | 'operator' | 'viewer')[];
+  twoFactorEnabled?: boolean | null;
+  twoFactorSecret?: string | null;
+  twoFactorRecoveryCodeHashes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  twoFactorLastCounter?: number | null;
+  twoFactorFailedAttempts?: number | null;
+  twoFactorLockedUntil?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -164,6 +180,18 @@ export interface DatabaseConnection {
   maintenanceDatabase: string;
   username: string;
   sslMode: 'verify-full' | 'require' | 'prefer' | 'disable';
+  /**
+   * Optional public or cross-network hostname. DBMason never opens network access automatically.
+   */
+  externalHost?: string | null;
+  /**
+   * Optional external listener port.
+   */
+  externalPort?: number | null;
+  /**
+   * TLS expectation for the optional external endpoint.
+   */
+  externalSslMode?: ('verify-full' | 'require' | 'prefer' | 'disable') | null;
   encryptedSecret: string;
   status: 'unknown' | 'online' | 'offline';
   serverVersion?: string | null;
@@ -174,6 +202,8 @@ export interface DatabaseConnection {
   createdAt: string;
 }
 /**
+ * Reusable database access templates for DBMason operators.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "access-profiles".
  */
@@ -189,6 +219,8 @@ export interface AccessProfile {
   createdAt: string;
 }
 /**
+ * Append-only DBMason control-plane activity.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-events".
  */
@@ -294,6 +326,12 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   roles?: T;
+  twoFactorEnabled?: T;
+  twoFactorSecret?: T;
+  twoFactorRecoveryCodeHashes?: T;
+  twoFactorLastCounter?: T;
+  twoFactorFailedAttempts?: T;
+  twoFactorLockedUntil?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -324,6 +362,9 @@ export interface DatabaseConnectionsSelect<T extends boolean = true> {
   maintenanceDatabase?: T;
   username?: T;
   sslMode?: T;
+  externalHost?: T;
+  externalPort?: T;
+  externalSslMode?: T;
   encryptedSecret?: T;
   status?: T;
   serverVersion?: T;

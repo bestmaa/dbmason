@@ -4,6 +4,9 @@ import { databaseManagerClient } from '@/features/database-manager/services/data
 
 const mysqlConnection = {
   engine: 'mysql',
+  externalHost: null,
+  externalPort: null,
+  externalSslMode: null,
   host: 'mysql.internal',
   id: 'fd56e639-7854-4d7d-a075-e4677f179df6',
   lastCheckedAt: null,
@@ -11,6 +14,7 @@ const mysqlConnection = {
   name: 'MySQL',
   port: 3306,
   serverVersion: null,
+  sslMode: 'verify-full',
   status: 'unknown',
 } as const
 
@@ -26,6 +30,7 @@ const snapshotCapabilities = {
 } as const
 
 const principal = {
+  authenticationUsername: 'reader',
   canCreateDatabase: false,
   canCreateRole: false,
   canLogin: true,

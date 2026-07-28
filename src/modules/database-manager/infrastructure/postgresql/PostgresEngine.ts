@@ -55,6 +55,7 @@ interface DatabaseRow extends QueryResultRow {
 }
 
 interface PrincipalRow extends QueryResultRow {
+  authenticationUsername: string
   canCreateDatabase: boolean
   canCreateRole: boolean
   canLogin: boolean
@@ -250,6 +251,7 @@ export class PostgresEngine implements DatabaseEngine {
       `)
       const principals = await client.query<PrincipalRow>(`
         SELECT role.rolname AS name,
+          role.rolname AS "authenticationUsername",
           role.rolcanlogin AS "canLogin",
           role.rolsuper AS "isSuperuser",
           role.rolcreatedb AS "canCreateDatabase",

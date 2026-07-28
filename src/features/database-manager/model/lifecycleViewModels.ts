@@ -45,5 +45,6 @@ export interface ConnectionRemovalActions {
   close: () => void
   onConfirmationChange: ChangeEventHandler<HTMLInputElement>
   onSubmit: FormEventHandler<HTMLFormElement>
-  open: () => void
+  openSelected: () => void
+  openTarget: MouseEventHandler<HTMLButtonElement>
 }

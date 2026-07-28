@@ -98,12 +98,28 @@ Open the configured application URL. A new control plane shows one bootstrap act
 1. Select **Create owner account**.
 2. Enter a unique email, a password of at least 12 characters, and a display name.
 3. Submit once. Concurrent bootstrap attempts are serialized, and only the first account becomes the initial owner.
+4. Sign in with the new password. DBMason opens the main database workspace.
+5. To opt into 2FA, open **Security**, confirm the current password, scan the QR
+   code with Google Authenticator, Microsoft Authenticator, or another TOTP
+   application, and enter its six-digit code.
+6. Save all eight recovery codes offline. Each recovery code works once and
+   DBMason never displays it again. Enabling or disabling 2FA signs out every
+   existing session and requires a fresh login.
+7. Normal setup and sign-in stay on
+   the product's `/setup` and `/login` pages rather than entering the
+   administration shell.
 
-Payload Admin then exposes Users, Database Connections, Access Profiles, and Audit Events:
-
-![Production owner dashboard](images/11-production-owner-dashboard.png)
+Owners and admins can open the branded **Control center** from the workspace.
+It exposes team accounts, connection records, access profiles, and audit events.
+The old generic collection dashboard is no longer part of this flow.
 
 Use separate DBMason accounts for people. Do not share a managed-database administrator credential.
+Authenticator 2FA is optional per account and strongly recommended for owners
+and admins. Five invalid factor attempts lock that account for ten minutes.
+Accounts that do not opt in are protected by their password only, so keep the
+control plane on trusted networks. Do not rotate
+`CONNECTION_ENCRYPTION_KEY` without migrating encrypted data; DBMason uses it
+for both saved connection credentials and authenticator seeds.
 
 ## 4. Add PostgreSQL or MySQL
 
@@ -125,6 +141,28 @@ The password is encrypted with AES-256-GCM before it reaches SQLite and is never
 ![Production MySQL 8.4 connected overview](images/23-mysql-connected-overview.png)
 
 A DBMason container cannot reach a host-published database port through its own `127.0.0.1`. Give containers deliberate network routing or use an approved host gateway/DNS name, and include that name in `DATABASE_HOST_ALLOWLIST`.
+
+### View or copy a database connection URL
+
+For DBMason owners and admins, each database row has a **Connection details**
+action. Operators and viewers cannot view this connection metadata:
+
+1. Select a standard, least-privilege database login from the live inventory.
+   Privileged, current, system, and role-linked accounts are excluded.
+2. Copy the internal template. DBMason treats the saved management
+   `host:port` as this endpoint; it works only where that network name is
+   reachable, such as the same Docker network.
+3. Optionally enter external host, port, and TLS display metadata. DBMason
+   cannot discover Dockploy port publishing automatically, and saving this
+   metadata does not publish or open a database port.
+4. The displayed URL always contains a `PASSWORD` placeholder. To copy a
+   complete URL, enter the selected restricted account's password; it remains
+   only in active browser state and is cleared when the dialog or connection
+   changes.
+
+DBMason never decrypts or reveals the saved administrator/root password for
+these URLs. For MySQL, TLS mode is displayed separately because MySQL connection
+URIs do not have one portable TLS-mode query parameter.
 
 The saved MySQL administrator username is the login user component. Managed
 MySQL principals use complete `user@host` identities, such as
@@ -326,7 +364,11 @@ DBMason does not silently change cluster-wide `PUBLIC` defaults because that cou
 
 ## 11. Give application users read-only access
 
-Owners manage DBMason accounts under Payload Admin **Users**. A `viewer` can inspect saved connections, live inventory, and aggregate observability but cannot open Data & SQL, add/remove a saved connection, create a database, create/manage a remote principal, or read other application-user records.
+Owners manage DBMason accounts under **Control center → Team accounts**. A
+`viewer` can inspect saved connections, live inventory, and aggregate
+observability but cannot open Data & SQL, add/remove a saved connection, create
+a database, create/manage a remote principal, or read other application-user
+records.
 
 ![Production viewer observability without workspace or mutation controls](images/20-production-viewer-observability.png)
 
@@ -348,7 +390,11 @@ Requested-audit persistence is fail-closed: remote work does not start when the 
 
 ## 13. Remove a saved connection
 
-Owners and admins can select **Remove**, type the saved connection name, and confirm. This deletes only the encrypted control-plane record. It does not drop remote databases, principals, objects, or grants.
+Owners and admins can select the trash action beside a connection in the left
+**Connections** list, or select **Remove** in that connection's header. Type
+the saved connection name and confirm. This deletes only the encrypted
+control-plane record. It does not drop remote databases, principals, objects,
+or grants.
 
 To change a saved administrator password today, create and validate a replacement saved connection before removing the old record. In-place saved credential rotation is a later feature.
 

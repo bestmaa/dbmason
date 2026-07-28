@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
-import type { Page } from '@playwright/test'
 
+import { loginWithTwoFactor } from '../helpers/twoFactorLogin'
 import {
   cleanupRemoteResources,
   readSeededLabels,
@@ -25,14 +25,6 @@ const viewer = {
   password: 'MySQL_E2E_Viewer_only_2026!',
 } as const
 const connectionName = 'Isolated MySQL 8.4 E2E'
-
-async function login(page: Page, user: typeof owner | typeof viewer): Promise<void> {
-  await page.goto('/admin/login')
-  await page.locator('#field-email').fill(user.email)
-  await page.locator('#field-password').fill(user.password)
-  await page.locator('form').getByRole('button', { name: /log\s*in/i }).click()
-  await expect(page).toHaveURL(/\/admin(?:\/)?$/u)
-}
 
 function readConnectionId(value: unknown): string {
   if (
@@ -76,10 +68,13 @@ test.describe.serial('MySQL MVP through Chromium', () => {
     await page.locator('#field-email').fill(owner.email)
     await page.locator('#field-password').fill(owner.password)
     await page.locator('#field-confirm-password').fill(owner.password)
-    await page.locator('form').getByRole('button', { name: /create/i }).click()
-    await expect(page).toHaveURL(/\/admin(?:\/)?$/u)
+    await page
+      .locator('form')
+      .getByRole('button', { name: /create/i })
+      .click()
+    await expect(page).toHaveURL(/\/login/u)
+    await loginWithTwoFactor(page, owner)
 
-    await page.goto('/')
     await expect(page.locator('.identity')).toContainText(owner.email)
     await page.locator('.connection-rail').getByRole('button', { name: 'Add connection' }).click()
     const dialog = page.getByRole('dialog', { name: 'Add connection' })
@@ -113,7 +108,7 @@ test.describe.serial('MySQL MVP through Chromium', () => {
   })
 
   test('creates a database and canonical read-only MySQL account', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await expect(page.getByRole('heading', { name: connectionName })).toBeVisible()
     await page.getByRole('button', { name: 'Database', exact: true }).click()
@@ -150,7 +145,7 @@ test.describe.serial('MySQL MVP through Chromium', () => {
   })
 
   test('loads MySQL observability and enforces the guarded SQL workspace', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await expect(page.getByRole('heading', { name: connectionName })).toBeVisible()
 
@@ -226,7 +221,7 @@ test.describe.serial('MySQL MVP through Chromium', () => {
   })
 
   test('keeps duplicate failures inside the active dialog', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await page.getByRole('button', { name: 'Database', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: 'Create database' })
@@ -238,7 +233,7 @@ test.describe.serial('MySQL MVP through Chromium', () => {
   })
 
   test('keeps viewers read-only at both UI and API boundaries', async ({ browser, page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     const createViewer = await page.evaluate(async (newViewer) => {
       const response = await fetch('/api/users', {
         body: JSON.stringify({ ...newViewer, roles: ['viewer'] }),
@@ -253,7 +248,7 @@ test.describe.serial('MySQL MVP through Chromium', () => {
     const viewerContext = await browser.newContext()
     const viewerPage = await viewerContext.newPage()
     try {
-      await login(viewerPage, viewer)
+      await loginWithTwoFactor(viewerPage, viewer)
       await viewerPage.goto('/')
       await expect(viewerPage.getByRole('heading', { name: connectionName })).toBeVisible()
       await expect(viewerPage.getByRole('button', { name: 'Add connection' })).toHaveCount(0)
@@ -283,7 +278,11 @@ test.describe.serial('MySQL MVP through Chromium', () => {
           })
           return response.status
         },
-        { database: remoteResources.database, id: connectionId, principal: remoteResources.account },
+        {
+          database: remoteResources.database,
+          id: connectionId,
+          principal: remoteResources.account,
+        },
       )
       expect(workspaceStatus).toBe(403)
 
@@ -306,7 +305,7 @@ test.describe.serial('MySQL MVP through Chromium', () => {
   })
 
   test('manages grants, login, password rotation, and account deletion', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await page.getByRole('tab', { name: /Accounts/u }).click()
     await expect(page.getByRole('button', { name: 'Manage root@%' })).toBeDisabled()
@@ -350,7 +349,9 @@ test.describe.serial('MySQL MVP through Chromium', () => {
     await expect(dialog.getByRole('button', { name: 'Revoke explicit access' })).toBeEnabled()
     expect(await verifySelectAccess(currentPassword)).toBe(false)
 
-    await dialog.getByLabel(`Type ${remoteResources.account} to confirm`).fill(remoteResources.account)
+    await dialog
+      .getByLabel(`Type ${remoteResources.account} to confirm`)
+      .fill(remoteResources.account)
     await dialog.getByRole('button', { name: 'Drop account', exact: true }).click()
     await expect(dialog).toBeHidden()
     await expect(
@@ -359,9 +360,14 @@ test.describe.serial('MySQL MVP through Chromium', () => {
   })
 
   test('removes only the saved control-plane connection', async ({ page }) => {
-    await login(page, owner)
+    await loginWithTwoFactor(page, owner)
     await page.goto('/')
-    await page.getByRole('button', { name: 'Remove saved connection' }).click()
+    await page
+      .getByRole('button', {
+        exact: true,
+        name: `Remove saved connection ${connectionName}`,
+      })
+      .click()
     const dialog = page.getByRole('dialog', { name: 'Remove saved connection' })
     await dialog.getByLabel(`Type ${connectionName} to confirm`).fill(connectionName)
     await dialog.getByRole('button', { name: 'Remove connection' }).click()

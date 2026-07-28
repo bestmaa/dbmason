@@ -11,6 +11,7 @@ Do not open a public issue for suspected credential disclosure, authentication b
 - Put DBMason behind HTTPS and restrict it to trusted administrators.
 - Set `DBMASON_PUBLIC_URL` to the exact browser-facing origin. Only exact loopback hosts may use HTTP; all other origins require HTTPS.
 - Payload account passwords are rejected below 12 characters on bootstrap, direct changes, and reset flows.
+- Strongly recommend RFC 6238 authenticator 2FA for owners and admins. It is opt-in per account; store the one-use recovery codes offline.
 - Restrict container egress to approved database networks when possible.
 - Set `DATABASE_HOST_ALLOWLIST` to the exact database hosts or `*.domain` patterns the deployment may reach. DBMason also rejects metadata/link-local, unspecified, and multicast targets.
 - Prefer `verify-full` TLS certificate and hostname verification for every remote PostgreSQL or MySQL target.
@@ -27,6 +28,63 @@ credential-bearing workspace uses a separate 256 KiB cap and the tighter
 query/result limits described below.
 
 DNS lookups are bounded by the global operation limiter but do not yet have a separate cancellation deadline. Deployments should combine `DATABASE_HOST_ALLOWLIST` with network-level egress rules so DNS behavior alone is never the security boundary.
+
+## Application two-factor authentication
+
+DBMason offers optional per-account six-digit, 30-second TOTP compatible with
+Google Authenticator, Microsoft Authenticator, and other RFC 6238 applications. Setup
+QR codes are generated inside DBMason; the `otpauth://` URI is never sent to an
+external image service. TOTP seeds use AES-256-GCM with user-bound associated
+data and an HKDF-derived subkey of `CONNECTION_ENCRYPTION_KEY`. Recovery codes
+are generated with cryptographic randomness, shown once, stored only as keyed
+hashes, and removed after use.
+
+Password checks use Payload's existing five-attempt lockout. Authenticator and
+recovery failures have a separate five-attempt, ten-minute account lock plus a
+short-lived one-use login challenge. Accepted TOTP counters are recorded so the
+same time-step code cannot be replayed. Direct calls to Payload's ordinary
+login endpoint fail closed because only the server-created, factor-verified
+flow may issue a session. Accounts with 2FA disabled receive a password-only
+session through that same exact-origin flow. Enabling or disabling 2FA revokes
+all of the account's existing sessions before requiring a fresh sign-in.
+Authentication mutations are serialized inside the
+single supported SQLite application replica so concurrent requests cannot
+reuse a challenge, recovery code, or stale failure counter.
+
+The historical 2FA schema migration deletes sessions issued by older builds so
+they cannot outlive the authentication upgrade. Back up the SQLite volume
+before upgrading, then expect every user to sign in again. Password-reset auto-login remains fail closed
+until a factor-aware reset screen is implemented; do not bypass the login hook
+for reset tokens, because Payload otherwise returns an authenticated session.
+If both the authenticator and recovery codes are lost, recovery requires an
+operator with protected host-level access to the control-plane database.
+The current password is required to start enrollment. Disabling requires both
+the current password and a valid authenticator or recovery code. An account
+that remains opted out is protected only by its password, so restrict DBMason
+to trusted networks and enable 2FA for high-privilege users. Keep
+`CONNECTION_ENCRYPTION_KEY` stable and recoverably backed up: changing it
+without migrating encrypted values makes saved connection credentials and TOTP
+seeds unreadable.
+
+TOTP reduces the impact of a stolen password. It does not protect a session
+already stolen from the browser, malicious code running in the application
+origin, phishing that relays a live code, or a compromised server runtime.
+
+## Displayed database connection URLs
+
+The connection-details dialog treats the saved management `host:port` as an
+internal endpoint. An external endpoint is optional owner/admin-maintained
+metadata; DBMason cannot discover Dockploy port publishing and saving this
+metadata does not expose a port or change a database server. Only owners and
+admins can open connection details; lower roles receive redacted external
+endpoint fields from connection-list responses.
+
+URL templates use a selected standard login account from live inventory. The
+saved encrypted administrator password is never decrypted or returned for this
+feature. A complete URL can be copied only after the owner or admin enters the
+selected restricted account's password into transient browser state; the
+rendered page continues to show a `PASSWORD` placeholder, and the transient
+password is cleared when the dialog or connection changes.
 
 ## Origin, CSRF, and server-rendered authentication
 
