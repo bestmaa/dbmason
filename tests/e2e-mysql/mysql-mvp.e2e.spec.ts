@@ -308,13 +308,24 @@ test.describe.serial('MySQL MVP through Chromium', () => {
     await loginWithTwoFactor(page, owner)
     await page.goto('/')
     await page.getByRole('tab', { name: /Accounts/u }).click()
-    await expect(page.getByRole('button', { name: 'Manage root@%' })).toBeDisabled()
+    await page.getByRole('button', { name: 'View access for root@%' }).click()
+    const protectedDialog = page.getByRole('dialog', { name: 'Access for root@%' })
+    await expect(protectedDialog.getByText('Current database access')).toBeVisible()
+    await expect(protectedDialog.getByRole('button', { name: 'Apply preset' })).toHaveCount(0)
+    await protectedDialog.getByRole('button', { name: 'Close dialog' }).click()
     await page.getByRole('button', { name: `Manage ${remoteResources.account}` }).click()
     let dialog = page.getByRole('dialog', { name: `Manage ${remoteResources.account}` })
-    await dialog.getByLabel('Database').selectOption(remoteResources.database)
-    await dialog.getByLabel('Access preset').selectOption('write')
+    let accessRow = dialog
+      .getByRole('table', { name: 'Current access for each database' })
+      .getByRole('row', { name: new RegExp(remoteResources.database, 'u') })
+    await expect(accessRow).toContainText('Matches Read only')
+    await dialog
+      .getByRole('combobox', { name: 'Database', exact: true })
+      .selectOption(remoteResources.database)
+    await dialog.getByLabel('New preset to apply').selectOption('write')
     await dialog.getByRole('button', { name: 'Apply preset' }).click()
     await expect(dialog.getByRole('button', { name: 'Apply preset' })).toBeEnabled()
+    await expect(accessRow).toContainText('Matches Read & write')
     await verifyWritableLogin(currentPassword)
 
     await dialog.getByRole('button', { name: 'Rotate password' }).click()
@@ -335,18 +346,26 @@ test.describe.serial('MySQL MVP through Chromium', () => {
     await expect(dialog.getByRole('button', { name: 'Disable login' })).toBeVisible()
     expect(await verifySelectAccess(currentPassword)).toBe(true)
 
-    await dialog.getByLabel('Database').selectOption(remoteResources.database)
-    await dialog.getByLabel('Access preset').selectOption('connect')
+    await dialog
+      .getByRole('combobox', { name: 'Database', exact: true })
+      .selectOption(remoteResources.database)
+    await dialog.getByLabel('New preset to apply').selectOption('connect')
     await dialog.getByRole('button', { name: 'Apply preset' }).click()
     await expect(dialog).toContainText('authentication-only')
+    accessRow = dialog
+      .getByRole('table', { name: 'Current access for each database' })
+      .getByRole('row', { name: new RegExp(remoteResources.database, 'u') })
+    await expect(accessRow).toContainText('No direct grant')
+    await expect(accessRow).toContainText('No database access')
     expect(await verifySelectAccess(currentPassword)).toBe(false)
 
-    await dialog.getByLabel('Access preset').selectOption('read')
+    await dialog.getByLabel('New preset to apply').selectOption('read')
     await dialog.getByRole('button', { name: 'Apply preset' }).click()
     await expect(dialog.getByRole('button', { name: 'Apply preset' })).toBeEnabled()
+    await expect(accessRow).toContainText('Matches Read only')
     expect(await verifySelectAccess(currentPassword)).toBe(true)
     await dialog.getByRole('button', { name: 'Revoke explicit access' }).click()
-    await expect(dialog.getByRole('button', { name: 'Revoke explicit access' })).toBeEnabled()
+    await expect(dialog.getByRole('button', { name: 'Revoke explicit access' })).toBeDisabled()
     expect(await verifySelectAccess(currentPassword)).toBe(false)
 
     await dialog

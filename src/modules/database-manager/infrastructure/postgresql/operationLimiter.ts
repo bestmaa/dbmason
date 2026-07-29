@@ -70,3 +70,4 @@ export const postgresOperationLimiter = new OperationLimiter(8, 32, 5_000)
 // Interactive queries have a tighter budget than short manager operations so a
 // few expensive reads cannot consume every PostgreSQL slot or inflate memory.
 export const postgresWorkspaceOperationLimiter = new OperationLimiter(2, 8, 3_000)
+export const postgresInventoryOperationLimiter = new OperationLimiter(1, 4, 2_000)

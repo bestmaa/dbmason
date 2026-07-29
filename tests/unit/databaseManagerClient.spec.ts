@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { databaseManagerClient } from '@/features/database-manager/services/databaseManagerClient'
+import { principalLifecycleClient } from '@/features/database-manager/services/principalLifecycleClient'
 
 const mysqlConnection = {
   engine: 'mysql',
@@ -163,5 +164,38 @@ describe('database manager browser client engines', () => {
     await expect(databaseManagerClient.getSnapshot(mysqlConnection.id)).rejects.toThrow(
       'The server returned an invalid response.',
     )
+  })
+
+  it('parses the live principal access inventory and rejects unknown sources', async () => {
+    const inventory = {
+      databases: [{
+        database: 'app',
+        directPreset: 'read',
+        effectivePreset: 'read',
+        potentialPreset: 'read',
+        sources: ['direct'],
+      }],
+      observedAt: '2026-07-29T00:00:00.000Z',
+      principal: 'reader@%',
+      truncated: false,
+    } as const
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json(inventory)))
+
+    await expect(
+      principalLifecycleClient.getAccess(mysqlConnection.id, principal.name),
+    ).resolves.toEqual(inventory)
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        Response.json({
+          ...inventory,
+          databases: [{ ...inventory.databases[0], sources: ['raw-grant-text'] }],
+        }),
+      ),
+    )
+    await expect(
+      principalLifecycleClient.getAccess(mysqlConnection.id, principal.name),
+    ).rejects.toThrow('The server returned an invalid response.')
   })
 })

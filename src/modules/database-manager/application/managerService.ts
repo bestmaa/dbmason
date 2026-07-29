@@ -9,6 +9,7 @@ import type {
   CreatePrincipalCommand,
   CreatePrincipalResult,
   DropPrincipalCommand,
+  PrincipalAccessInventory,
   PrincipalAccessCommand,
   PrincipalAccessResult,
   RevokePrincipalAccessCommand,
@@ -160,6 +161,19 @@ export const managerService = {
     const stored = await loadConnection(req, publicId)
     return getDatabaseEngine(stored.engine)
       .getSnapshot(stored.config)
+      .catch((error: unknown) => {
+        throw toManagerError(error)
+      })
+  },
+
+  async getPrincipalAccess(
+    req: PayloadRequest,
+    publicId: string,
+    principal: string,
+  ): Promise<PrincipalAccessInventory> {
+    const stored = await loadConnection(req, publicId)
+    return getDatabaseEngine(stored.engine)
+      .getPrincipalAccess(stored.config, principal)
       .catch((error: unknown) => {
         throw toManagerError(error)
       })

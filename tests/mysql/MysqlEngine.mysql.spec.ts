@@ -7,23 +7,40 @@ import { MysqlEngine } from '@/modules/database-manager/infrastructure/mysql/Mys
 import { dropMysqlResources, mysqlAdmin, mysqlTestConfig } from './mysqlHarness'
 
 const database = 'dbm_backend_engine'
+const lookalikeDatabase = 'dbmXbackendXengine'
+const wildcardDatabase = 'dbm_wild_a'
 const reader = 'dbm_backend_reader@%'
 const privileged = 'dbm_backend_global@%'
 const grantCapable = 'dbm_backend_grant@%'
 const roleMember = 'dbm_backend_member@%'
 const proxyMember = 'dbm_backend_proxy@%'
 const scoped = 'dbm_backend_scoped@%'
+const wildcardMember = 'dbm_backend_wildcard@%'
+const legacyWildcardMember = 'dbm_backend_legacy@%'
+const grantFloodMember = 'dbm_backend_flood@%'
+const overlapWildcardMember = 'dbm_backend_overlap@%'
 const role = 'dbm_backend_role'
-const accounts = [reader, privileged, grantCapable, roleMember, proxyMember, scoped] as const
+const accounts = [
+  reader,
+  privileged,
+  grantCapable,
+  roleMember,
+  proxyMember,
+  scoped,
+  wildcardMember,
+  legacyWildcardMember,
+  grantFloodMember,
+  overlapWildcardMember,
+] as const
 const engine = new MysqlEngine()
 
 describe.sequential('MysqlEngine against MySQL 8.4', () => {
   beforeAll(async () => {
-    await dropMysqlResources([database], accounts, [role])
+    await dropMysqlResources([database, lookalikeDatabase, wildcardDatabase], accounts, [role])
   })
 
   afterAll(async () => {
-    await dropMysqlResources([database], accounts, [role])
+    await dropMysqlResources([database, lookalikeDatabase, wildcardDatabase], accounts, [role])
   })
 
   it('tests the connection and returns a genuine MySQL inventory/observability snapshot', async () => {
@@ -70,6 +87,7 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
   it('creates a database/account and applies explicit access presets', async () => {
     const config = mysqlTestConfig()
     await engine.createDatabase(config, { name: database, owner: null })
+    await engine.createDatabase(config, { name: lookalikeDatabase, owner: null })
     const created = await engine.createPrincipal(config, {
       access: [{ database, level: 'connect' }],
       name: reader,
@@ -77,6 +95,10 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
     expect(created.principal).toBe(reader)
     expect(created.oneTimePassword).toMatch(/^[A-Za-z0-9_-]{32}$/u)
     expect(created.warnings.join(' ')).toContain('no per-database CONNECT privilege')
+    const authenticationOnly = await engine.getPrincipalAccess(config, reader)
+    expect(
+      authenticationOnly.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({ directPreset: 'none', effectivePreset: 'none', sources: [] })
 
     await engine.setPrincipalAccess(config, { database, level: 'read', principal: reader })
     const admin = await mysqlAdmin()
@@ -102,6 +124,35 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
     } finally {
       await restricted.end()
     }
+
+    const inventory = await engine.getPrincipalAccess(config, reader)
+    expect(inventory.databases.find(({ database: name }) => name === database)).toMatchObject({
+      directPreset: 'read',
+      effectivePreset: 'read',
+      potentialPreset: 'read',
+      sources: ['direct'],
+    })
+    await expect(
+      createConnection({
+        database: lookalikeDatabase,
+        host: config.host,
+        password: created.oneTimePassword,
+        port: config.port,
+        user: 'dbm_backend_reader',
+      }),
+    ).rejects.toMatchObject({ code: 'ER_DBACCESS_DENIED_ERROR' })
+
+    await engine.setPrincipalAccess(config, { database, level: 'write', principal: reader })
+    const writeInventory = await engine.getPrincipalAccess(config, reader)
+    expect(
+      writeInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({ directPreset: 'write', effectivePreset: 'write' })
+
+    await engine.setPrincipalAccess(config, { database, level: 'developer', principal: reader })
+    const developerInventory = await engine.getPrincipalAccess(config, reader)
+    expect(
+      developerInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({ directPreset: 'developer', effectivePreset: 'developer' })
   })
 
   it('locks, unlocks, rotates, and drops a restricted account', async () => {
@@ -150,6 +201,11 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
       await admin.end()
     }
 
+    const customInventory = await engine.getPrincipalAccess(config, scoped)
+    expect(
+      customInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({ directPreset: 'custom', effectivePreset: 'custom' })
+
     await engine.setPrincipalAccess(config, { database, level: 'read', principal: scoped })
     const inspection = await mysqlAdmin()
     try {
@@ -177,6 +233,10 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
     }
 
     await engine.revokePrincipalAccess(config, { database, principal: scoped })
+    const revokedInventory = await engine.getPrincipalAccess(config, scoped)
+    expect(
+      revokedInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({ directPreset: 'none', effectivePreset: 'none', sources: [] })
     await expect(
       createConnection({
         database,
@@ -188,6 +248,95 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
     ).rejects.toMatchObject({ code: 'ER_DBACCESS_DENIED_ERROR' })
     await engine.dropPrincipal(config, { principal: scoped })
   })
+
+  it('refuses to revoke an ambiguous broad wildcard grant', async () => {
+    const config = mysqlTestConfig()
+    const admin = await mysqlAdmin()
+    try {
+      await admin.query(
+        "CREATE USER 'dbm_backend_legacy'@'%' IDENTIFIED BY 'test-only-legacy'",
+      )
+      await admin.query(
+        "GRANT SELECT, SHOW VIEW ON `dbm_backend_engine`.* TO 'dbm_backend_legacy'@'%'",
+      )
+      await admin.query(
+        "CREATE USER 'dbm_backend_overlap'@'%' IDENTIFIED BY 'test-only-overlap'",
+      )
+      await admin.query(
+        "GRANT SELECT, SHOW VIEW ON `dbm%`.* TO 'dbm_backend_overlap'@'%'",
+      )
+    } finally {
+      await admin.end()
+    }
+
+    await expect(
+      engine.setPrincipalAccess(config, {
+        database,
+        level: 'read',
+        principal: legacyWildcardMember,
+      }),
+    ).rejects.toMatchObject({
+      code: 'PRIVILEGE_RECONCILIATION_UNSAFE',
+    } satisfies Partial<ManagerError>)
+    await expect(
+      engine.setPrincipalAccess(config, {
+        database,
+        level: 'read',
+        principal: overlapWildcardMember,
+      }),
+    ).rejects.toMatchObject({
+      code: 'PRIVILEGE_RECONCILIATION_UNSAFE',
+    } satisfies Partial<ManagerError>)
+
+    const inspection = await mysqlAdmin()
+    try {
+      const [rows] = await inspection.query(
+        `SELECT Db AS databasePattern FROM mysql.db
+        WHERE User = 'dbm_backend_legacy' AND Host = '%'`,
+      )
+      expect(rows).toMatchObject([{ databasePattern: database }])
+    } finally {
+      await inspection.end()
+    }
+    const stillBroad = await createConnection({
+      database: lookalikeDatabase,
+      host: config.host,
+      password: 'test-only-legacy',
+      port: config.port,
+      user: 'dbm_backend_legacy',
+    })
+    await stillBroad.end()
+  })
+
+  it('returns unknown instead of buffering an excessive database-grant inventory', async () => {
+    const config = mysqlTestConfig()
+    const admin = await mysqlAdmin()
+    try {
+      await admin.query(
+        "CREATE USER 'dbm_backend_flood'@'%' IDENTIFIED BY 'test-only-flood'",
+      )
+      for (let index = 0; index < 257; index += 1) {
+        const suffix = index.toString().padStart(3, '0')
+        await admin.query(
+          `GRANT SELECT ON \`dbm_cap_${suffix}\`.* TO 'dbm_backend_flood'@'%'`,
+        )
+      }
+    } finally {
+      await admin.end()
+    }
+
+    const inventory = await engine.getPrincipalAccess(config, grantFloodMember)
+    expect(inventory.truncated).toBe(true)
+    expect(inventory.databases.length).toBeGreaterThan(0)
+    expect(
+      inventory.databases.every(
+        (item) =>
+          item.directPreset === 'unknown' &&
+          item.effectivePreset === 'unknown' &&
+          item.potentialPreset === 'unknown',
+      ),
+    ).toBe(true)
+  }, 20_000)
 
   it('fails closed for global privileges, role edges, system schemas, and owners', async () => {
     const config = mysqlTestConfig()
@@ -204,6 +353,13 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
       await admin.query(`GRANT '${role}'@'%' TO 'dbm_backend_member'@'%'`)
       await admin.query(`CREATE USER 'dbm_backend_proxy'@'%' IDENTIFIED BY 'test-only-proxy'`)
       await admin.query(`GRANT PROXY ON 'root'@'%' TO 'dbm_backend_proxy'@'%'`)
+      await admin.query(`CREATE DATABASE \`${wildcardDatabase}\``)
+      await admin.query(
+        `CREATE USER 'dbm_backend_wildcard'@'%' IDENTIFIED BY 'test-only-wildcard'`,
+      )
+      await admin.query(
+        "GRANT SELECT, SHOW VIEW ON `dbm\\_wild\\_%`.* TO 'dbm_backend_wildcard'@'%'",
+      )
     } finally {
       await admin.end()
     }
@@ -219,6 +375,35 @@ describe.sequential('MysqlEngine against MySQL 8.4', () => {
     await expect(
       engine.rotatePrincipalPassword(config, { principal: proxyMember }),
     ).rejects.toMatchObject({ code: 'PRINCIPAL_PROTECTED' } satisfies Partial<ManagerError>)
+    const globalInventory = await engine.getPrincipalAccess(config, privileged)
+    expect(
+      globalInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({
+      directPreset: 'custom',
+      effectivePreset: 'custom',
+      sources: ['global'],
+    })
+    const roleInventory = await engine.getPrincipalAccess(config, roleMember)
+    expect(
+      roleInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({
+      directPreset: 'none',
+      effectivePreset: 'none',
+      potentialPreset: 'unknown',
+      sources: ['role-switch'],
+    })
+    const proxyInventory = await engine.getPrincipalAccess(config, proxyMember)
+    expect(
+      proxyInventory.databases.find(({ database: name }) => name === database),
+    ).toMatchObject({ potentialPreset: 'unknown', sources: ['proxy'] })
+    const wildcardInventory = await engine.getPrincipalAccess(config, wildcardMember)
+    expect(
+      wildcardInventory.databases.find(({ database: name }) => name === wildcardDatabase),
+    ).toMatchObject({
+      directPreset: 'custom',
+      effectivePreset: 'custom',
+      sources: ['direct'],
+    })
     await expect(
       engine.setPrincipalAccess(config, {
         database: 'mysql',

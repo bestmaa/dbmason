@@ -61,3 +61,4 @@ class MysqlOperationLimiter {
 
 export const mysqlOperationLimiter = new MysqlOperationLimiter(8, 32, 5_000)
 export const mysqlWorkspaceOperationLimiter = new MysqlOperationLimiter(2, 8, 3_000)
+export const mysqlInventoryOperationLimiter = new MysqlOperationLimiter(1, 4, 2_000)

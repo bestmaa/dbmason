@@ -1,27 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent, MouseEvent } from 'react'
 
-import type {
-  AccessLevel,
-  CreatePrincipalResult,
-  DatabaseSummary,
-} from '@/modules/database-manager/domain/contracts'
+import type { AccessLevel, CreatePrincipalResult, DatabaseSummary } from '@/modules/database-manager/domain/contracts'
 
+import { parseAvailableAccessLevel, preferredAccessLevel } from '../model/accessLevelOptions'
 import type {
+  PrincipalAccessFormValue,
   PrincipalManagementActions,
   PrincipalManagementModel,
-  PrincipalAccessFormValue,
 } from '../model/lifecycleViewModels'
-import {
-  parseAvailableAccessLevel,
-  preferredAccessLevel,
-} from '../model/accessLevelOptions'
-import { databaseHasPublicConnect } from '../model/databaseResources'
 import type { PrincipalRowViewModel } from '../model/principalRows'
 import { principalLifecycleClient } from '../services/principalLifecycleClient'
-import { managerErrorMessage } from './managerHookSupport'
+import { usePrincipalAccessInventory } from './usePrincipalAccessInventory'
+import { usePrincipalOperationGuard } from './usePrincipalOperationGuard'
 
 const initialAccess: PrincipalAccessFormValue = { database: '', level: 'read' }
 
@@ -41,65 +34,98 @@ interface PrincipalManagementState {
 }
 
 export function usePrincipalManagement(input: PrincipalManagementInput): PrincipalManagementState {
+  const preferredLevel = preferredAccessLevel(input.accessLevels)
   const [principalName, setPrincipalName] = useState<string | null>(null)
   const [accessForm, setAccessForm] = useState({
     ...initialAccess,
-    level: preferredAccessLevel(input.accessLevels),
+    level: preferredLevel,
   })
   const [dropConfirmation, setDropConfirmation] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
   const [warnings, setWarnings] = useState<readonly string[]>([])
+  const accessInventory = usePrincipalAccessInventory()
+  const resetAccessInventory = accessInventory.reset
+  const previousConnectionId = useRef(input.connectionId)
+  const operationGuard = usePrincipalOperationGuard(input.connectionId, principalName)
+  const invalidateOperation = operationGuard.invalidate
   const principal = input.principals.find((item) => item.name === principalName) ?? null
-  const selectedDatabase = input.databases.find(
-    (database) => database.name === accessForm.database,
-  )
+  const canMutate = input.canManage && principal?.managementDisabledReason === null
+  const currentAccess = accessInventory.inventory?.databases.find(
+    ({ database }) => database === accessForm.database,
+  ) ?? null
+  const loadAccessInventory = async (
+    connectionId: string,
+    targetPrincipal: string,
+    selectedDatabaseName: string,
+  ) => {
+    const requestContext = operationGuard.beginInventory(connectionId, targetPrincipal)
+    if (requestContext === null) return
+    const inventory = await accessInventory.load(connectionId, targetPrincipal)
+    if (
+      !inventory ||
+      !operationGuard.isCurrentInventory(
+        requestContext,
+        connectionId,
+        targetPrincipal,
+      )
+    ) return
+    const selectedAccess = inventory?.databases.find(
+      ({ database }) => database === selectedDatabaseName,
+    )
+    const level = selectedAccess
+      ? parseAvailableAccessLevel(selectedAccess.directPreset, input.accessLevels)
+      : null
+    setAccessForm((value) =>
+      value.database === selectedDatabaseName
+        ? { ...value, level: level ?? preferredLevel }
+        : value,
+    )
+  }
 
-  const reset = () => {
+  const reset = useCallback(() => {
+    invalidateOperation()
+    resetAccessInventory()
     setPrincipalName(null)
-    setAccessForm({ ...initialAccess, level: preferredAccessLevel(input.accessLevels) })
+    setAccessForm({ ...initialAccess, level: preferredLevel })
     setDropConfirmation('')
-    setError(null)
     setWarnings([])
-  }
+  }, [invalidateOperation, preferredLevel, resetAccessInventory])
 
-  const run = async (operation: () => Promise<void>) => {
-    if (!input.canManage || !input.connectionId || !principal || principal.managementDisabledReason) return
-    setSubmitting(true)
-    setError(null)
-    try {
-      await operation()
-    } catch (operationError: unknown) {
-      setError(managerErrorMessage(operationError))
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  useEffect(() => {
+    if (previousConnectionId.current === input.connectionId) return
+    previousConnectionId.current = input.connectionId
+    reset()
+  }, [input.connectionId, reset])
+
+  const run = (operation: Parameters<typeof operationGuard.run>[3]) =>
+    operationGuard.run(input.canManage, input.connectionId, principal, operation)
 
   const onApplyAccess = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    void run(async () => {
-      if (
-        !input.connectionId ||
-        !principal ||
-        !accessForm.database ||
-        !input.accessLevels.includes(accessForm.level)
-      ) return
+    void run(async (context) => {
+      if (!accessForm.database || !input.accessLevels.includes(accessForm.level)) return
       const nextWarnings = await principalLifecycleClient.setAccess(
-        input.connectionId,
-        principal.name,
+        context.connectionId,
+        context.principalName,
         accessForm,
       )
+      if (!operationGuard.isCurrentOperation(context)) return
       setWarnings(nextWarnings)
+      await loadAccessInventory(
+        context.connectionId,
+        context.principalName,
+        accessForm.database,
+      )
+      if (!operationGuard.isCurrentOperation(context)) return
       input.onRefresh()
     })
   }
 
   const onDrop = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    void run(async () => {
-      if (!input.connectionId || !principal || dropConfirmation !== principal.name) return
-      await principalLifecycleClient.drop(input.connectionId, principal.name)
+    void run(async (context) => {
+      if (dropConfirmation !== context.principalName) return
+      await principalLifecycleClient.drop(context.connectionId, context.principalName)
+      if (!operationGuard.isCurrentOperation(context)) return
       reset()
       input.onRefresh()
     })
@@ -107,24 +133,40 @@ export function usePrincipalManagement(input: PrincipalManagementInput): Princip
 
   const actions: PrincipalManagementActions = {
     close: () => {
-      if (!submitting) reset()
+      if (!operationGuard.submitting) reset()
     },
     manage: (event: MouseEvent<HTMLButtonElement>) => {
       const name = event.currentTarget.dataset.principalName
       const target = input.principals.find((item) => item.name === name)
-      if (!input.canManage || !target || target.managementDisabledReason) return
+      if (!target) return
+      operationGuard.selectPrincipal(target.name)
       setPrincipalName(target.name)
       setAccessForm({
         database: input.databases[0]?.name ?? '',
-        level: preferredAccessLevel(input.accessLevels),
+        level: preferredLevel,
       })
       setDropConfirmation('')
-      setError(null)
+      operationGuard.clearError()
       setWarnings([])
+      accessInventory.reset()
+      if (input.connectionId) {
+        void loadAccessInventory(input.connectionId, target.name, input.databases[0]?.name ?? '')
+      }
     },
     onApplyAccess,
-    onDatabaseChange: (event: ChangeEvent<HTMLSelectElement>) =>
-      setAccessForm((value) => ({ ...value, database: event.target.value })),
+    onDatabaseChange: (event: ChangeEvent<HTMLSelectElement>) => {
+      const database = event.target.value
+      const access = accessInventory.inventory?.databases.find(
+        (item) => item.database === database,
+      )
+      const level = access
+        ? parseAvailableAccessLevel(access.directPreset, input.accessLevels)
+        : null
+      setAccessForm({
+        database,
+        level: level ?? preferredLevel,
+      })
+    },
     onDrop,
     onDropConfirmationChange: (event: ChangeEvent<HTMLInputElement>) =>
       setDropConfirmation(event.target.value),
@@ -133,32 +175,45 @@ export function usePrincipalManagement(input: PrincipalManagementInput): Princip
       if (level) setAccessForm((value) => ({ ...value, level }))
     },
     onRevokeAccess: () => {
-      void run(async () => {
-        if (!input.connectionId || !principal || !accessForm.database) return
+      void run(async (context) => {
+        if (!accessForm.database) return
         const nextWarnings = await principalLifecycleClient.revokeAccess(
-          input.connectionId,
-          principal.name,
+          context.connectionId,
+          context.principalName,
           accessForm.database,
         )
+        if (!operationGuard.isCurrentOperation(context)) return
         setWarnings(nextWarnings)
+        await loadAccessInventory(
+          context.connectionId,
+          context.principalName,
+          accessForm.database,
+        )
+        if (!operationGuard.isCurrentOperation(context)) return
         input.onRefresh()
       })
     },
     onRotatePassword: () => {
-      void run(async () => {
-        if (!input.connectionId || !principal) return
+      void run(async (context) => {
         const credential = await principalLifecycleClient.rotatePassword(
-          input.connectionId,
-          principal.name,
+          context.connectionId,
+          context.principalName,
         )
+        if (!operationGuard.isCurrentOperation(context)) return
         reset()
         input.onCredential({ ...credential, warnings: [] })
       })
     },
     onToggleLogin: () => {
-      void run(async () => {
-        if (!input.connectionId || !principal) return
-        await principalLifecycleClient.setLogin(input.connectionId, principal.name, !principal.canLogin)
+      if (!principal) return
+      const enabled = !principal.canLogin
+      void run(async (context) => {
+        await principalLifecycleClient.setLogin(
+          context.connectionId,
+          context.principalName,
+          enabled,
+        )
+        if (!operationGuard.isCurrentOperation(context)) return
         setWarnings([])
         input.onRefresh()
       })
@@ -169,13 +224,22 @@ export function usePrincipalManagement(input: PrincipalManagementInput): Princip
     actions,
     model: {
       accessForm,
+      accessInventory: accessInventory.inventory?.databases ?? [],
+      accessInventoryError: accessInventory.error,
+      accessInventoryLoading: accessInventory.loading,
+      accessInventoryObservedAt: accessInventory.inventory?.observedAt ?? null,
+      accessInventoryTruncated: accessInventory.inventory?.truncated ?? false,
+      canMutate,
       canConfirmDrop: Boolean(principal && dropConfirmation === principal.name),
+      canRevokeCurrentAccess:
+        currentAccess !== null &&
+        currentAccess.directPreset !== 'none' &&
+        currentAccess.directPreset !== 'unknown',
+      currentAccess,
       dropConfirmation,
-      error,
+      error: operationGuard.error,
       principal,
-      selectedDatabaseHasPublicConnect:
-        selectedDatabase === undefined ? false : databaseHasPublicConnect(selectedDatabase),
-      submitting,
+      submitting: operationGuard.submitting,
       warnings,
     },
   }

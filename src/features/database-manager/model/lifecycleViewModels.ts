@@ -1,6 +1,10 @@
 import type { ChangeEventHandler, FormEventHandler, MouseEventHandler } from 'react'
 
-import type { AccessLevel, ConnectionSummary } from '@/modules/database-manager/domain/contracts'
+import type {
+  AccessLevel,
+  ConnectionSummary,
+  PrincipalDatabaseAccess,
+} from '@/modules/database-manager/domain/contracts'
 
 import type { PrincipalRowViewModel } from './principalRows'
 
@@ -11,11 +15,18 @@ export interface PrincipalAccessFormValue {
 
 export interface PrincipalManagementModel {
   accessForm: PrincipalAccessFormValue
+  accessInventory: readonly PrincipalDatabaseAccess[]
+  accessInventoryError: string | null
+  accessInventoryLoading: boolean
+  accessInventoryObservedAt: string | null
+  accessInventoryTruncated: boolean
+  canMutate: boolean
   canConfirmDrop: boolean
+  canRevokeCurrentAccess: boolean
+  currentAccess: PrincipalDatabaseAccess | null
   dropConfirmation: string
   error: string | null
   principal: PrincipalRowViewModel | null
-  selectedDatabaseHasPublicConnect: boolean
   submitting: boolean
   warnings: readonly string[]
 }
