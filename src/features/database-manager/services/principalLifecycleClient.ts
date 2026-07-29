@@ -1,16 +1,47 @@
 import { z } from 'zod'
 
-import type { AccessLevel, RotatePrincipalPasswordResult } from '@/modules/database-manager/domain/contracts'
+import { accessPresetMatches, accessSources } from '@/modules/database-manager/domain/contracts'
+import type {
+  AccessLevel,
+  PrincipalAccessInventory,
+  RotatePrincipalPasswordResult,
+} from '@/modules/database-manager/domain/contracts'
 
 import { requestJson } from './managerHttpClient'
 
 const warningsSchema = z.object({ warnings: z.array(z.string()) })
+const accessInventorySchema = z.object({
+  databases: z.array(
+    z.object({
+      database: z.string(),
+      directPreset: z.enum(accessPresetMatches),
+      effectivePreset: z.enum(accessPresetMatches),
+      potentialPreset: z.enum(accessPresetMatches),
+      sources: z.array(z.enum(accessSources)),
+    }).strict(),
+  ),
+  observedAt: z.string().datetime(),
+  principal: z.string(),
+  truncated: z.boolean(),
+}).strict()
 
 function principalPath(connectionId: string, principal: string): string {
   return `/api/db-manager/v1/connections/${encodeURIComponent(connectionId)}/principals/${encodeURIComponent(principal)}`
 }
 
 export const principalLifecycleClient = {
+  getAccess(
+    connectionId: string,
+    principal: string,
+    signal?: AbortSignal,
+  ): Promise<PrincipalAccessInventory> {
+    return requestJson(
+      `${principalPath(connectionId, principal)}/access`,
+      accessInventorySchema,
+      { signal: signal ?? null },
+    )
+  },
+
   async setAccess(
     connectionId: string,
     principal: string,

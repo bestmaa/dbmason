@@ -16,6 +16,21 @@ export type SslMode = (typeof sslModes)[number]
 export const accessLevels = ['connect', 'read', 'write', 'developer'] as const
 export type AccessLevel = (typeof accessLevels)[number]
 
+export const accessPresetMatches = [...accessLevels, 'none', 'custom', 'unknown'] as const
+export type AccessPresetMatch = (typeof accessPresetMatches)[number]
+
+export const accessSources = [
+  'direct',
+  'public',
+  'inherited',
+  'role-switch',
+  'ownership',
+  'privileged',
+  'global',
+  'proxy',
+] as const
+export type AccessSource = (typeof accessSources)[number]
+
 export type ConnectionStatus = 'offline' | 'online' | 'unknown'
 
 export interface DatabaseConnectionConfig {
@@ -75,6 +90,21 @@ export interface PrincipalSummary {
   memberships: readonly string[]
   name: string
   validUntil: string | null
+}
+
+export interface PrincipalDatabaseAccess {
+  database: string
+  directPreset: AccessPresetMatch
+  effectivePreset: AccessPresetMatch
+  potentialPreset: AccessPresetMatch
+  sources: readonly AccessSource[]
+}
+
+export interface PrincipalAccessInventory {
+  databases: readonly PrincipalDatabaseAccess[]
+  observedAt: string
+  principal: string
+  truncated: boolean
 }
 
 export interface EngineCapabilities {
@@ -179,6 +209,10 @@ export interface DatabaseEngine {
   ): Promise<CreatePrincipalResult>
   dropPrincipal(config: DatabaseConnectionConfig, command: DropPrincipalCommand): Promise<void>
   getObservability(config: DatabaseConnectionConfig): Promise<ObservabilitySnapshot>
+  getPrincipalAccess(
+    config: DatabaseConnectionConfig,
+    principal: string,
+  ): Promise<PrincipalAccessInventory>
   getSnapshot(config: DatabaseConnectionConfig): Promise<ServerSnapshot>
   loadWorkspaceCatalog(
     config: DatabaseConnectionConfig,

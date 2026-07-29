@@ -11,6 +11,7 @@ import type {
   MysqlDatabaseSummary,
   DropPrincipalCommand,
   PrincipalAccessCommand,
+  PrincipalAccessInventory,
   PrincipalAccessResult,
   PrincipalSummary,
   RevokePrincipalAccessCommand,
@@ -34,7 +35,13 @@ import { isMysqlSystemSchema, parseMysqlAccount, quoteMysqlAccount } from './ide
 import { quoteMysqlIdentifier } from './identifiers'
 import { withMysqlConnection } from './mysqlClient'
 import { mysqlBoolean } from './mysqlValues'
+import { getMysqlPrincipalAccess } from './MysqlAccessInventory'
 import { getMysqlObservability } from './MysqlObservability'
+import {
+  hasUnescapedMysqlWildcard,
+  mysqlDatabaseGrantPattern,
+  mysqlGrantPatternMatches,
+} from './mysqlPrivilegeScope'
 import {
   browseMysqlWorkspaceRelation,
   loadMysqlWorkspaceCatalog,
@@ -71,6 +78,14 @@ interface ExistsRow extends RowDataPacket {
   found: unknown
 }
 
+interface DatabaseGrantPatternRow extends RowDataPacket {
+  databasePattern: string
+}
+
+interface PartialRevokesRow extends RowDataPacket {
+  partialRevokes: unknown
+}
+
 interface TablePrivilegeRow extends RowDataPacket {
   privilege: string
   tableName: string
@@ -96,6 +111,7 @@ const capabilities = {
   supportsReadOnlyWorkspace: true,
   supportsSchemas: false,
 } as const
+const maximumReconciledDatabaseGrantRows = 256
 
 const tablePrivilegeAllowlist = new Set([
   'ALTER',
@@ -174,19 +190,53 @@ async function accountExists(connection: Connection, principal: string): Promise
   return mysqlBoolean(rows[0]?.found)
 }
 
+async function partialRevokesEnabled(connection: Connection): Promise<boolean> {
+  const [rows] = await connection.query<PartialRevokesRow[]>(
+    'SELECT @@partial_revokes AS partialRevokes',
+  )
+  return mysqlBoolean(rows[0]?.partialRevokes)
+}
+
 async function revokeDirectDatabaseAccess(
   connection: Connection,
   principal: string,
   database: string,
-): Promise<void> {
+): Promise<boolean> {
   const account = parseMysqlAccount(principal)
   const targetGrantee = `'${account.user}'@'${account.host}'`
-  const [schemaRows] = await connection.query<ExistsRow[]>(
-    `SELECT EXISTS (
-      SELECT 1 FROM information_schema.SCHEMA_PRIVILEGES privilege
-      WHERE privilege.GRANTEE = ? AND privilege.TABLE_SCHEMA = ?
-    ) AS found`,
-    [targetGrantee, database],
+  const partialRevokes = await partialRevokesEnabled(connection)
+  const safePattern = mysqlDatabaseGrantPattern(database, partialRevokes)
+  const [allDatabaseGrantRows] = await connection.query<DatabaseGrantPatternRow[]>(
+    `SELECT privilege.Db AS databasePattern
+    FROM mysql.db privilege
+    WHERE privilege.User = ? AND privilege.Host = ?
+    ORDER BY privilege.Db
+    LIMIT ${maximumReconciledDatabaseGrantRows + 1}`,
+    [account.user, account.host],
+  )
+  if (allDatabaseGrantRows.length > maximumReconciledDatabaseGrantRows) {
+    throw new ManagerError(
+      'PRIVILEGE_RECONCILIATION_UNSAFE',
+      'The MySQL account has too many database grants to reconcile safely.',
+      409,
+    )
+  }
+  if (
+    !partialRevokes &&
+    allDatabaseGrantRows.some(
+      ({ databasePattern }) =>
+        hasUnescapedMysqlWildcard(databasePattern) &&
+        mysqlGrantPatternMatches(databasePattern, database),
+    )
+  ) {
+    throw new ManagerError(
+      'PRIVILEGE_RECONCILIATION_UNSAFE',
+      'A broad MySQL wildcard grant overlaps this database; no access was changed.',
+      409,
+    )
+  }
+  const databaseGrantRows = allDatabaseGrantRows.filter(
+    ({ databasePattern }) => databasePattern === safePattern,
   )
   const [tableRows] = await connection.query<TablePrivilegeRow[]>(
     `SELECT privilege.TABLE_NAME AS tableName, privilege.PRIVILEGE_TYPE AS privilege
@@ -291,11 +341,12 @@ async function revokeDirectDatabaseAccess(
     )
   }
 
-  if (mysqlBoolean(schemaRows[0]?.found)) {
+  for (const row of databaseGrantRows) {
     await connection.query(
-      `REVOKE ALL PRIVILEGES ON ${quoteMysqlIdentifier(database)}.* FROM ${quoteMysqlAccount(account)}`,
+      `REVOKE ALL PRIVILEGES ON ${quoteMysqlIdentifier(row.databasePattern)}.* FROM ${quoteMysqlAccount(account)}`,
     )
   }
+  return partialRevokes
 }
 
 export class MysqlEngine implements DatabaseEngine {
@@ -388,6 +439,13 @@ export class MysqlEngine implements DatabaseEngine {
     })
   }
 
+  async getPrincipalAccess(
+    config: DatabaseConnectionConfig,
+    principal: string,
+  ): Promise<PrincipalAccessInventory> {
+    return getMysqlPrincipalAccess(config, principal)
+  }
+
   async createDatabase(
     config: DatabaseConnectionConfig,
     command: CreateDatabaseCommand,
@@ -459,11 +517,19 @@ export class MysqlEngine implements DatabaseEngine {
     return withMysqlConnection(config, config.database, async (connection) => {
       const account = await assertSafeMysqlAccount(connection, command.principal)
       await assertAccessDatabase(connection, command.database)
-      await revokeDirectDatabaseAccess(connection, command.principal, command.database)
+      const partialRevokes = await revokeDirectDatabaseAccess(
+        connection,
+        command.principal,
+        command.database,
+      )
       const privileges = grantForLevel(command.level)
       if (privileges) {
+        const databasePattern = mysqlDatabaseGrantPattern(
+          command.database,
+          partialRevokes,
+        )
         await connection.query(
-          `GRANT ${privileges} ON ${quoteMysqlIdentifier(command.database)}.* TO ${quoteMysqlAccount(account)}`,
+          `GRANT ${privileges} ON ${quoteMysqlIdentifier(databasePattern)}.* TO ${quoteMysqlAccount(account)}`,
         )
       }
       const warning = accessWarning(command.level)

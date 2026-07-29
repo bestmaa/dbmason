@@ -377,15 +377,28 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await page.goto('/')
     await page.getByRole('tab', { name: /Users & roles/u }).click()
 
-    await expect(
-      page.getByRole('button', { name: `Manage ${readTestPostgresSettings().user}` }),
-    ).toBeDisabled()
+    await page
+      .getByRole('button', {
+        name: `View access for ${readTestPostgresSettings().user}`,
+      })
+      .click()
+    const protectedDialog = page.getByRole('dialog', {
+      name: `Access for ${readTestPostgresSettings().user}`,
+    })
+    await expect(protectedDialog.getByText('Current database access')).toBeVisible()
+    await expect(protectedDialog.getByRole('button', { name: 'Apply preset' })).toHaveCount(0)
+    await protectedDialog.getByRole('button', { name: 'Close dialog' }).click()
     await page.getByRole('button', { name: `Manage ${remoteResources.principal}` }).click()
     let dialog = page.getByRole('dialog', { name: `Manage ${remoteResources.principal}` })
+    let accessRow = dialog
+      .getByRole('table', { name: 'Current access for each database' })
+      .getByRole('row', { name: new RegExp(remoteResources.database, 'u') })
+    await expect(accessRow).toContainText('Matches Read only')
     await dialog.getByLabel('Database').selectOption(remoteResources.database)
-    await dialog.getByLabel('Access preset').selectOption('write')
+    await dialog.getByLabel('New preset to apply').selectOption('write')
     await dialog.getByRole('button', { name: 'Apply preset' }).click()
     await expect(dialog.getByRole('button', { name: 'Apply preset' })).toBeEnabled()
+    await expect(accessRow).toContainText('Matches Read & write')
     await verifyWritableLogin(currentPassword)
 
     await dialog.getByRole('button', { name: 'Rotate password' }).click()
@@ -409,6 +422,12 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await dialog.getByLabel('Database').selectOption(remoteResources.database)
     await dialog.getByRole('button', { name: 'Revoke explicit access' }).click()
     await expect(dialog).toContainText('PUBLIC still grants CONNECT')
+    accessRow = dialog
+      .getByRole('table', { name: 'Current access for each database' })
+      .getByRole('row', { name: new RegExp(remoteResources.database, 'u') })
+    await expect(accessRow).toContainText('No direct grant')
+    await expect(accessRow).toContainText('Custom')
+    await expect(accessRow).toContainText('PUBLIC')
     expect(await verifySelectAccess(currentPassword)).toBe(false)
 
     await dialog

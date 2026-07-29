@@ -26,6 +26,21 @@ export const resourceEndpoints: readonly Endpoint[] = [
       handleEndpoint(async () => {
         requireAuthenticated(req)
         const connectionId = getRouteParam(req, 'connectionId')
+        const { principal } = principalRouteSchema.parse({
+          principal: getRouteParam(req, 'principal'),
+        })
+        return jsonResponse(
+          await managerService.getPrincipalAccess(req, connectionId, principal),
+        )
+      }),
+    method: 'get',
+    path: '/db-manager/v1/connections/:connectionId/principals/:principal/access',
+  },
+  {
+    handler: (req) =>
+      handleEndpoint(async () => {
+        requireAuthenticated(req)
+        const connectionId = getRouteParam(req, 'connectionId')
         const snapshot = await managerService.getSnapshot(req, connectionId)
         return jsonResponse(snapshot)
       }),

@@ -14,6 +14,10 @@ interface PrivilegeRow extends QueryResultRow {
   canConnect: boolean
 }
 
+interface OidRow extends QueryResultRow {
+  oid: number
+}
+
 function requiredEnv(name: string): string {
   const value = process.env[name]
   if (!value) throw new Error(`Missing ${name}. Start the isolated PostgreSQL test harness.`)
@@ -40,11 +44,16 @@ const adminConfig: DatabaseConnectionConfig = {
 const suffix = `${process.pid}_${Date.now().toString(36)}`
 const names = {
   database: `dbc_it_${suffix}`,
+  developerRole: `dbc_developer_${suffix}`,
   outsideDatabase: `dbc_outside_${suffix}`,
   readRole: `dbc_read_${suffix}`,
   writeRole: `dbc_write_${suffix}`,
   connectRole: `dbc_connect_${suffix}`,
   failedRole: `dbc_failed_${suffix}`,
+  inheritedRole: `dbc_inherited_${suffix}`,
+  potentialPrivilegeRole: `dbc_potential_privilege_${suffix}`,
+  potentialProbe: `dbc_potential_probe_${suffix}`,
+  potentialSwitchRole: `dbc_potential_switch_${suffix}`,
 }
 const engine = new PostgresEngine()
 const credentials: Record<'connect' | 'read' | 'write', string> = {
@@ -96,7 +105,17 @@ async function dropTestResources(): Promise<void> {
       for (const database of [names.database, names.outsideDatabase]) {
         await client.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(database)} WITH (FORCE)`)
       }
-      for (const role of [names.readRole, names.writeRole, names.connectRole, names.failedRole]) {
+      for (const role of [
+        names.inheritedRole,
+        names.readRole,
+        names.writeRole,
+        names.developerRole,
+        names.connectRole,
+        names.failedRole,
+        names.potentialProbe,
+        names.potentialSwitchRole,
+        names.potentialPrivilegeRole,
+      ]) {
         await client.query(`DROP ROLE IF EXISTS ${quoteIdentifier(role)}`)
       }
     },
@@ -132,6 +151,42 @@ describe('PostgresEngine against the isolated PostgreSQL harness', () => {
         name: names.connectRole,
       })
     ).oneTimePassword
+    await engine.createPrincipal(adminConfig, {
+      access: [{ database: names.database, level: 'developer' }],
+      name: names.developerRole,
+    })
+    await engine.createPrincipal(adminConfig, { access: [], name: names.inheritedRole })
+    await engine.createPrincipal(adminConfig, {
+      access: [{ database: names.database, level: 'connect' }],
+      name: names.potentialProbe,
+    })
+    await adminSql(
+      maintenanceDatabase,
+      `CREATE ROLE ${quoteIdentifier(names.potentialSwitchRole)} NOLOGIN`,
+    )
+    await adminSql(
+      maintenanceDatabase,
+      `CREATE ROLE ${quoteIdentifier(names.potentialPrivilegeRole)} NOLOGIN`,
+    )
+    await adminSql(
+      maintenanceDatabase,
+      `GRANT ${quoteIdentifier(names.potentialSwitchRole)}
+        TO ${quoteIdentifier(names.potentialProbe)} WITH INHERIT FALSE, SET TRUE`,
+    )
+    await adminSql(
+      maintenanceDatabase,
+      `GRANT ${quoteIdentifier(names.potentialPrivilegeRole)}
+        TO ${quoteIdentifier(names.potentialSwitchRole)} WITH INHERIT TRUE, SET FALSE`,
+    )
+    await adminSql(
+      maintenanceDatabase,
+      `GRANT CREATE ON DATABASE ${quoteIdentifier(names.database)}
+        TO ${quoteIdentifier(names.potentialPrivilegeRole)}`,
+    )
+    await adminSql(
+      maintenanceDatabase,
+      `GRANT ${quoteIdentifier(names.readRole)} TO ${quoteIdentifier(names.inheritedRole)}`,
+    )
 
     await adminSql(
       names.database,
@@ -221,6 +276,173 @@ describe('PostgresEngine against the isolated PostgreSQL harness', () => {
         await client.query('SELECT 1')
       }),
     ).resolves.toBeUndefined()
+  })
+
+  it('reports live direct presets separately from effective PUBLIC access', async () => {
+    const readInventory = await engine.getPrincipalAccess(adminConfig, names.readRole)
+    expect(
+      readInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({
+      directPreset: 'read',
+      effectivePreset: 'custom',
+      sources: expect.arrayContaining(['direct', 'public']),
+    })
+    expect(
+      readInventory.databases.find(({ database }) => database === names.outsideDatabase),
+    ).toMatchObject({
+      directPreset: 'none',
+      effectivePreset: 'custom',
+      sources: ['public'],
+    })
+
+    const writeInventory = await engine.getPrincipalAccess(adminConfig, names.writeRole)
+    expect(
+      writeInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({ directPreset: 'write', effectivePreset: 'custom' })
+
+    const connectInventory = await engine.getPrincipalAccess(adminConfig, names.connectRole)
+    expect(
+      connectInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({ directPreset: 'connect', effectivePreset: 'custom' })
+
+    const developerInventory = await engine.getPrincipalAccess(
+      adminConfig,
+      names.developerRole,
+    )
+    expect(
+      developerInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({ directPreset: 'developer', effectivePreset: 'custom' })
+
+    const inheritedInventory = await engine.getPrincipalAccess(
+      adminConfig,
+      names.inheritedRole,
+    )
+    expect(
+      inheritedInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({
+      directPreset: 'none',
+      effectivePreset: 'custom',
+      sources: expect.arrayContaining(['public', 'inherited']),
+    })
+    expect(
+      inheritedInventory.databases.find(
+        ({ database }) => database === names.outsideDatabase,
+      )?.sources,
+    ).not.toContain('inherited')
+  })
+
+  it('reports privileged attributes and SET-role chains as custom authority', async () => {
+    await adminSql(
+      maintenanceDatabase,
+      `ALTER ROLE ${quoteIdentifier(names.connectRole)} BYPASSRLS`,
+    )
+    const privilegedInventory = await engine.getPrincipalAccess(
+      adminConfig,
+      names.connectRole,
+    )
+    expect(
+      privilegedInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({
+      directPreset: 'custom',
+      effectivePreset: 'custom',
+      sources: expect.arrayContaining(['privileged']),
+    })
+    await adminSql(
+      maintenanceDatabase,
+      `ALTER ROLE ${quoteIdentifier(names.connectRole)} NOBYPASSRLS`,
+    )
+
+    const potentialInventory = await engine.getPrincipalAccess(
+      adminConfig,
+      names.potentialProbe,
+    )
+    expect(
+      potentialInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({
+      directPreset: 'connect',
+      potentialPreset: 'custom',
+      sources: expect.arrayContaining(['direct', 'role-switch']),
+    })
+  })
+
+  it('fails unmodelled large-object write authority to custom', async () => {
+    await withClient(
+      names.database,
+      adminConfig.username,
+      adminConfig.password,
+      async (client) => {
+        const result = await client.query<OidRow>('SELECT lo_create(0) AS oid')
+        const oid = result.rows[0]?.oid
+        if (!oid) throw new Error('PostgreSQL did not create the test large object')
+        try {
+          await client.query(
+            `GRANT UPDATE ON LARGE OBJECT ${oid} TO ${quoteIdentifier(names.writeRole)}`,
+          )
+          const inventory = await engine.getPrincipalAccess(adminConfig, names.writeRole)
+          expect(
+            inventory.databases.find(({ database }) => database === names.database),
+          ).toMatchObject({
+            directPreset: 'custom',
+            effectivePreset: 'custom',
+            sources: expect.arrayContaining(['direct']),
+          })
+        } finally {
+          await client.query('SELECT lo_unlink($1)', [oid])
+        }
+      },
+    )
+    const restored = await engine.getPrincipalAccess(adminConfig, names.writeRole)
+    expect(
+      restored.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({ directPreset: 'write' })
+  })
+
+  it('fails database grant options and private-schema authority to custom', async () => {
+    await adminSql(
+      maintenanceDatabase,
+      `GRANT CONNECT ON DATABASE ${quoteIdentifier(names.database)}
+        TO ${quoteIdentifier(names.connectRole)} WITH GRANT OPTION`,
+    )
+    const grantOptionInventory = await engine.getPrincipalAccess(
+      adminConfig,
+      names.connectRole,
+    )
+    expect(
+      grantOptionInventory.databases.find(
+        ({ database }) => database === names.database,
+      ),
+    ).toMatchObject({
+      directPreset: 'custom',
+      effectivePreset: 'custom',
+      sources: expect.arrayContaining(['direct', 'public']),
+    })
+    await adminSql(
+      maintenanceDatabase,
+      `REVOKE GRANT OPTION FOR CONNECT ON DATABASE ${quoteIdentifier(names.database)}
+        FROM ${quoteIdentifier(names.connectRole)}`,
+    )
+
+    await adminSql(names.database, 'CREATE SCHEMA private_inventory')
+    await adminSql(
+      names.database,
+      'CREATE TABLE private_inventory.secret_items (id integer)',
+    )
+    await adminSql(
+      names.database,
+      `GRANT USAGE ON SCHEMA private_inventory TO ${quoteIdentifier(names.readRole)}`,
+    )
+    await adminSql(
+      names.database,
+      `GRANT SELECT ON private_inventory.secret_items TO ${quoteIdentifier(names.readRole)}`,
+    )
+    const privateInventory = await engine.getPrincipalAccess(adminConfig, names.readRole)
+    expect(
+      privateInventory.databases.find(({ database }) => database === names.database),
+    ).toMatchObject({
+      directPreset: 'custom',
+      effectivePreset: 'custom',
+      sources: expect.arrayContaining(['direct', 'public']),
+    })
   })
 
   it('preflights missing databases before creating a role', async () => {

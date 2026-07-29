@@ -7,14 +7,36 @@
 .lifecycle-form { display: grid; gap: 13px; padding: 18px 22px 22px; }
 .lifecycle-form--bordered { border-top: 1px solid var(--border); }
 .lifecycle-heading { display: flex; align-items: flex-start; gap: 9px; }
-.lifecycle-heading strong, .lifecycle-heading small { display: block; }
-.lifecycle-heading strong { color: var(--text); font-size: 11px; }
+.lifecycle-heading strong, .lifecycle-heading h3, .lifecycle-heading small { display: block; }
+.lifecycle-heading strong, .lifecycle-heading h3 { color: var(--text); font-size: 11px; }
+.lifecycle-heading h3 { margin: 0; }
 .lifecycle-heading small { margin-top: 4px; color: var(--text-muted); font-size: 9px; line-height: 1.5; }
 .lifecycle-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .lifecycle-form__actions { display: flex; justify-content: flex-end; gap: 8px; }
 .access-caveat, .danger-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 11px; border: 1px solid rgb(246 189 96 / 20%); border-radius: 8px; background: rgb(246 189 96 / 6%); color: var(--amber); font-size: 9px; line-height: 1.5; }
 .access-caveat svg, .danger-note svg { flex: 0 0 auto; }
 .lifecycle-warning { margin: 0; }
+.access-inventory { display: grid; gap: 11px; padding: 18px 22px; border-top: 1px solid var(--border); background: rgb(55 214 198 / 1.5%); }
+.access-inventory .lifecycle-heading { justify-content: space-between; }
+.access-inventory time { color: var(--text-muted); font-size: 8px; white-space: nowrap; }
+.access-inventory__message { margin: 0; color: var(--text-muted); font-size: 9px; }
+.access-inventory__table-wrap { max-height: 210px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+.access-inventory__table { width: 100%; border-collapse: collapse; }
+.access-inventory__table th, .access-inventory__table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-soft); font-size: 9px; text-align: left; vertical-align: top; white-space: nowrap; }
+.access-inventory__table thead th { position: sticky; top: 0; z-index: 1; background: var(--surface-2); color: var(--text-muted); font-size: 8px; text-transform: uppercase; }
+.access-inventory__table tbody tr:last-child > * { border-bottom: 0; }
+.access-inventory__table tbody tr.is-selected { background: rgb(55 214 198 / 6%); }
+.access-inventory__table small { display: block; margin-top: 4px; color: var(--text-muted); }
+.access-status { display: inline-flex; padding: 3px 6px; border: 1px solid var(--border); border-radius: 999px; }
+.access-status--active { border-color: rgb(55 214 198 / 28%); color: var(--accent); }
+.access-status--danger { border-color: rgb(255 122 144 / 28%); color: #ffc0cb; }
+.access-status--warning { border-color: rgb(246 189 96 / 28%); color: var(--amber); }
+.access-status--muted { color: var(--text-muted); }
+.access-source-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.access-source { padding: 2px 5px; border-radius: 999px; background: var(--surface-3); color: var(--text-muted); font-size: 8px; }
+.current-access-note { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--text-muted); font-size: 9px; }
+.current-access-note strong { color: var(--text); }
+.current-access-note span { padding-left: 7px; border-left: 1px solid var(--border); }
 .lifecycle-danger { border-top: 1px solid var(--border); background: rgb(255 122 144 / 2%); }
 .lifecycle-danger .lifecycle-heading { color: var(--red); }
 .danger-note { border-color: rgb(255 122 144 / 20%); background: rgb(255 122 144 / 6%); color: #ffc0cb; }
@@ -29,4 +51,5 @@
   .lifecycle-fields { grid-template-columns: 1fr; }
   .lifecycle-quick-actions, .lifecycle-form__actions { flex-direction: column; }
   .lifecycle-quick-actions .button, .lifecycle-form__actions .button { width: 100%; }
+  .access-inventory .lifecycle-heading { display: grid; }
 }

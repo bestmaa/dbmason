@@ -1,4 +1,4 @@
-import { Check, MoreHorizontal, X } from 'lucide-react'
+import { Check, Eye, MoreHorizontal, X } from 'lucide-react'
 import type { MouseEventHandler } from 'react'
 
 import type { PrincipalRowViewModel } from '../model/principalRows'
@@ -14,7 +14,7 @@ export function PrincipalTable({ canManage, onManage, principals }: PrincipalTab
     <div className="resource-table-wrap">
       <table className="resource-table">
         <caption className="sr-only">Database accounts and roles</caption>
-        <thead><tr><th>Account or role</th><th>Login</th><th>Memberships</th><th>Capabilities</th>{canManage && <th><span className="sr-only">Actions</span></th>}</tr></thead>
+        <thead><tr><th>Account or role</th><th>Login</th><th>Memberships</th><th>Capabilities</th><th><span className="sr-only">Access details</span></th></tr></thead>
         <tbody>
           {principals.map((principal) => (
             <tr key={principal.name}>
@@ -34,21 +34,20 @@ export function PrincipalTable({ canManage, onManage, principals }: PrincipalTab
                   {!principal.isSuperuser && !principal.canCreateDatabase && !principal.canCreateRole && 'Standard'}
                 </div>
               </td>
-              {canManage && (
-                <td>
-                  <button
-                    aria-label={`Manage ${principal.name}`}
-                    className="icon-button"
-                    data-principal-name={principal.name}
-                    disabled={principal.managementDisabledReason !== null}
-                    onClick={onManage}
-                    title={principal.managementDisabledReason ?? `Manage ${principal.name}`}
-                    type="button"
-                  >
-                    <MoreHorizontal size={17} />
-                  </button>
-                </td>
-              )}
+              <td>
+                <button
+                  aria-label={`${canManage && !principal.managementDisabledReason ? 'Manage' : 'View access for'} ${principal.name}`}
+                  className="icon-button"
+                  data-principal-name={principal.name}
+                  onClick={onManage}
+                  title={canManage && !principal.managementDisabledReason ? `Manage ${principal.name}` : `View database access for ${principal.name}`}
+                  type="button"
+                >
+                  {canManage && !principal.managementDisabledReason
+                    ? <MoreHorizontal size={17} />
+                    : <Eye size={17} />}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

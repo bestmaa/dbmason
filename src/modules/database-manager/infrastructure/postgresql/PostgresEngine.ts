@@ -11,6 +11,7 @@ import type {
   PostgresDatabaseSummary,
   DropPrincipalCommand,
   PrincipalAccessCommand,
+  PrincipalAccessInventory,
   PrincipalAccessResult,
   PrincipalSummary,
   RevokePrincipalAccessCommand,
@@ -31,6 +32,7 @@ import type {
 import { generateDatabasePassword } from '../security/passwordGenerator'
 import { createScramSha256Verifier } from '../security/scramSha256Verifier'
 import { quoteIdentifier } from './identifiers'
+import { getPostgresPrincipalAccess } from './PostgresAccessInventory'
 import { getPostgresObservability } from './PostgresObservability'
 import {
   browseWorkspaceRelation,
@@ -199,6 +201,13 @@ export class PostgresEngine implements DatabaseEngine {
 
   getObservability(config: DatabaseConnectionConfig): Promise<PostgresObservabilitySnapshot> {
     return getPostgresObservability(config)
+  }
+
+  async getPrincipalAccess(
+    config: DatabaseConnectionConfig,
+    principal: string,
+  ): Promise<PrincipalAccessInventory> {
+    return getPostgresPrincipalAccess(config, principal)
   }
 
   loadWorkspaceCatalog(

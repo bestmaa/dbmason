@@ -126,6 +126,28 @@ Stores only connection metadata and a versioned encrypted credential envelope:
 
 Remote databases and roles are never mirrored here. Connection passwords are never returned to the browser.
 
+Principal database access is inspected live when an authenticated user opens
+an account's access dialog. Viewers and protected principals receive the same
+read-only inventory; only owner/admin/operator roles can mutate manageable
+principals. It is not inferred from the last DBMason action and is not
+persisted in SQLite. The typed inventory separates an exact direct preset
+match from immediately effective access and access that may become available
+through role switching. `PUBLIC`, inherited membership, ownership, privileged
+role attributes, global, and proxy sources remain explicit. Partial,
+grant-capable, wildcard, unmodelled ACL classes, privileged, or unreadable
+shapes are `custom` or `unknown`, never silently reduced to `read` or `none`.
+
+PostgreSQL inspection is bounded to 64 databases, one short catalog read per
+connectable database, a three-second statement timeout, and a ten-second
+overall scheduling budget. MySQL inspects at most 128 schemas and 256
+database-grant rows in one bounded connection and treats unresolved `%`/`_`
+database grant patterns conservatively. Each engine has a separate
+single-active, four-waiter
+inventory limiter so read-only topology scans cannot consume the manager's
+general operation capacity. A capped or inaccessible row is returned as
+`unknown`; raw ACLs, grant text, object names, grantors, and engine errors are
+never returned.
+
 Per-database URL templates combine this non-secret endpoint metadata with a
 selected standard login from the live snapshot. The saved administrator secret
 is not decrypted. A restricted account password may be entered transiently in
@@ -325,6 +347,7 @@ POST /api/db-manager/v1/connections
 POST /api/db-manager/v1/connections/:id/test
 GET  /api/db-manager/v1/connections/:id/snapshot
 GET  /api/db-manager/v1/connections/:id/observability
+GET  /api/db-manager/v1/connections/:id/principals/:name/access
 POST /api/db-manager/v1/connections/:id/databases
 POST /api/db-manager/v1/connections/:id/principals
 POST /api/db-manager/v1/connections/:id/principals/:name/access

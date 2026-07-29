@@ -53,7 +53,27 @@ describe('engine capability-driven access presets', () => {
         databases,
         model: {
           accessForm: { database: 'app', level: 'read' },
+          accessInventory: [{
+            database: 'app',
+            directPreset: 'read',
+            effectivePreset: 'read',
+            potentialPreset: 'read',
+            sources: ['direct'],
+          }],
+          accessInventoryError: null,
+          accessInventoryLoading: false,
+          accessInventoryObservedAt: null,
+          accessInventoryTruncated: false,
+          canMutate: true,
           canConfirmDrop: false,
+          canRevokeCurrentAccess: true,
+          currentAccess: {
+            database: 'app',
+            directPreset: 'read',
+            effectivePreset: 'read',
+            potentialPreset: 'read',
+            sources: ['direct'],
+          },
           dropConfirmation: '',
           error: null,
           principal: {
@@ -67,7 +87,6 @@ describe('engine capability-driven access presets', () => {
             name: 'reader',
             validUntil: null,
           },
-          selectedDatabaseHasPublicConnect: false,
           submitting: false,
           warnings: [],
         },
@@ -81,5 +100,8 @@ describe('engine capability-driven access presets', () => {
       expect(html).not.toContain('value="write"')
       expect(html).not.toContain('value="developer"')
     }
+    expect(manageHtml).toContain('Current database access')
+    expect(manageHtml).toContain('Matches Read only')
+    expect(manageHtml).toContain('Effective: Read only')
   })
 })
