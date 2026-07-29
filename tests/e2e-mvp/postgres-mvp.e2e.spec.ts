@@ -421,7 +421,9 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
     await expect(dialog.getByRole('button', { name: 'Disable login' })).toBeVisible()
     expect(await verifySelectAccess(currentPassword)).toBe(true)
 
-    await dialog.getByLabel('Database').selectOption(remoteResources.database)
+    await dialog
+      .getByRole('combobox', { name: 'Database', exact: true })
+      .selectOption(remoteResources.database)
     await dialog.getByRole('button', { name: 'Revoke explicit access' }).click()
     await expect(dialog).toContainText('PUBLIC still grants CONNECT')
     accessRow = dialog

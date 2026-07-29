@@ -346,7 +346,9 @@ test.describe.serial('MySQL MVP through Chromium', () => {
     await expect(dialog.getByRole('button', { name: 'Disable login' })).toBeVisible()
     expect(await verifySelectAccess(currentPassword)).toBe(true)
 
-    await dialog.getByLabel('Database').selectOption(remoteResources.database)
+    await dialog
+      .getByRole('combobox', { name: 'Database', exact: true })
+      .selectOption(remoteResources.database)
     await dialog.getByLabel('New preset to apply').selectOption('connect')
     await dialog.getByRole('button', { name: 'Apply preset' }).click()
     await expect(dialog).toContainText('authentication-only')
