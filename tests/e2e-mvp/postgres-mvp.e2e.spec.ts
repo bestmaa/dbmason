@@ -394,7 +394,9 @@ test.describe.serial('PostgreSQL MVP through Chromium', () => {
       .getByRole('table', { name: 'Current access for each database' })
       .getByRole('row', { name: new RegExp(remoteResources.database, 'u') })
     await expect(accessRow).toContainText('Matches Read only')
-    await dialog.getByLabel('Database').selectOption(remoteResources.database)
+    await dialog
+      .getByRole('combobox', { name: 'Database', exact: true })
+      .selectOption(remoteResources.database)
     await dialog.getByLabel('New preset to apply').selectOption('write')
     await dialog.getByRole('button', { name: 'Apply preset' }).click()
     await expect(dialog.getByRole('button', { name: 'Apply preset' })).toBeEnabled()
