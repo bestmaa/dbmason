@@ -15,8 +15,8 @@ importers:
   .:
     dependencies:
       '@payloadcms/db-sqlite':
-        specifier: 3.86.0
-        version: 3.86.0(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)
+        specifier: 3.90.0
+        version: 3.90.0(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)
       '@payloadcms/next':
         specifier: 3.86.0
         version: 3.86.0(@types/react@19.2.14)(graphql@16.14.2)(monaco-editor@0.55.1)(next@16.2.11(@babel/core@7.29.7)(@playwright/test@1.58.2)(@types/node@22.19.9)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.7.3)
@@ -1100,15 +1100,15 @@ packages:
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
 
-  '@payloadcms/db-sqlite@3.86.0':
-    resolution: {integrity: sha512-eNrqAKd1+FPOnG9plMtJbf0jTWphUrryrGEFPU2TmvA7PcfGtQRSBXCX30YYbSoztORl9vtx8dr03IPch5NT0w==}
+  '@payloadcms/db-sqlite@3.90.0':
+    resolution: {integrity: sha512-0cO43Y8qkxFHGsUDyYhz7+N0fiIh7nalGZfeA/pyndkGS6g6PlA0MDX8wqT2TiMO+CNCZuSNOC/TUdBYd3WxxA==}
     peerDependencies:
-      payload: 3.86.0
+      payload: 3.90.0
 
-  '@payloadcms/drizzle@3.86.0':
-    resolution: {integrity: sha512-30qtjVUd281YZTIW4zYh75w+QyniZ78oXJSGLglZBo4davNEFMjqaN68WIF+s4g3EFSNirlmkD5amzZWphW+KQ==}
+  '@payloadcms/drizzle@3.90.0':
+    resolution: {integrity: sha512-OSVa5Ig7BHcgN15cuaczdDOBA+5dK6A6U9TZja2O+Lf7O+fUw5+bUWYc5KQHsHsZoXS+VB10uATfpicnht5fLA==}
     peerDependencies:
-      payload: 3.86.0
+      payload: 3.90.0
 
   '@payloadcms/graphql@3.86.0':
     resolution: {integrity: sha512-bgzAfV9fjgRbrafkNSiZpoTqgbgUaDl4mmjnvMRGK6toLK44KgjUBzh0ox4+EaunHQAWIakVXAW8xyIIcrqsyA==}
@@ -1394,8 +1394,8 @@ packages:
   '@types/whatwg-mimetype@3.0.2':
     resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
 
-  '@types/ws@8.18.1':
-    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+  '@types/ws@8.18.2':
+    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
 
   '@typescript-eslint/eslint-plugin@8.64.0':
     resolution: {integrity: sha512-CGvQPBxN3wZLu6Rz2kFUpZeoCm78xUic92ck39KPePkO1NPOwjCqdQnm5Q87tpWw9vcBvW8XLrDXjH9PWYtJ3Q==}
@@ -2275,6 +2275,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -2437,6 +2438,9 @@ packages:
 
   get-tsconfig@4.14.0:
     resolution: {integrity: sha512-yTb+8DXzDREzgvYmh6s9vHsSVCHeC0G3PI5bEXNBHtmshPnO+S5O7qgLEOn0I5QvMy6kpZN8K1NKGyilLb93wA==}
+
+  get-tsconfig@4.14.3:
+    resolution: {integrity: sha512-++QEw4DIY7WGoukz+/+A/8dGYPT9l9yIadnmSgZ8Rjr3YVSVDipQSO9CdnJo9ePqFqUUqh+wk9uIaoiAwsiPkA==}
 
   get-tsconfig@4.8.1:
     resolution: {integrity: sha512-k9PN+cFBmaLWtVz29SkUoqU5O0slLuHJXt/2P+tMVFT+phsSGXGkp9t3rQIqdz0e+06EHNGs3oM6ZX1s2zHxRg==}
@@ -2729,8 +2733,8 @@ packages:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
 
-  js-base64@3.9.1:
-    resolution: {integrity: sha512-U73qptcvf/HIOauFOmqT3a0mDUp0MYlfd15oqoe9kqZt5XhiXVb+HG09sLvI9PQ9tZIBFS4nlErai8zbWazP0g==}
+  js-base64@3.9.4:
+    resolution: {integrity: sha512-PtOMXpEGuP0RRiRXsjzHzl44dMHxSu2CPvAhinupR1tBa88me+1DPqsobl7eupn5UukjLkln1ZnAOAOXOrYG0Q==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -3893,6 +3897,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.22.0:
+    resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xml-name-validator@5.0.0:
     resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
     engines: {node: '>=18'}
@@ -4237,7 +4253,7 @@ snapshots:
   '@esbuild-kit/esm-loader@2.6.5':
     dependencies:
       '@esbuild-kit/core-utils': 3.3.2
-      get-tsconfig: 4.14.0
+      get-tsconfig: 4.14.3
 
   '@esbuild/aix-ppc64@0.25.12':
     optional: true
@@ -4634,7 +4650,7 @@ snapshots:
     dependencies:
       '@libsql/core': 0.14.0
       '@libsql/hrana-client': 0.7.0
-      js-base64: 3.9.1
+      js-base64: 3.9.4
       libsql: 0.4.7
       promise-limit: 2.7.0
     transitivePeerDependencies:
@@ -4643,7 +4659,7 @@ snapshots:
 
   '@libsql/core@0.14.0':
     dependencies:
-      js-base64: 3.9.1
+      js-base64: 3.9.4
 
   '@libsql/darwin-arm64@0.4.7':
     optional: true
@@ -4655,7 +4671,7 @@ snapshots:
     dependencies:
       '@libsql/isomorphic-fetch': 0.3.1
       '@libsql/isomorphic-ws': 0.1.5
-      js-base64: 3.9.1
+      js-base64: 3.9.4
       node-fetch: 3.3.2
     transitivePeerDependencies:
       - bufferutil
@@ -4665,8 +4681,8 @@ snapshots:
 
   '@libsql/isomorphic-ws@0.1.5':
     dependencies:
-      '@types/ws': 8.18.1
-      ws: 8.21.1
+      '@types/ws': 8.18.2
+      ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -4752,10 +4768,10 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@payloadcms/db-sqlite@3.86.0(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)':
+  '@payloadcms/db-sqlite@3.90.0(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)':
     dependencies:
       '@libsql/client': 0.14.0
-      '@payloadcms/drizzle': 3.86.0(@libsql/client@0.14.0)(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)
+      '@payloadcms/drizzle': 3.90.0(@libsql/client@0.14.0)(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)
       console-table-printer: 2.12.1
       drizzle-kit: 0.31.7
       drizzle-orm: 0.45.2(@libsql/client@0.14.0)(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(pg@8.22.0)
@@ -4796,7 +4812,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@payloadcms/drizzle@3.86.0(@libsql/client@0.14.0)(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)':
+  '@payloadcms/drizzle@3.90.0(@libsql/client@0.14.0)(@types/pg@8.20.0)(mysql2@3.23.1(@types/node@22.19.9))(payload@3.86.0(graphql@16.14.2)(typescript@5.7.3))(pg@8.22.0)':
     dependencies:
       console-table-printer: 2.12.1
       dequal: 2.0.3
@@ -5122,7 +5138,7 @@ snapshots:
   '@types/whatwg-mimetype@3.0.2':
     optional: true
 
-  '@types/ws@8.18.1':
+  '@types/ws@8.18.2':
     dependencies:
       '@types/node': 22.19.9
 
@@ -6302,6 +6318,10 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
+  get-tsconfig@4.14.3:
+    dependencies:
+      resolve-pkg-maps: 1.0.0
+
   get-tsconfig@4.8.1:
     dependencies:
       resolve-pkg-maps: 1.0.0
@@ -6346,11 +6366,11 @@ snapshots:
     dependencies:
       '@types/node': 22.19.9
       '@types/whatwg-mimetype': 3.0.2
-      '@types/ws': 8.18.1
+      '@types/ws': 8.18.2
       buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.21.1
+      ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -6588,7 +6608,7 @@ snapshots:
 
   joycon@3.1.1: {}
 
-  js-base64@3.9.1: {}
+  js-base64@3.9.4: {}
 
   js-tokens@4.0.0: {}
 
@@ -7888,6 +7908,8 @@ snapshots:
   wrappy@1.0.2: {}
 
   ws@8.21.1: {}
+
+  ws@8.22.0: {}
 
   xml-name-validator@5.0.0: {}
 

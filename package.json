@@ -53,7 +53,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@payloadcms/db-sqlite": "3.86.0",
+    "@payloadcms/db-sqlite": "3.90.0",
     "@payloadcms/next": "3.86.0",
     "@payloadcms/ui": "3.86.0",
     "cross-env": "^7.0.3",
