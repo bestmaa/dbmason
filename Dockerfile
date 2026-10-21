@@ -1,4 +1,4 @@
-FROM node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436 AS base
+FROM node:26.12.0-alpine3.23@sha256:2ae3a23c9c5d2129398f4844c7c43400c061faf6973852f0fa837323bff9a5a8 AS base
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN pnpm --config.optional=false licenses list --prod --json \
   | node scripts/collect-third-party-licenses.mjs \
   node_modules /third-party-licenses .next/standalone/node_modules /dev/stdin
 
-FROM node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436 AS runner
+FROM node:26.12.0-alpine3.23@sha256:2ae3a23c9c5d2129398f4844c7c43400c061faf6973852f0fa837323bff9a5a8 AS runner
 LABEL org.opencontainers.image.licenses="AGPL-3.0-only" \
   org.opencontainers.image.source="https://github.com/bestmaa/dbmason" \
   org.opencontainers.image.title="DBMason"
